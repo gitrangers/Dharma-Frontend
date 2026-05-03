@@ -1,0 +1,586 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { resolveUploadUrl } from "@/lib/media";
+import { movieSlug } from "@/lib/moviesLayout";
+import { youtubeThumbnailUrl, youtubeWatchUrl } from "@/lib/youtube";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
+function slideHrefForHero(s) {
+  const raw = String(s.url || "").trim();
+  if (!raw) return null;
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return youtubeWatchUrl(raw) || null;
+}
+
+function HeroSlideContent({ s, img }) {
+  const slug = s.movieSlug ? String(s.movieSlug).trim() : "";
+  const external = slideHrefForHero(s);
+  if (slug) {
+    return (
+      <Link href={`/movie/${encodeURIComponent(slug)}`} className="d-block">
+        {img}
+      </Link>
+    );
+  }
+  if (external) {
+    return (
+      <a href={external} target="_blank" rel="noopener noreferrer" className="d-block">
+        {img}
+      </a>
+    );
+  }
+  return img;
+}
+
+function formatRelease(d) {
+  if (!d) return "";
+  const dt = new Date(d);
+  if (Number.isNaN(dt.getTime())) return "";
+  return dt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function monthYearLabel(m) {
+  const month = Number(m?.month);
+  const year = Number(m?.year);
+  if (Number.isFinite(month) && month >= 1 && month <= 12 && Number.isFinite(year)) {
+    const mo = new Date(2000, month - 1, 1).toLocaleString("en", { month: "short" });
+    return `(${mo} ${year})`;
+  }
+  if (Number.isFinite(year)) return `(${year})`;
+  return "";
+}
+
+function ViewAllMoviesLink() {
+  return (
+    <div className="btn-view-more mt15">
+      <Link href="/movies" className="btn-1 font-hammersmith btn color-primary float-end mobile-center text-decoration-none">
+        <svg aria-hidden="true" focusable="false">
+          <rect x="0" y="0" fill="none" width="100%" height="100%" />
+        </svg>
+        VIEW ALL
+      </Link>
+    </div>
+  );
+}
+
+function MovieThumbCard({ item, released }) {
+  const slug = movieSlug(item);
+  const src = released ?
+      resolveUploadUrl(item.recentSmall || item.smallImage)
+    : resolveUploadUrl(item.upcomingSmall || item.smallImage);
+  const imgEl = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src || "/frontend/img/logo.png"}
+      alt={item.name || "Dharma Productions"}
+      className="img-responsive"
+    />
+  );
+  const caption = released ?
+    (
+      <h4 className="text-up color-grey">
+        {(item.name || "").slice(0, 20)}
+        <br />
+        {monthYearLabel(item)}
+      </h4>
+    )
+  : (
+      <h4 className="text-up color-grey">
+        {(item.name || "").slice(0, 20)}
+        <br />
+        {item.releaseDate ?
+          <span>{formatRelease(item.releaseDate)}</span>
+        : null}
+      </h4>
+    );
+
+  const inner = (
+    <>
+      <div className="img-pads">{imgEl}</div>
+      <div className="movie-names">{caption}</div>
+    </>
+  );
+
+  if (item.status !== false && slug) {
+    return (
+      <Link href={`/movie/${encodeURIComponent(slug)}`} className="text-decoration-none text-reset d-block">
+        {inner}
+      </Link>
+    );
+  }
+  return <div className="d-block">{inner}</div>;
+}
+
+export function HomePageContent({
+  heroSlides = [],
+  upcomingMovies = [],
+  recentMovies = [],
+  videoRows = [],
+  videoFeature = null,
+  newsItems = [],
+}) {
+  const [tab, setTab] = useState("upcoming");
+  const [subEmail, setSubEmail] = useState("");
+  const [subMsg, setSubMsg] = useState("");
+  const [subBusy, setSubBusy] = useState(false);
+
+  const slides = useMemo(() => {
+    if (Array.isArray(heroSlides) && heroSlides.length) return heroSlides;
+    return [{ url: "", image: "", order: 0 }];
+  }, [heroSlides]);
+
+  const displayUpcoming = useMemo(() => (Array.isArray(upcomingMovies) ? upcomingMovies.slice(0, 10) : []), [upcomingMovies]);
+  const displayRecent = useMemo(() => (Array.isArray(recentMovies) ? recentMovies.slice(0, 10) : []), [recentMovies]);
+
+  const { feature, strip } = useMemo(() => {
+    const sorted = Array.isArray(videoRows) ?
+        [...videoRows].sort(
+          (a, b) =>
+            (Number(b.movieOrder) || 0) - (Number(a.movieOrder) || 0) ||
+            (Number(b.order) || 0) - (Number(a.order) || 0),
+        )
+      : [];
+    const hasSailsFeature = Boolean(videoFeature && (videoFeature.image || videoFeature.url));
+    if (hasSailsFeature) {
+      return { feature: videoFeature, strip: sorted.slice(0, 16) };
+    }
+    const f = sorted[0] ?? null;
+    return { feature: f, strip: sorted.slice(1, 17) };
+  }, [videoFeature, videoRows]);
+
+  const featureThumb =
+    feature ?
+      (() => {
+        const img = feature.image || feature.thumbnail;
+        if (img) return resolveUploadUrl(String(img)) || String(img);
+        return youtubeThumbnailUrl(feature.url) || "";
+      })()
+    : "";
+
+  return (
+    <div className="dharma-home">
+      <section className="home-hero d-none d-md-block">
+        <div className="home-slider dh-relative">
+          <Swiper
+            modules={[Autoplay, Pagination, Navigation]}
+            slidesPerView={1}
+            loop={slides.length > 1}
+            autoplay={{ delay: 4500, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            navigation
+            className="dharma-home-hero-swiper"
+          >
+            {slides.map((s, i) => {
+              const imgSrc =
+                resolveUploadUrl(s.image) || s.image || youtubeThumbnailUrl(s.url) || "/frontend/img/logo.png";
+              const img = (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imgSrc} alt="Dharma Productions" className="img-responsive width100" />
+              );
+              return (
+                <SwiperSlide key={`${s.order}-${i}`}>
+                  <HeroSlideContent s={s} img={img} />
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+          <div className="movie-tab text-center dh-absulate dh-list second">
+            <ul className="padding0 margin0 up-tab list-unstyled d-flex justify-content-center flex-wrap mb-0">
+              <li className={`mr2${tab === "upcoming" ? " active-tab" : ""}`}>
+                <button
+                  type="button"
+                  className="border-0 bg-transparent p-0"
+                  onClick={() => {
+                    setTab("upcoming");
+                  }}
+                >
+                  <h1 className="margin0 font-hammersmith">UPCOMING</h1>
+                </button>
+              </li>
+              <li className={tab === "released" ? "active-tab" : ""}>
+                <button type="button" className="border-0 bg-transparent p-0" onClick={() => setTab("released")}>
+                  <h1 className="margin0 font-hammersmith">RELEASED</h1>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-hero d-md-none">
+        <div className="home-slider dh-relative width-auto">
+          <Swiper
+            modules={[Autoplay, Pagination]}
+            slidesPerView={1}
+            loop={slides.length > 1}
+            autoplay={{ delay: 4000, disableOnInteraction: false }}
+            pagination={{ clickable: true }}
+            className="dharma-home-hero-swiper"
+          >
+            {slides.map((s, i) => {
+              const imgSrc =
+                resolveUploadUrl(s.image) || s.image || youtubeThumbnailUrl(s.url) || "/frontend/img/logo.png";
+              const img = (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imgSrc} alt="" className="img-responsive" />
+              );
+              return (
+                <SwiperSlide key={`m-${s.order}-${i}`}>
+                  <HeroSlideContent s={s} img={img} />
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+          <div className="movie-tab text-center dh-absulate dh-list second">
+            <ul className="padding0 margin0 up-tab list-unstyled d-flex justify-content-center flex-wrap mb-0">
+              <li className={`mr2${tab === "upcoming" ? " active-tab" : ""}`}>
+                <button type="button" className="border-0 bg-transparent p-0" onClick={() => setTab("upcoming")}>
+                  <h1 className="margin0 font-hammersmith h6 text-up">UPCOMING</h1>
+                </button>
+              </li>
+              <li className={tab === "released" ? "active-tab" : ""}>
+                <button type="button" className="border-0 bg-transparent p-0" onClick={() => setTab("released")}>
+                  <h1 className="margin0 font-hammersmith h6 text-up">RELEASED</h1>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="container">
+          <div className="tab-active">
+            {tab === "upcoming" ?
+              <div className="upcoming mobile-row">
+                {displayUpcoming.length === 0 ?
+                  <p className="text-center color-grey py-4 mb-0">No upcoming titles right now.</p>
+                : null}
+                <div className="row-flex text-center d-none d-md-flex flex-wrap justify-content-center">
+                  {displayUpcoming.map((item) => (
+                    <div key={movieSlug(item) || item._id} className="col-flex px-1 mb-3">
+                      <MovieThumbCard item={item} released={false} />
+                    </div>
+                  ))}
+                </div>
+                <div className="d-md-none">
+                  <Swiper slidesPerView={1.15} spaceBetween={14} className="px-1">
+                    {displayUpcoming.map((item) => (
+                      <SwiperSlide key={`mu-${movieSlug(item)}`} style={{ maxWidth: 240 }}>
+                        <MovieThumbCard item={item} released={false} />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+                {displayUpcoming.length > 0 ? <ViewAllMoviesLink /> : null}
+              </div>
+            : null}
+            {tab === "released" ?
+              <div className="release mobile-row">
+                {displayRecent.length === 0 ?
+                  <p className="text-center color-grey py-4 mb-0">No recent releases to show.</p>
+                : null}
+                <div className="row-flex text-center d-none d-md-flex flex-wrap justify-content-center">
+                  {displayRecent.map((item) => (
+                    <div key={movieSlug(item) || item._id} className="col-flex px-1 mb-3">
+                      <MovieThumbCard item={item} released />
+                    </div>
+                  ))}
+                </div>
+                <div className="d-md-none">
+                  <Swiper slidesPerView={1.15} spaceBetween={14} className="px-1">
+                    {displayRecent.map((item) => (
+                      <SwiperSlide key={`mr-${movieSlug(item)}`} style={{ maxWidth: 240 }}>
+                        <MovieThumbCard item={item} released />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </div>
+                {displayRecent.length > 0 ? <ViewAllMoviesLink /> : null}
+              </div>
+            : null}
+          </div>
+        </div>
+      </section>
+
+      <section className="dh-relative">
+        <div className="dharma-tv-bg dharma-home-tv pb-short">
+          <div className="container">
+            <div className="row">
+              <div className="dharma-title text-md-end titles mt30 col-12">
+                <h1 className="margin0 color-primary font-hammersmith line45 home-videos-title">VIDEOS</h1>
+              </div>
+            </div>
+            {feature ?
+              <div className="row">
+                <div className="col-12">
+                  <div className="dharma-home-tv-feature video-play text-shadow dh-relative">
+                    <a
+                      href={youtubeWatchUrl(feature.url) || slideHrefForHero(feature) || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="d-block position-relative"
+                    >
+                      {featureThumb ?
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={featureThumb} alt="" className="img-responsive width100" />
+                      : null}
+                      <span className="dharma-home-play-overlay dh-absulate">
+                        <Image src="/frontend/img/play-world.png" alt="Play" width={120} height={120} className="img-fluid" />
+                      </span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            : null}
+          </div>
+          <div className="container">
+            <div className="row">
+              <div className="col-12">
+                {strip.length > 0 ?
+                  <div className="video-slider slider-nav mt30 min-tp-nm">
+                    <Swiper
+                      modules={[Navigation]}
+                      slidesPerView={1.2}
+                      spaceBetween={12}
+                      navigation
+                      breakpoints={{
+                        576: { slidesPerView: 2, spaceBetween: 14 },
+                        768: { slidesPerView: 3, spaceBetween: 16 },
+                        1200: { slidesPerView: 4, spaceBetween: 16 },
+                      }}
+                      className="dharma-home-video-strip"
+                    >
+                      {strip.map((row, ri) => {
+                        const rawUrl = String(row.url || "").trim();
+                        const watch = /^https?:\/\//i.test(rawUrl) ? rawUrl : youtubeWatchUrl(rawUrl) || "";
+                        const thumb =
+                          resolveUploadUrl(row.thumbnail) || youtubeThumbnailUrl(row.url) || "";
+                        const title = String(row.title || "").slice(0, 80);
+                        const key = `${rawUrl}-${title}-${ri}`;
+                        return (
+                          <SwiperSlide key={key}>
+                            <a href={watch || "#"} target="_blank" rel="noopener noreferrer" className="text-decoration-none">
+                              <div className="video-box">
+                                <div className="video-slide-img">
+                                  <div className="img-animate dh-relative">
+                                    {thumb ?
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img src={thumb} alt="" className="img-responsive width100" />
+                                    : null}
+                                  </div>
+                                </div>
+                                <div className="video-names mt10">
+                                  <span className="color-white">{title}</span>
+                                </div>
+                              </div>
+                            </a>
+                          </SwiperSlide>
+                        );
+                      })}
+                    </Swiper>
+                    <div className="text-center btn-view-all mt40">
+                      <Link href="/videos" className="btn-1 font-hammersmith btn color-primary text-decoration-none">
+                        <svg aria-hidden="true" focusable="false">
+                          <rect x="0" y="0" fill="none" width="100%" height="100%" />
+                        </svg>
+                        VIEW ALL
+                      </Link>
+                    </div>
+                  </div>
+                : null}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="container-fluid position-relative px-0 dharma-home-subscribe-wrap">
+          <div className="subscribe dharma-home-subscribe">
+            <div className="container">
+              <div className="row align-items-center gy-3">
+                <div className="col-md-6 text-center col-sm-7">
+                  <div className="display-inline up-img">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/frontend/img/subscribe.png" alt="" className="img-fluid" />
+                  </div>
+                  <div className="sub-text display-inline mt20 text-start text-sm-center">
+                    <h3 className="font-hammersmith color-primary text-up margin0">SUBSCribe NOW</h3>
+                    <h3 className="font-hammersmith color-primary text-up margin0">for MORE UPDATES</h3>
+                  </div>
+                </div>
+                <div className="col-md-6 col-sm-5">
+                  <form
+                    className="sub-input mt20 sub-text home-subscribe-form"
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setSubMsg("");
+                      const t = subEmail.trim();
+                      if (!t) return;
+                      setSubBusy(true);
+                      try {
+                        const r = await fetch("/api/subscribe", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ email: t }),
+                        });
+                        const j = await r.json().catch(() => ({}));
+                        const data = j?.data;
+                        if (data && typeof data === "object" && data.message === "already exist") {
+                          setSubMsg("This email is already subscribed.");
+                        } else if (j?.value !== false) {
+                          setSubMsg("Thank you for subscribing.");
+                          setSubEmail("");
+                        } else {
+                          setSubMsg("Subscription could not be saved. Try again later.");
+                        }
+                      } catch {
+                        setSubMsg("Network error. Try again later.");
+                      } finally {
+                        setSubBusy(false);
+                      }
+                    }}
+                  >
+                    <div className="input-group">
+                      <input
+                        type="email"
+                        className="form-control"
+                        placeholder="Enter your email-id"
+                        name="email"
+                        autoComplete="email"
+                        value={subEmail}
+                        onChange={(e) => setSubEmail(e.target.value)}
+                        disabled={subBusy}
+                      />
+                      <button
+                        className="go-btn color-primary font-hammersmith px-3 border-0 bg-transparent"
+                        type="submit"
+                        disabled={subBusy}
+                      >
+                        GO
+                      </button>
+                    </div>
+                    {subMsg ?
+                      <p className="small mt-2 mb-0 color-primary" role="status">
+                        {subMsg}
+                      </p>
+                    : null}
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {newsItems && newsItems.length > 0 ?
+        <section className="bg-sun home-news-sun">
+          <div className="news">
+            <div className="title px-4 pt-4 pb-2">
+              <h1 className="font-hammersmith color-white margin0 home-news-title text-up">NEWS</h1>
+            </div>
+            <div className="px-3 pb-5">
+              <Swiper
+                modules={[Navigation]}
+                spaceBetween={20}
+                slidesPerView={1.15}
+                navigation
+                breakpoints={{
+                  576: { slidesPerView: 1.5, spaceBetween: 24 },
+                  768: { slidesPerView: 2.2, spaceBetween: 28 },
+                  1200: { slidesPerView: 3.2, spaceBetween: 40 },
+                }}
+                className="home-news-swiper px-1"
+              >
+                {newsItems.map((n) => (
+                  <SwiperSlide key={n.id}>
+                    <Link href={`/news-events?id=${encodeURIComponent(n.id)}`} className="text-decoration-none text-reset">
+                      <div className="video-box">
+                        <div className="video-slide-img">
+                          <div className="img-animate">
+                            {n.image ?
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={n.image} alt="" className="img-responsive" />
+                            : null}
+                          </div>
+                        </div>
+                        <div className="video-name mt20 h40">
+                          <h4 className="color-white margin0 small">{n.title.slice(0, 55)}</h4>
+                        </div>
+                        {n.date ?
+                          <div className="video-date">
+                            <span className="color-black f12">{n.date}</span>
+                          </div>
+                        : null}
+                      </div>
+                    </Link>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          </div>
+        </section>
+      : null}
+
+      <section className="d-none d-md-block">
+        <div className="dhrarma-world dh-relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/frontend/img/news-bg.jpg" alt="" className="img-fluid w-100" />
+          <div className="container dh-absulate middle">
+            <div className="row justify-content-center">
+              <div className="col-lg-10 text-center">
+                <div className="dharma-world-text">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/frontend/img/dharma-img.png" alt="Dharma Productions" className="img-fluid margin-auto d-block mx-auto" />
+                </div>
+                <div className="pad-inner text-center mt-3">
+                  <p className="color-white margin0">For those whose dharma is Dharma, welcome home.</p>
+                  <p className="color-white mb-0">
+                    Entertainment | Interaction | and much more; we bring to you the best of the Dharma Family.
+                  </p>
+                  <div className="btn-view-enter mt20 text-center mob-marg0">
+                    <Link href="/social" className="btn-1 font-hammersmith btn color-primary text-center text-decoration-none">
+                      <svg aria-hidden="true" focusable="false">
+                        <rect x="0" y="0" fill="none" width="100%" height="100%" />
+                      </svg>
+                      ENTER
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="top-right dh-absulate d-none d-lg-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/frontend/img/top-right.png" alt="" className="img-fluid" />
+          </div>
+          <div className="bottom-left dh-absulate d-none d-lg-block">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/frontend/img/bottom-left.png" alt="" className="img-fluid" />
+          </div>
+        </div>
+      </section>
+
+      <section className="d-md-none bg-dark text-center py-5">
+        <div className="container px-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/frontend/img/dharma-img.png" alt="" className="img-fluid mx-auto mb-3" style={{ maxWidth: 220 }} />
+          <p className="color-white mb-2">For those whose dharma is Dharma, welcome home.</p>
+          <Link href="/social" className="btn-1 font-hammersmith btn color-primary text-decoration-none">
+            <svg aria-hidden="true" focusable="false">
+              <rect x="0" y="0" fill="none" width="100%" height="100%" />
+            </svg>
+            ENTER
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+}

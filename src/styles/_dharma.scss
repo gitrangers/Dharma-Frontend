@@ -1,0 +1,3392 @@
+/* Bootstrap is loaded as compiled CSS from layout.tsx */
+
+$brand-primary: #f26522;
+$dark-primary: #d4550e;
+$movies-accent: #f26522;
+$white: #ffffff;
+$black: #171717;
+$grey: #6f6f6e;
+
+/* Fixed header total height (orange + curve) — keep heroes aligned under navbar */
+:root {
+  --dh-header-offset: 116px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --dh-header-offset: 106px;
+  }
+}
+
+@font-face {
+  font-family: "AMRTYPEN";
+  src: url("/frontend/fonts/AMRTYPEN.ttf") format("truetype");
+  font-display: swap;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  padding-top: 0;
+}
+
+.font-hammersmith {
+  font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif;
+}
+
+.font-karla {
+  font-family: "Karla", sans-serif;
+}
+
+.color-primary {
+  color: $brand-primary !important;
+}
+.color-white {
+  color: $white !important;
+}
+.color-grey {
+  color: $grey !important;
+}
+.text-up {
+  text-transform: uppercase;
+}
+
+.brand-primary {
+  color: $brand-primary;
+}
+
+.padding0 {
+  padding: 0;
+}
+.margin0 {
+  margin: 0;
+}
+
+.dh-relative {
+  position: relative;
+}
+.dh-absulate {
+  position: absolute;
+}
+
+.dh-list {
+  ul {
+    display: block;
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    li {
+      display: inline-block;
+    }
+  }
+}
+
+.head-social.dh-list ul.dh-header-social-ul {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 5px;
+  list-style: none;
+}
+
+.head-social.dh-list ul.dh-header-social-ul.dh-header-social-ul--start {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.home .navbar {
+  background-color: transparent !important;
+}
+
+/*
+ * Bootstrap 5 `.navbar > .container-fluid` uses `display:flex` + `justify-content:space-between`.
+ * Legacy header has two block siblings (`.head-bg` + `.head-curve`). Flex would pin them in a row;
+ * force a vertical stack + full width like `frontend/views/header.html`.
+ */
+.dh-site-navbar > .dh-header-shell.container-fluid {
+  display: block !important;
+  width: 100%;
+  max-width: 100%;
+  flex: 1 1 100%;
+}
+
+/* Legacy Angular header: orange + curve inset from viewport edges (matches content band). */
+.dh-header-shell {
+  position: relative;
+}
+
+.head-bg {
+  background: $brand-primary;
+  margin: 0 60px;
+  /* Orange band only; `.head-curve` is the next sibling (legacy `header.html`). */
+  padding: clamp(10px, 1.35vw, 16px) 0 0;
+  box-sizing: border-box;
+  display: block;
+}
+
+@media (max-width: 1200px) {
+  .head-bg {
+    margin: 0 35px;
+  }
+
+  .head-curve {
+    margin: -1px 35px 0;
+    background-size: 100% 100%;
+  }
+}
+
+@media (max-width: 767px) {
+  .head-bg {
+    margin: 0 10px;
+    padding: 10px 0 0;
+  }
+
+  .head-curve {
+    margin: -1px 10px 0;
+    background-position-y: -10px;
+  }
+}
+
+/* Bootstrap 5 “container” ≈ 1140/1320 — match legacy ~1170 content band */
+/* Horizontal band + optional search/drawer; ribbon curve is the following sibling */
+/* Tighter left gutter so logo sits farther left like localhost:1337 reference */
+.dh-header-inner.container {
+  max-width: 1170px;
+  padding-bottom: 6px;
+  padding-left: clamp(6px, 2.5vw, 14px);
+  padding-right: clamp(12px, 2.4vw, 22px);
+}
+
+@media (min-width: 768px) {
+  .dh-header-inner.container {
+    padding-left: 0;
+  }
+}
+
+.dh-header-main-row {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  min-height: 46px;
+}
+
+.dh-header-logo-col {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .dh-header-main-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 1fr) auto minmax(140px, 1fr);
+    align-items: center;
+    column-gap: clamp(0.5rem, 1.2vw, 1.15rem);
+    min-height: 48px;
+  }
+
+  .dh-header-logo-col {
+    flex: unset;
+    justify-content: flex-start;
+  }
+
+  .dh-header-nav-wrap {
+    justify-self: center;
+    max-width: min(760px, 94vw);
+  }
+
+  .dh-header-social-col {
+    justify-self: end;
+  }
+}
+
+.dh-header-logo {
+  width: 168px;
+  max-width: min(168px, 46vw);
+  height: auto;
+  display: block;
+}
+
+.dh-header-toggler .navbar-toggler-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* Same as `frontend/sass/main.scss`: sibling under `.head-bg`, inset margins track orange band */
+.head-curve {
+  background: url("/frontend/img/head-curve.png") no-repeat center;
+  height: 30px;
+  background-size: cover;
+  background-position-y: -10px;
+  margin: -1px 60px 0;
+  display: block;
+  line-height: 0;
+  pointer-events: none;
+}
+
+.logo-img {
+  width: 180px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.mt15 {
+  margin-top: 15px;
+}
+.mt25 {
+  margin-top: 25px;
+}
+.mt45 {
+  margin-top: 45px;
+}
+.mt18 {
+  margin-top: 18px;
+}
+
+/* frontend/views/header.html — `.container-fluid.mob-pad0`, `.pull-right`, `.main-pad0` */
+.mob-pad0 {
+  padding: 0;
+}
+
+.pull-right {
+  float: right !important;
+}
+
+@media (max-width: 767px) {
+  .main-pad0 {
+    padding: 0;
+  }
+  .fl-main {
+    float: left !important;
+    margin-top: 3px !important;
+  }
+  .w15 {
+    width: 15px;
+  }
+  .m24-mob {
+    margin-top: 24px !important;
+  }
+  .mt18 {
+    margin-top: 10px;
+  }
+  .mt15 {
+    margin-top: 7px;
+  }
+  .custom-menu li a {
+    padding: 0 5px !important;
+    font-size: 11px;
+  }
+}
+
+.head-social ul li {
+  padding: 0 1px;
+}
+
+.head-social ul li a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 0;
+  color: $white;
+  text-decoration: none;
+}
+
+/* Reference screenshot: white ring + white glyph (“ghost”), not filled pills */
+.head-social ul li a i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  color: $white;
+  font-size: 12px;
+  border-radius: 100%;
+  height: 24px;
+  width: 24px;
+  line-height: 1;
+  text-align: center;
+}
+
+.head-social ul li a:hover i,
+.head-social ul li a:focus-visible i {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: $white;
+}
+
+/* Match icon rings — circular outline + centered glass icon */
+.head-social .my-main-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.head-social .my-main-btn:hover,
+.head-social .my-main-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.12) !important;
+  outline: 0;
+  padding: 0 !important;
+}
+
+.head-social .my-main-btn img,
+.head-social .my-main-btn .w15 {
+  width: 13px !important;
+  height: auto !important;
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .head-social ul li {
+    padding: 0;
+  }
+
+  .head-social ul li a i {
+    font-size: 11px;
+    height: 24px;
+    width: 24px;
+  }
+}
+
+.dh-site-navbar {
+  padding-top: 0;
+  padding-bottom: 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Header search: legacy `.my-search` is absolute + 25% wide; Next keeps the strip in flow. */
+.site-header-search.search-movie {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  right: auto;
+  top: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 0 0 8px;
+  box-sizing: border-box;
+}
+
+.site-header-search .movie-search-pg {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+}
+
+.site-header-search .search-img {
+  position: relative;
+  top: auto;
+  left: auto;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.site-header-search .search-img2 {
+  position: relative;
+  top: auto;
+  right: auto;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+/* frontend/sass/main.scss `.search-in` — white type on orange bar */
+.site-header-search .search-in,
+.site-header-search .form-control.search-in {
+  background: transparent;
+  border: 1px solid $brand-primary;
+  width: 100%;
+  height: 45px;
+  padding: 0 12px 0 44px;
+  color: $white;
+  border-radius: 0;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.site-header-search .search-in::placeholder,
+.site-header-search .form-control.search-in::placeholder {
+  color: $white;
+  opacity: 1;
+}
+
+.site-header-search .search-in:focus,
+.site-header-search .form-control.search-in:focus {
+  outline: 0;
+  box-shadow: none;
+  border-color: $brand-primary;
+  color: $white;
+}
+
+.site-header-search .search-in:focus::placeholder,
+.site-header-search .form-control.search-in:focus::placeholder {
+  color: transparent;
+}
+
+.custom-menu li a {
+  padding: 10px 12px !important;
+}
+
+.dh-header-inner .custom-menu.dh-header-nav-list li a {
+  padding: 10px 12px !important;
+  white-space: nowrap;
+}
+
+@media (max-width: 1199px) and (min-width: 992px) {
+  .dh-header-inner .custom-menu.dh-header-nav-list li a {
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+}
+
+.navbar-nav li a.nav-link {
+  color: $white !important;
+}
+
+/* `frontend/views/menu.html` — text-up + color-white + font-hammersmith */
+.dh-header-nav-link.nav-link {
+  font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif !important;
+  font-weight: 400;
+  font-size: clamp(11px, 0.75vw + 10px, 14px);
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+}
+
+.dh-header-nav-list.navbar-nav {
+  gap: 0;
+}
+
+@media (min-width: 768px) {
+  .dh-header-nav-list.navbar-nav {
+    flex-wrap: nowrap !important;
+    justify-content: center;
+  }
+}
+
+/* Mid widths: tighter copy so seven items + 2.0 stay one row */
+@media (min-width: 768px) and (max-width: 991px) {
+  .dh-header-inner .custom-menu.dh-header-nav-list li a {
+    padding: 5px 5px !important;
+    font-size: 10px !important;
+  }
+}
+
+.footer {
+  background-color: $black;
+  padding: 10px 0;
+}
+
+.footer-data ul li {
+  border-right: 1px solid #b2b2b2;
+  padding: 0 6px;
+  line-height: 100%;
+  color: #b2b2b2;
+  cursor: pointer;
+}
+.footer-data ul li:last-child {
+  border: none;
+}
+
+.footer-social ul li {
+  padding: 0 5px;
+}
+
+.footer-social ul li a i {
+  font-size: 20px;
+  background: #424242;
+  height: 35px;
+  width: 35px;
+  color: $black;
+  border-radius: 100%;
+  text-align: center;
+  line-height: 35px;
+  transition: background 0.3s ease;
+}
+.footer-social ul li a:hover i {
+  background: $brand-primary;
+}
+
+.copy p {
+  color: #b2b2b2;
+  margin: 0;
+}
+
+.home-slider {
+  position: relative;
+}
+
+.movie-tab {
+  width: 100%;
+  bottom: -20px;
+  z-index: 99;
+  left: 0;
+  right: 0;
+}
+
+.movie-tab .btn-group .btn {
+  float: none;
+  color: $brand-primary;
+  background: #000;
+  border: none;
+  font-size: 25px;
+  padding: 9px 70px;
+  font-family: "Hammersmith One", Georgia, serif;
+}
+
+.movie-tab .btn-group .btn:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.movie-tab .btn-group .btn:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.movie-tab .active-tab {
+  background: url("/frontend/img/bg-grediant.jpg") no-repeat;
+  background-size: 100% 100%;
+  color: $white !important;
+}
+
+.mr2 {
+  margin-right: -4px;
+}
+
+.tab-active {
+  padding: 70px 0 80px;
+}
+
+.img-pads {
+  background: #fff;
+  padding: 10px;
+  margin: 5px;
+  box-shadow: 2px 4px 10px 2px #dcdcdc;
+}
+
+/* Past Releases card label — port of frontend/sass/main.scss `.movie-names`
+   (+ frontend/sass/_mobile.scss responsive sizes). */
+.movie-names {
+  min-height: 50px;
+
+  h4 {
+    text-align: left;
+    padding-left: 10px;
+    margin: 0;
+    /* Legacy uses Bootstrap 3 h4 defaults: 18px / 500 / line-height 1.1 */
+    font-family: var(--font-karla), Karla, "Helvetica Neue", Arial, sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+}
+
+@media (max-width: 991px) {
+  .movie-names h4 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-names h4 {
+    font-size: 14px;
+  }
+}
+
+.second {
+  bottom: -20px;
+}
+
+.img-responsive {
+  max-width: 100%;
+  height: auto;
+}
+
+.dharma-tv-bg {
+  background: url("/frontend/img/video-bg.jpg") no-repeat center;
+  background-size: cover;
+}
+
+.my-main-btn {
+  background: transparent;
+  border: none;
+  padding: 7px;
+  border-radius: 25px;
+  &:focus {
+    background: $dark-primary;
+    outline: 0;
+    padding: 7px;
+    border-radius: 25px;
+  }
+}
+
+@media (max-width: 767px) {
+  .my-main-btn {
+    padding: 7px 5px;
+    border-radius: 25px;
+    &:focus {
+      padding: 7px 5px;
+    }
+  }
+}
+
+.w15 {
+  width: 18px;
+}
+
+.min-vh-content {
+  min-height: 60vh;
+}
+
+/* Pull hero under fixed navbar like original layout */
+.home-hero {
+  margin-top: calc(-1 * var(--dh-header-offset));
+  padding-top: var(--dh-header-offset);
+}
+
+.site-main {
+  padding-top: 0;
+  min-height: 50vh;
+}
+
+.btn-primary {
+  background-color: $brand-primary !important;
+  border-color: $brand-primary !important;
+}
+.btn-primary:hover {
+  background-color: $dark-primary !important;
+  border-color: $dark-primary !important;
+}
+
+/* Movie-inside video tab — legacy frontend/sass/main.scss `.btn-primary-outline` + `.btn-enter` */
+.btn-primary-outline {
+  display: inline-block;
+  font-weight: 400;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  border: 2px solid $brand-primary;
+  background: transparent;
+  color: $brand-primary;
+  transition:
+    color 300ms ease,
+    background-color 300ms ease,
+    border-color 300ms ease;
+  &:hover {
+    background: $brand-primary;
+    color: $white;
+    border-color: $brand-primary;
+  }
+  &:focus-visible {
+    outline: 2px solid $brand-primary;
+    outline-offset: 2px;
+  }
+}
+.btn-enter {
+  padding: 7px 30px 5px;
+}
+
+/* Movies page — `movie-up.jpg` includes ceiling + three spotlights (legacy movies.html).
+   Padding must exceed fixed header height so art under the curve stays visible (not only hidden under the navbar). */
+.dharma-movies-bg {
+  position: relative;
+  background-color: #ececec;
+  background-image: url("/frontend/img/movie-up.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  /* Keep top of art aligned; extra padding below header reveals the hanging fixtures */
+  background-position: center top;
+  padding: calc(var(--dh-header-offset) + 120px) 0 0;
+}
+
+@media (max-width: 991px) {
+  .dharma-movies-bg {
+    padding: calc(var(--dh-header-offset) + 80px) 0 0;
+  }
+}
+
+@media (max-width: 575px) {
+  .dharma-movies-bg {
+    padding: calc(var(--dh-header-offset) + 56px) 0 0;
+  }
+}
+
+.movies-page-hero {
+  position: relative;
+  background: transparent;
+}
+
+.movies-hero-head {
+  margin-bottom: clamp(1rem, 3vw, 1.75rem);
+}
+
+.search-rslt {
+  margin-bottom: 0.75rem;
+}
+
+/* frontend/sass/_main2.scss */
+.dharma-movies-bg2 {
+  background: url("/frontend/img/movie-middle.jpg") no-repeat;
+  background-size: cover;
+  padding: 100px 0 50px;
+}
+
+.dharma-movies-bg3 {
+  background: url("/frontend/img/movie-bottom.jpg") no-repeat;
+  background-size: cover;
+  padding: 40px 0 60px;
+}
+
+.orange-bg.movies-orange-band {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Legacy utility classes — frontend/sass/main.scss + _main2.scss (movies.html Recent) */
+.ml15 {
+  margin-left: 15px;
+}
+
+.mb0 {
+  margin-bottom: 0 !important;
+}
+
+.line30 {
+  line-height: 45%;
+}
+
+.f55 {
+  font-size: 45px;
+}
+
+.mb20 {
+  margin-bottom: 20px;
+}
+
+.recent-movie {
+  .video-name {
+    font-size: 18px;
+    margin-left: 5px;
+  }
+
+  .flex-control-nav.flex-control-paging {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .recent-movie .video-name {
+    font-size: 14px;
+    min-height: 20px;
+  }
+
+  .f55 {
+    font-size: 25px;
+  }
+}
+
+/* Recent + Past sections must share the same content band as the Upcoming card
+   column, otherwise their `.container` is wider than the Swiper above and the
+   whole block looks shifted right. Mirrors `.movies-upcoming-card-column`. */
+.dharma-movies-bg2 .orange-bg > .container,
+.dharma-movies-bg3 .orange-bg > .container {
+  max-width: min(1120px, 78vw);
+}
+
+@media (max-width: 575px) {
+  .dharma-movies-bg2 .orange-bg > .container,
+  .dharma-movies-bg3 .orange-bg > .container {
+    max-width: min(1120px, 88vw);
+  }
+}
+
+/* Legacy .f120 ~120px on large screens */
+.movies-head-xl {
+  font-size: clamp(3rem, 12vw, 7.5rem);
+  line-height: 1.02;
+  letter-spacing: 0.03em;
+}
+
+.movies-section-title {
+  font-size: clamp(1.75rem, 3vw, 3rem);
+  line-height: 1.2;
+}
+
+.movies-section-title-accent {
+  color: $movies-accent !important;
+  font-weight: 700;
+}
+
+/* Match upcoming poster column width */
+.search-movie-mar {
+  max-width: min(1120px, 78vw);
+}
+
+@media (max-width: 575px) {
+  .search-movie-mar {
+    max-width: min(1120px, 88vw);
+  }
+}
+
+/*
+ * /videos — one shared column: “VIDEOS” title, search, and hero sit in the same horizontal band
+ * (same left/right edges as Angular `dharma-tv.html` within `.container`).
+ */
+.videos-page-legacy .videos-page-mar {
+  max-width: min(1120px, 78vw);
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+@media (max-width: 575px) {
+  .videos-page-legacy .videos-page-mar {
+    max-width: min(1120px, 88vw);
+  }
+}
+
+/* Fill the band; avoid double `search-movie-mar` max-width shrink vs parent. */
+.videos-page-legacy .videos-page-mar .search-movie.search-movie-mar,
+.videos-page-legacy .videos-page-mar .videos-hero-rail.search-movie-mar {
+  max-width: 100%;
+}
+
+.movies-hero-search-wrap {
+  width: 100%;
+}
+
+/* Hero combobox: legacy movies — white field, orange border, rounded corners */
+.movies-hero-search-wrap .movies-search-input {
+  border-radius: 7px;
+  border: 1px solid $brand-primary;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.movies-hero-search-wrap .movies-search-input:focus {
+  border-color: $brand-primary;
+  box-shadow: 0 0 0 2px rgba($brand-primary, 0.22);
+}
+
+.movies-hero-title-accent {
+  color: $movies-accent !important;
+}
+
+/* Combobox: light border input + thumbnail list (reference UI) */
+.movies-search-combobox {
+  position: relative;
+  width: 100%;
+}
+
+.movies-search-field {
+  width: 100%;
+}
+
+.movies-search-input-inner {
+  position: relative;
+  width: 100%;
+}
+
+.movies-search-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.62;
+}
+
+.movies-search-input {
+  border-radius: 0;
+  border: 1px solid $brand-primary;
+  background-color: #fff;
+  height: 50px;
+  padding: 0.55rem 2.25rem 0.55rem 3rem;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: #333;
+}
+
+.movies-search-field--has-clear .movies-search-input {
+  padding-right: 3rem;
+}
+
+.movies-search-input::placeholder {
+  color: #9a9a9a;
+}
+
+.movies-search-input:focus {
+  border-color: $brand-primary;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(241, 101, 34, 0.22);
+  color: #222;
+}
+
+.movies-search-clear {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 4;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.movies-search-clear img {
+  display: block;
+}
+
+.movies-search-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 3px);
+  z-index: 60;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14);
+  scrollbar-color: #c0c0c0 #f0f0f0;
+  scrollbar-width: thin;
+}
+
+.movies-search-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.movies-search-dropdown::-webkit-scrollbar-thumb {
+  background: #b8b8b8;
+  border-radius: 4px;
+}
+
+.movies-search-dropdown::-webkit-scrollbar-track {
+  background: #ececec;
+}
+
+.movies-search-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin: 0;
+  cursor: pointer;
+  font-family: var(--font-karla), Karla, sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #222;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.movies-search-option:hover,
+.movies-search-option.is-highlighted {
+  background: $movies-accent;
+  color: #fff;
+}
+
+.movies-search-thumb {
+  width: 42px;
+  height: 60px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.movies-search-option-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.row-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.mobile-row .col-flex {
+  flex: 0 0 20%;
+  max-width: 20%;
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .mobile-row .col-flex {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+  }
+}
+
+@media (max-width: 575px) {
+  .mobile-row .col-flex {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+/* Upcoming Swiper — ~78vw card, arrows outside with gap (reference layout) */
+.movies-upcoming-stack {
+  width: 100%;
+}
+
+/* Heading row mirrors slider row so title aligns with poster left edge */
+.movies-upcoming-row--title {
+  align-items: flex-end;
+  margin-bottom: 0.35rem;
+}
+
+.movies-upcoming-row--title .movies-upcoming-card-column h1,
+.movies-upcoming-row--title .movies-upcoming-card-column h2 {
+  margin-bottom: 0;
+  text-align: left;
+}
+
+.movies-upcoming-arrow--placeholder {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 2px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 575px) {
+  .movies-upcoming-arrow--placeholder {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.movies-upcoming-outer {
+  width: 100%;
+  overflow: hidden;
+}
+
+.movies-upcoming-row {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: clamp(12px, 2.5vw, 28px);
+  width: 100%;
+  max-width: 100%;
+}
+
+.movies-upcoming-card-column {
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: min(1120px, 78vw);
+  min-width: 0;
+}
+
+.movies-upcoming-swiper-inner {
+  padding-bottom: 8px;
+  background: transparent !important;
+  width: 100%;
+}
+
+.movies-upcoming-swiper-inner .swiper-wrapper {
+  background: transparent;
+}
+
+.movies-upcoming-swiper-inner .swiper-slide {
+  background: transparent;
+}
+
+.movies-upcoming-slide {
+  height: auto;
+}
+
+.movies-upcoming-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: $movies-accent !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+  &:hover {
+    filter: brightness(1.08);
+  }
+  &:focus-visible {
+    outline: 2px solid $movies-accent;
+    outline-offset: 2px;
+  }
+}
+
+.movies-upcoming-arrow-icon {
+  font-size: 17px;
+  line-height: 1;
+}
+
+@media (max-width: 575px) {
+  .movies-upcoming-row {
+    gap: 8px;
+  }
+  .movies-upcoming-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  .movies-upcoming-arrow-icon {
+    font-size: 14px;
+  }
+  .movies-upcoming-card-column {
+    max-width: min(1120px, 88vw);
+  }
+}
+
+.movies-upcoming-frame {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #fff;
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.movies-upcoming-meta {
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.movies-upcoming-meta-inner {
+  line-height: 1.5;
+}
+
+.movies-upcoming-meta-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.movies-upcoming-meta-sep {
+  font-weight: 700;
+}
+
+.movies-upcoming-meta .color-primary,
+.movies-upcoming-meta .text-primary {
+  color: $movies-accent !important;
+}
+
+/* Pagination dots — active solid orange, inactive lighter orange */
+.movies-upcoming-swiper-inner .swiper-pagination {
+  position: relative !important;
+  margin-top: 14px;
+  bottom: auto !important;
+}
+
+.movies-upcoming-swiper-inner .swiper-pagination-bullet {
+  width: 10px;
+  height: 10px;
+  margin: 0 5px !important;
+  background: rgba($movies-accent, 0.38) !important;
+  opacity: 1 !important;
+}
+
+.movies-upcoming-swiper-inner .swiper-pagination-bullet-active {
+  background: $movies-accent !important;
+  transform: scale(1.15);
+}
+
+.upcoming-slide-img {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  display: block;
+  vertical-align: top;
+  object-fit: contain;
+  object-position: top center;
+  background-color: #fff;
+}
+
+/* "VIEW ALL" button — port of frontend/sass/main.scss `.btn-view-more` / `.btn-1`.
+   An SVG `<rect>` draws the 2px orange outline; on hover the rect's
+   stroke-dasharray is animated for the chase effect. */
+.btn-view-more {
+  .btn-1 {
+    background: transparent;
+    border: none;
+    font-weight: 100;
+    cursor: pointer;
+    padding: 0;
+    &:hover {
+      background: rgba(225, 51, 45, 0);
+      font-weight: 900;
+      letter-spacing: 1px;
+      rect {
+        stroke-width: 5;
+        stroke-dasharray: 15, 310;
+        stroke-dashoffset: 55;
+        transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+      }
+    }
+    svg {
+      height: 40px;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+      pointer-events: none;
+    }
+    rect {
+      fill: none;
+      stroke: $brand-primary;
+      stroke-width: 2;
+      stroke-dasharray: 422, 0;
+      transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+  }
+  .btn {
+    color: $brand-primary;
+    cursor: pointer;
+    display: block;
+    font-size: 16px;
+    font-weight: 400;
+    position: relative;
+    text-decoration: none;
+    text-transform: uppercase;
+    vertical-align: middle;
+    width: 100%;
+    max-width: 160px;
+    padding: 10px 0 8px;
+    margin: 0 auto;
+  }
+}
+
+.display-inline {
+  display: inline-block;
+}
+
+.dharma-top-pad {
+  padding-top: 30px;
+}
+
+/* ----------------------------------------------------------------------- */
+/* Overview / About — DharmaNode BS3 type + frontend/sass/_mobile.scss       */
+/* ----------------------------------------------------------------------- */
+
+.overview-page {
+  font-family: var(--font-karla), Karla, "Helvetica Neue", Helvetica, Arial,
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.428571429;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+}
+
+.overview-page .abt-banner {
+  background: url("/frontend/img/abt.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.top-pad-abt {
+  padding: 23% 0 21%;
+}
+
+.main-about-sec {
+  position: relative;
+}
+
+/* Bootstrap 3 `.container` widths (legacy max 1170px, not BS5 1320px). */
+.overview-page__container {
+  @media (min-width: 768px) and (max-width: 991.98px) {
+    max-width: 750px;
+  }
+  @media (min-width: 992px) and (max-width: 1199.98px) {
+    max-width: 970px;
+  }
+  @media (min-width: 1200px) {
+    max-width: 1170px;
+  }
+}
+
+/* “about us” — Hammersmith; steps from _mobile.scss (1200 / 767 / 480). */
+.overview-page .head-title .f120 {
+  font-family: var(--font-hammersmith), "Hammersmith One", Georgia,
+    "Times New Roman", Times, serif;
+  font-size: 120px;
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+/* Orange taglines — BS3 `h1` + `.font-bold`; 30px ≤991, 18px ≤767. */
+.overview-page .overview-taglines h1 {
+  font-family: inherit;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Intro band (`.data-abt`) — BS3 body copy: 14px; 13px ≤767. */
+.overview-page .data-abt p {
+  margin: 0;
+  color: #333;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.428571429;
+}
+
+/* Horizontal padding — `movie-inside-date`: 50 / 30 / 20px. */
+.overview-page .movie-inside-date {
+  padding-left: 50px;
+  padding-right: 50px;
+}
+
+.overview-page .karan-img {
+  margin: 0 -15px;
+}
+
+.overview-page .mn-org {
+  background-color: $brand-primary;
+  padding: 15px 40px;
+}
+
+.overview-page .mn-org h1 {
+  font-family: inherit;
+  font-size: 36px;
+  line-height: 1.1;
+  font-weight: 700;
+  margin: 0;
+}
+
+.overview-page .mn-org h4 {
+  font-family: inherit;
+  font-size: 18px;
+  line-height: 1.1;
+  font-weight: 700;
+  margin: 0;
+}
+
+.overview-page .mn-org .f18 {
+  font-size: 18px;
+  line-height: 1.428571429;
+  font-weight: 400;
+}
+
+/* Bio copy — same BS3 body rhythm as legacy. */
+.overview-page .karan-img .movie-inside-date > p {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.428571429;
+  color: #333;
+  margin: 0 0 10px;
+}
+
+.overview-page .top-min {
+  margin-top: -90px;
+  z-index: 99;
+  position: relative;
+}
+
+.pb30 {
+  padding-bottom: 30px;
+}
+
+.pt20 {
+  padding-top: 20px;
+}
+
+@media (max-width: 1200px) {
+  .overview-page .head-title .f120 {
+    font-size: 100px;
+  }
+  .overview-page .m-min-tp {
+    margin-top: -1px;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .overview-page .overview-taglines h1 {
+    font-size: 30px;
+  }
+  .overview-page .movie-inside-date {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+  .overview-page .mn-org {
+    padding: 15px 20px;
+  }
+}
+
+@media (max-width: 767px) {
+  .overview-page .abt-banner {
+    background-attachment: scroll;
+  }
+  .overview-page .head-title .f120 {
+    font-size: 80px;
+  }
+  .overview-page .overview-taglines h1 {
+    font-size: 18px;
+  }
+  .overview-page .data-abt p {
+    font-size: 13px;
+  }
+  .overview-page .movie-inside-date {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .overview-page .mn-org {
+    padding: 15px;
+  }
+  .overview-page .mn-org .f14-min {
+    font-size: 14px !important;
+  }
+  .overview-page .top-min {
+    margin-top: -36px;
+  }
+  .overview-page .karan-img {
+    margin: 0 -5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-page .abt-banner {
+    background-size: 100% auto;
+  }
+  .overview-page .head-title .f120 {
+    font-size: 60px;
+  }
+  .overview-page .top-min {
+    margin-top: -26px;
+  }
+}
+
+/* ----------------------------------------------------------------------- */
+/* Movie inside page — parity with DharmaNodeRun frontend/sass/main.scss   */
+/* + frontend/sass/_mobile.scss (movie-inside-bg, curve, inner-bg, tabs).*/
+/* ----------------------------------------------------------------------- */
+
+.pd4 {
+  padding: 0 4%;
+}
+
+.width100 {
+  width: 100%;
+}
+
+.movie-inside-bg {
+  background: url("/frontend/img/main3.jpg");
+  padding-top: 45%;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: top center !important;
+  background-attachment: fixed !important;
+}
+
+.movie-inside-curve {
+  background: url("/frontend/img/movie-inside-bg.png") no-repeat;
+  height: 20px;
+  margin-top: -37px;
+  z-index: 99;
+  position: relative;
+  background-size: 100% 100%;
+}
+
+.movie-inner-bg {
+  background-color: #fff;
+  position: relative;
+}
+
+.movie-inside-date {
+  padding-left: 50px;
+  padding-right: 50px;
+}
+
+@media (max-width: 767px) {
+  .movie-inside-bg {
+    padding: 360px 25px 0;
+    background-size: cover;
+    background-attachment: scroll !important;
+  }
+  .movie-inside-date {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+.m-title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  /* Avoid clipping “Theatrical Trailer” — legacy does not pull the title up with negative margin */
+  position: relative;
+  z-index: 1;
+  h1 {
+    background: #fff;
+    display: inline-block;
+    padding: 0 30px;
+    line-height: 1.25;
+  }
+}
+
+@media (max-width: 991px) {
+  .movie-inside-date {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .movie-inner-bg {
+    margin-top: -1px;
+  }
+  .bg-synopsis {
+    background: none !important;
+  }
+  .m-title {
+    h1 {
+      font-size: 24px;
+    }
+  }
+}
+
+@media (max-width: 575px) {
+  .movie-inside-bg {
+    padding: 210px 10px 0;
+    background-size: cover !important;
+  }
+  .m-title h1 {
+    font-size: 20px;
+  }
+}
+
+/* Legacy movie-inside: full width within .movie-inside-date padding (no max-width cap) */
+.movie-trailor {
+  width: 100%;
+  max-width: none;
+  margin: 0 auto;
+}
+
+.movie-trailor-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  position: relative;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  /* Some UAs crop button contents; trailer art includes title lettering at bottom */
+  overflow: visible;
+  &:focus-visible {
+    outline: 2px solid $brand-primary;
+    outline-offset: 2px;
+  }
+  > img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+  }
+  .middle {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.movie-trailor > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+
+.movie-trailor-play-img {
+  display: block;
+  max-width: min(160px, 36vw);
+  width: auto;
+  height: auto;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+/* Video grid play affordance (still uses ▶ in a circle — legacy play-small-btn.jpg) */
+.movie-trailor-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(243, 112, 33, 0.92);
+  color: #fff;
+  font-size: 28px;
+  padding-left: 6px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+
+.movie-trailor-play--sm {
+  width: 36px;
+  height: 36px;
+  font-size: 14px;
+  padding-left: 3px;
+}
+
+/* Legacy tab strip (tab-bg.png). Reset Bootstrap 5 .btn inside .btn-group. */
+.movie-inside-tab-btn {
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.all-tabs .btn-group > .movie-inside-tab-btn {
+  margin: 0 !important;
+}
+
+.all-tabs {
+  background: url("/frontend/img/tab-bg.png") no-repeat;
+  background-size: 100% 100%;
+  padding: 10px 0 24px;
+  margin: 25px 35px 0 -14px;
+  position: relative;
+
+  .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0;
+
+    .movie-inside-tab-btn {
+      background: transparent;
+      border: none;
+      text-transform: uppercase;
+      font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif;
+      font-size: 18px;
+      padding: 0 18px;
+      color: $black;
+      line-height: 1.35;
+      flex: 0 1 auto;
+      &:first-child {
+        padding-left: 52px;
+      }
+      &:focus,
+      &:active {
+        outline: 0;
+      }
+      &.active-list {
+        color: $white !important;
+      }
+      &.my-disable,
+      &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@media (max-width: 991px) {
+  .all-tabs {
+    margin: 20px 8px 0 -8px;
+    .btn-group .movie-inside-tab-btn {
+      font-size: 15px;
+      padding: 0 10px;
+      &:first-child {
+        padding-left: 30px;
+      }
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .all-tabs {
+    margin: 25px 35px 0 -8px;
+    padding: 10px 0 24px;
+    .btn-group .movie-inside-tab-btn {
+      font-size: 12px;
+      padding: 0 8px;
+      &:first-child {
+        padding-left: 30px;
+      }
+    }
+  }
+}
+
+@media (max-width: 575px) {
+  .all-tabs {
+    margin: 25px 0 0 -5px;
+  }
+}
+
+/* Horizontal tab scroller on small screens (replaces Angular flex-slider). */
+.movie-inside-tabs-mob {
+  flex-wrap: nowrap !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+
+  .movie-inside-tab-btn {
+    flex: 0 0 auto;
+    min-width: 120px;
+    white-space: nowrap;
+    &:first-child {
+      padding-left: 18px;
+    }
+  }
+}
+
+.vs-dis {
+  .flex-control-nav {
+    display: none;
+  }
+}
+
+/* Synopsis panel default deco (legacy .bg-synopsis); cutImage2 overrides via inline style */
+.bg-synopsis {
+  background: url("/frontend/img/main2.png") no-repeat;
+  background-size: contain;
+  background-position: right bottom;
+  padding-top: 20px;
+  padding-bottom: 30px;
+}
+
+/* Legacy .scroll-over was a 400px scroll box; synopsis uses static .synopsis-pane instead. */
+.scroll-over {
+  height: 400px;
+  overflow: auto;
+  padding: 0 15px;
+  p {
+    color: $black;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+}
+
+/* Full-height synopsis copy (no inner scrollbar / “slider” feel) */
+.synopsis-pane {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  padding: 0 15px 32px;
+}
+
+.synopsis-pane h4 {
+  font-family: var(--font-karla), "Karla", system-ui, sans-serif;
+  font-weight: 600;
+  color: #171717;
+}
+
+.synopsis-pane > p,
+.synopsis-pane h4 + p {
+  font-family: var(--font-karla), "Karla", system-ui, sans-serif;
+  font-weight: 300;
+  font-size: 17px;
+  line-height: 1.85;
+  color: #2a2a2a;
+  margin-bottom: 1.25em;
+}
+
+.synopsis-body {
+  font-family: var(--font-karla), "Karla", system-ui, sans-serif;
+  font-weight: 300;
+  p,
+  li {
+    color: #2a2a2a;
+    font-size: 17px;
+    font-weight: 300;
+    line-height: 1.85;
+    margin: 0 0 1.35em;
+  }
+}
+
+@media (max-width: 767px) {
+  .synopsis-body {
+    p,
+    li {
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 1.15em;
+    }
+  }
+  .synopsis-pane > p,
+  .synopsis-pane h4 + p {
+    font-size: 15px;
+  }
+}
+
+.scroll-over::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-over::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.scroll-over::-webkit-scrollbar-thumb {
+  background: #c0c0c0;
+}
+
+.cast {
+  h1 {
+    font-size: 40px;
+    color: #171717;
+  }
+}
+
+.cast-box {
+  height: 120px;
+  width: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  text-align: center;
+  margin: 0 auto;
+  img {
+    text-align: center;
+    border-radius: 100%;
+    display: block;
+    margin: 0 auto;
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+  }
+}
+
+.color-dark {
+  color: #171717 !important;
+}
+.color-black {
+  color: #171717;
+}
+.font-bold {
+  font-weight: 700;
+}
+.f18 {
+  font-size: 18px;
+}
+.f12 {
+  font-size: 12px;
+}
+.text-cap {
+  text-transform: capitalize;
+}
+.line0 {
+  line-height: 0;
+}
+.pl10 {
+  padding-left: 10px;
+}
+.line45 {
+  line-height: 45%;
+}
+.list-none {
+  list-style: none;
+}
+.padd20 {
+  padding: 0 10px;
+}
+.pad5 {
+  padding: 5px;
+}
+.mt10 {
+  margin-top: 10px;
+}
+.mt20 {
+  margin-top: 20px;
+}
+.mt30 {
+  margin-top: 30px;
+}
+.mt60 {
+  margin-top: 60px;
+}
+.pt50 {
+  padding-top: 50px;
+}
+.margin-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.color-light-grey {
+  color: #838383;
+}
+.dark-black {
+  color: #171717;
+}
+
+.cast-credit {
+  padding-top: 20px;
+  padding-bottom: 60px;
+}
+
+.box-pad {
+  padding-bottom: 50px;
+  border-bottom: 2px solid #b0b0b0;
+}
+
+.all-cast {
+  ul {
+    padding-left: 0;
+    margin: 0;
+    li {
+      list-style: none;
+      font-size: 18px;
+      line-height: 240%;
+      color: #171717;
+    }
+  }
+}
+
+.role-name {
+  min-height: 50px;
+}
+
+.cast-name span {
+  font-size: 16px;
+}
+
+.other-cast ul li {
+  padding: 6px 0;
+  list-style: none;
+}
+
+.first-cast {
+  margin-bottom: 12px;
+}
+
+.bg-cast {
+  background: url("/frontend/img/main2.jpg") no-repeat;
+  background-position: right bottom;
+}
+
+.social-share {
+  border: 2px solid #ececec;
+  border-radius: 52px;
+  display: inline-block;
+  padding: 20px 8px;
+  ul {
+    text-align: center;
+    list-style: none;
+    margin-top: 10px;
+    margin-bottom: 0;
+    padding: 0;
+    li a i {
+      background: #c6c6c6;
+      color: $white;
+      font-size: 20px;
+      height: 35px;
+      width: 35px;
+      padding: 8px 5px;
+      border-radius: 100%;
+      margin: 10px 0;
+      display: inline-block;
+      transition: all 0.3s ease-in-out;
+      &:hover {
+        background: $brand-primary;
+      }
+    }
+  }
+}
+
+/* News tab grid (legacy used masonry; swap for a CSS grid that mirrors the
+   3-column / 2-column / 1-column step-down). */
+.movie-news-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 991px) {
+  .movie-news-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 575px) {
+  .movie-news-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.masonry-brick {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.masonry-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.masonry-box {
+  background: #fff;
+  box-shadow: 2px 4px 10px 2px #dcdcdc;
+  padding: 12px;
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+}
+.news-title h4 {
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 500;
+}
+.news-date {
+  margin-top: 6px;
+}
+
+/* Gallery / behind-the-scenes — react-masonry-css column divs + CSS Grid tracks.
+   (Flex + width:33% + min-width:auto let columns refuse to shrink and can leave a track empty.) */
+.movie-gallery-masonry.movie-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-left: 0;
+  align-items: start;
+}
+@media (max-width: 991px) {
+  .movie-gallery-masonry.movie-gallery-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 575px) {
+  .movie-gallery-masonry.movie-gallery-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.movie-gallery-masonry__column {
+  min-width: 0;
+  width: 100% !important;
+  padding-left: 0;
+  background-clip: padding-box;
+}
+.movie-gallery-masonry__column > .masonry-brick {
+  width: 100%;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  display: block;
+}
+
+/* Match legacy frontend/sass/main.scss `.img-animate` — zoom on hover inside masonry */
+.movie-gallery-grid .masonry-box.img-animate {
+  overflow: hidden;
+}
+.movie-gallery-grid .masonry-box.img-animate img {
+  width: 100%;
+  display: block;
+  transition: transform 0.3s ease;
+}
+.movie-gallery-grid .masonry-brick.masonry-link:hover .masonry-box.img-animate img {
+  transform: scale(1.1);
+}
+
+/* Staggered entrance (legacy masonry “pops in” feel when tab mounts) */
+@keyframes dh-gallery-brick-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.movie-gallery-grid--animated .masonry-brick.masonry-link {
+  animation: dh-gallery-brick-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-gallery-grid--animated .masonry-brick.masonry-link {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .movie-gallery-grid .masonry-box.img-animate img {
+    transition: none;
+  }
+  .movie-gallery-grid .masonry-brick.masonry-link:hover .masonry-box.img-animate img {
+    transform: none;
+  }
+}
+
+/* Videos */
+.video-play-box {
+  position: relative;
+}
+.video-play-btn {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  &:focus-visible {
+    outline: 2px solid $brand-primary;
+    outline-offset: 2px;
+  }
+}
+.img-animates {
+  position: relative;
+  overflow: hidden;
+}
+.img-animates .img-hv {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.video-play-btn:hover .overlay {
+  opacity: 1;
+}
+.overlay .pos-middle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+  width: 100%;
+  text-align: center;
+  color: $white;
+}
+.overlay .bottom-right.dh-absulate {
+  right: 10px;
+  bottom: 10px;
+  top: auto;
+  left: auto;
+}
+
+/* Wallpapers */
+.custom-tabs {
+  button {
+    background: transparent;
+    color: #838383;
+    line-height: 100%;
+    border: 0;
+    cursor: pointer;
+    padding: 8px 16px;
+    &:focus,
+    &:active {
+      outline: 0;
+    }
+    &:hover {
+      color: $brand-primary;
+    }
+    &:first-child {
+      border-right: 2px solid #838383;
+    }
+  }
+  .active-list {
+    color: $brand-primary !important;
+  }
+}
+
+.all-wall {
+  position: relative;
+  &:hover .download {
+    display: flex;
+  }
+}
+.all-wall .desktop {
+  position: relative;
+}
+.all-wall .desktop.mob-height {
+  min-height: 360px;
+}
+.all-wall .desktop img {
+  display: block;
+  width: 100%;
+}
+.all-wall .download {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.all-wall .download a {
+  color: #fff;
+  font-size: 28px;
+  text-decoration: none;
+}
+.all-wall .download .download-icon {
+  font-size: 32px;
+  background: $brand-primary;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Awards (accordion) */
+.movie-award {
+  .award-panel {
+    background: transparent;
+    border-bottom: 3px solid #ddd;
+  }
+  .award-heading {
+    width: 100%;
+    background: transparent;
+    border: 0;
+    text-align: left;
+    padding: 14px 8px;
+    color: #333333;
+    cursor: pointer;
+    &:focus-visible {
+      outline: 2px solid $brand-primary;
+    }
+    h3 {
+      font-size: 18px;
+    }
+  }
+  .award-toggle {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #d9d9d9;
+    color: #333;
+    text-align: center;
+    line-height: 28px;
+    font-weight: 700;
+    float: right;
+  }
+  .award-body {
+    padding: 8px 16px 20px;
+  }
+  .title-acc {
+    margin-bottom: 8px;
+    h1 {
+      font-size: 22px;
+      margin: 0;
+    }
+  }
+  .awards-name ul li {
+    font-size: 16px;
+    line-height: 200%;
+    list-style: none;
+  }
+}
+
+/* Floating "back to top" — legacy uses top-scroll.png */
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 15px;
+  cursor: pointer;
+  z-index: 99;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  display: none;
+  img {
+    display: block;
+    max-width: none;
+    height: auto;
+  }
+}
+
+.back-to-top.show {
+  display: inline-block;
+}
+
+/* Related movies strip */
+.related-m {
+  padding: 40px 15px;
+  background: rgba(247, 105, 20, 0.97);
+  .img-pads {
+    box-shadow: none;
+  }
+  .col-flex {
+    flex: 0 0 20%;
+    max-width: 20%;
+    padding: 6px;
+  }
+}
+@media (max-width: 991px) {
+  .related-m .col-flex {
+    flex: 0 0 33.333%;
+    max-width: 33.333%;
+  }
+}
+@media (max-width: 575px) {
+  .related-m .col-flex {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+}
+
+/* Modal — replaces fancybox iframe / fancybox-thumb. */
+.dh-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 1080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.dh-modal-frame {
+  position: relative;
+  width: min(960px, 100%);
+  aspect-ratio: 16 / 9;
+  background: #000;
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+.dh-modal-image-frame {
+  position: relative;
+  max-width: min(95vw, 1200px);
+  max-height: 90vh;
+  img {
+    max-width: 100%;
+    max-height: 90vh;
+    display: block;
+    margin: 0 auto;
+  }
+}
+.dh-modal-close {
+  position: absolute;
+  top: -40px;
+  right: -4px;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.padding0 {
+  padding: 0;
+}
+.bg-bottom-right {
+  width: 100%;
+}
+.movie-tabs {
+  position: relative;
+}
+
+/* `dharma-tv.html` — vertical rhythm between hero and each movie strip */
+.pb-short {
+  padding-top: 100px;
+  padding-bottom: 20px;
+}
+
+@media (max-width: 767px) {
+  .pb-short {
+    padding-top: 50px;
+    padding-bottom: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pb-short {
+    padding-top: 60px;
+    padding-bottom: 0;
+  }
+}
+
+/* Videos page — dharma-tv.html + tv-inside (DharmaNodeRun Angular) */
+
+.dharma-top-bg {
+  background: url("/frontend/img/tv-bg.jpg") no-repeat fixed top center;
+  background-size: cover;
+  /* Legacy `.dharma-tv-bg` uses `padding: 100px 0`; pull under fixed header like other pages. */
+  margin-top: calc(-1 * var(--dh-header-offset));
+  padding-top: calc(var(--dh-header-offset) + 100px);
+  padding-bottom: 100px;
+}
+
+/* Videos hero title — same stepped `f120` treatment as overview / Angular `dharma-tv.html`. */
+.videos-page-legacy .head-title .f120 {
+  font-size: 120px;
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+@media (max-width: 1200px) {
+  .videos-page-legacy .head-title .f120 {
+    font-size: 100px;
+  }
+}
+
+@media (max-width: 767px) {
+  .videos-page-legacy .head-title .f120 {
+    font-size: 80px;
+  }
+  .videos-page-legacy .mob-mt-15 {
+    margin-top: 25px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .videos-page-legacy .head-title .f120 {
+    font-size: 60px;
+  }
+}
+
+.videos-page-legacy .videos-no-movie-found {
+  min-height: 400px;
+}
+
+/* ---------------------------------------------------------------------- */
+/* `.videos-head-f120` removed — hero uses legacy `.f120` in markup.        */
+/* ---------------------------------------------------------------------- */
+
+.videos-page-legacy .search-rslt {
+  margin-bottom: 22px;
+}
+
+/* Videos page search — parity with Angular `search-movie` + `input.search-in` */
+.videos-page-legacy .search-movie.search-movie-mar {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.videos-page-legacy .search-movie .search-img {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  z-index: 99;
+  line-height: 0;
+}
+
+.videos-page-legacy .search-movie .search-img img {
+  filter: brightness(0) invert(1);
+  opacity: 0.94;
+  display: block;
+}
+
+.videos-page-legacy .search-movie .search-in {
+  background: transparent;
+  border: 1px solid #f37021;
+  width: 100%;
+  height: 45px;
+  padding: 0 0 0 45px;
+  color: #ffffff;
+  box-sizing: border-box;
+  border-radius: 0;
+  font-family: var(--font-karla), Karla, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.428571429;
+}
+
+.videos-page-legacy .search-movie .search-in:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(243, 112, 33, 0.45);
+}
+
+.videos-page-legacy .search-movie .search-in::placeholder {
+  color: rgba(255, 255, 255, 0.66);
+}
+
+.videos-page-legacy .search-movie.search-movie--has-clear .search-in {
+  padding: 0 44px 0 45px;
+}
+
+.videos-page-legacy .search-movie .search-img2 {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 99;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.videos-page-legacy .search-movie .search-img2:hover {
+  opacity: 0.92;
+}
+
+/* Hero sits in legacy flow with `.mt15` on the wrapper; first `.pb-short` provides band below. */
+.videos-page-legacy .videos-hero-player {
+  margin-bottom: 0;
+  overflow: visible;
+  /*
+   * Prev/next: match legacy FlexSlider *visual* weight (thin grey chevrons), not full 70×70 asset bounds.
+   * `left.png` / `right.png` are drawn smaller here; padding keeps a comfortable tap target.
+   */
+  --hero-nav-icon: 44px;
+  --hero-nav-gap: 16px;
+  --hero-nav-pad: 14px;
+}
+
+@media (max-width: 575px) {
+  .videos-page-legacy .videos-hero-player {
+    --hero-nav-icon: 40px;
+    --hero-nav-gap: 10px;
+    --hero-nav-pad: 12px;
+  }
+}
+
+/* Same horizontal band as `.search-movie.search-movie-mar` (do not set max-width: none here). */
+.videos-page-legacy .videos-hero-rail {
+  width: 100%;
+  overflow: visible;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.videos-hero-rail-inner {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+  /* Slide is full width of band (same as search). Arrows sit outside the image via absolute + translate. */
+}
+
+/* Hero swiper + slide link: no orange frame (search-style border must not bleed here) */
+.videos-page-legacy .videos-hero-swiper-shell,
+.videos-page-legacy .videos-hero-swiper,
+.videos-page-legacy .videos-hero-swiper .swiper-wrapper,
+.videos-page-legacy .videos-hero-swiper .swiper-slide,
+.videos-page-legacy .videos-hero-slide-link {
+  border: none !important;
+  outline: none;
+  box-shadow: none !important;
+}
+
+.videos-page-legacy .videos-hero-slide-link:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
+}
+
+.videos-hero-swiper-shell {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.videos-hero-swiper-shell .swiper-slide {
+  height: auto;
+}
+
+/* Hero image: BS3 `.img-responsive` behaviour — width follows container, height from aspect ratio (matches dharmanodeRun flexslider hero). */
+.videos-page-legacy .videos-hero-slide-frame.video-play {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  line-height: 0;
+  background-color: #0a0a0a;
+  border: none;
+  outline: none;
+  overflow: hidden;
+}
+
+.videos-page-legacy .videos-hero-slide-frame .videos-hero-slide__img.flexslider-slides-img {
+  border: none;
+  outline: none;
+  vertical-align: bottom;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.videos-hero-slide__shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    linear-gradient(to top, rgba(0, 0, 0, 0.28) 0%, transparent 55%),
+    radial-gradient(transparent 58%, rgba(0, 0, 0, 0.08) 100%);
+}
+
+/* `.middle` only existed under `.movie-trailor` — restore Flexslider centering for TV hero */
+.videos-page-legacy .videos-hero-slide-frame .play-btn.dh-absulate.middle {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.videos-page-legacy .videos-hero-slide-frame .mob-width-auto {
+  width: auto;
+  max-width: min(120px, 22vw);
+}
+
+.videos-hero-slide-link {
+  display: block;
+  background: #000;
+}
+
+.videos-hero-play {
+  z-index: 2 !important;
+}
+
+.videos-hero-play__icon {
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.55));
+  max-width: min(120px, 20vw);
+  height: auto;
+}
+
+/*
+ * Hero nav — full-width slide (search ke barabar). Arrows FlexSlider jaisa image ke bahar.
+ */
+.videos-page-legacy .videos-hero-outside-arrow {
+  position: absolute;
+  top: 40%;
+  z-index: 6;
+  box-sizing: border-box;
+  width: calc(var(--hero-nav-icon) + 2 * var(--hero-nav-pad));
+  height: calc(var(--hero-nav-icon) + 2 * var(--hero-nav-pad));
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: var(--hero-nav-pad);
+  border: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: var(--hero-nav-icon) var(--hero-nav-icon);
+  cursor: pointer;
+  opacity: 1;
+}
+.videos-page-legacy .videos-hero-outside-arrow:hover {
+  opacity: 1;
+}
+.videos-page-legacy .videos-hero-outside-arrow:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 2px;
+}
+
+.videos-page-legacy .videos-hero-outside-arrow--prev {
+  left: 0;
+  transform: translate(calc(-100% - var(--hero-nav-gap)), -50%);
+  background-image: url("/frontend/img/left.png");
+}
+.videos-page-legacy .videos-hero-outside-arrow--next {
+  right: 0;
+  left: auto;
+  transform: translate(calc(100% + var(--hero-nav-gap)), -50%);
+  background-image: url("/frontend/img/right.png");
+}
+
+@media (max-width: 991px) {
+  .videos-page-legacy .videos-hero-outside-arrow--prev {
+    left: var(--hero-nav-gap);
+    transform: translateY(-50%);
+  }
+  .videos-page-legacy .videos-hero-outside-arrow--next {
+    right: var(--hero-nav-gap);
+    transform: translateY(-50%);
+  }
+}
+
+@media (max-width: 767px) {
+  .videos-page-legacy .videos-hero-player.no-ar .videos-hero-outside-arrow {
+    display: none;
+  }
+
+  .videos-hero-play__icon {
+    max-width: min(96px, 22vw);
+  }
+}
+
+.videos-hero-swiper {
+  overflow: visible;
+}
+
+.videos-page-legacy .margin0 {
+  margin: 0;
+}
+
+.videos-page-legacy .img-animated {
+  overflow: hidden;
+}
+
+.videos-page-legacy .img-animated .hover-sec {
+  transition: transform 300ms ease;
+}
+
+.videos-page-legacy .img-animated:hover .hover-sec {
+  transform: scale(1.1);
+}
+
+.videos-page-legacy .em-box {
+  height: 148px;
+  width: auto;
+  overflow: hidden;
+  margin: 0 auto;
+  position: relative;
+}
+
+.videos-page-legacy .em-box img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: auto;
+  min-height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 767px) {
+  .videos-page-legacy .em-box {
+    height: 125px;
+  }
+}
+
+.videos-page-legacy .video-play {
+  position: relative;
+  overflow: hidden;
+}
+
+.videos-page-legacy .video-play img:not(.videos-hero-slide__img) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 767px) {
+  .videos-page-legacy .mobile-center {
+    text-align: center;
+  }
+  .videos-page-legacy .mobile-center .float-end {
+    float: none !important;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.videos-page-legacy .mt40 {
+  margin-top: 40px;
+}
+
+/* Movie rows under hero — same max-width as search (`search-movie-mar` on block);
+   VIEW ALL: single focusable SVG (rect outline + label), `.btn-view-more`-style chase on hover */
+.videos-page-legacy .videos-movie-section {
+  width: 100%;
+}
+
+/* `.line45` is `line-height: 45%` (legacy typo — ~20px for 45px type). Glyph overflow overlaps
+   the search bar above and sliders below under normal flow — use sane leading on videos only. */
+.videos-page-legacy .search-rslt h3 {
+  font-size: 24px;
+  line-height: 1.1;
+  font-weight: 400;
+}
+
+.videos-page-legacy .tv-box {
+  margin-bottom: 30px;
+}
+
+.videos-page-legacy .border-left {
+  margin-top: 40px;
+  padding: 0 0 0 30px;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+
+  /* Legacy `main.scss` + BS3: sidebar titles = Karla; tag/movie links = Hammersmith, 14px. */
+  h3 {
+    font-family: var(--font-karla), Karla, "Helvetica Neue", Arial, sans-serif;
+    font-size: 24px;
+    line-height: 1.1;
+    font-weight: 400;
+  }
+
+  ul li {
+    line-height: 200%;
+    font-size: 14px;
+    font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif;
+    a {
+      color: $white;
+      text-decoration: none;
+      transition: color 0.3s ease;
+      &:hover {
+        color: $brand-primary;
+      }
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .videos-page-legacy .border-left {
+    ul li {
+      font-size: 13px;
+    }
+
+    h3 {
+      font-size: 16px;
+    }
+  }
+
+  .videos-page-legacy .m-font12 {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .videos-page-legacy .border-left {
+    padding: 0 0 0 15px;
+
+    ul li {
+      font-size: 11px;
+      line-height: 100%;
+      padding: 7px 0;
+    }
+  }
+}
+
+.videos-page-legacy .videos-tv-inside .title h1.line45 {
+  line-height: 1.08;
+}
+
+.videos-page-legacy .videos-movie-section__title h1.line45,
+.videos-page-legacy .title h1.line45 {
+  line-height: 1.08;
+}
+
+.videos-page-legacy .videos-movie-section__title h1 {
+  margin-bottom: 1rem;
+}
+
+.videos-page-legacy .videos-movie-view-all {
+  display: block;
+  width: 100%;
+  clear: both;
+}
+
+/** Clear floated VIEW ALL SVG (Angular `float-right`). */
+.videos-page-legacy .videos-movie-view-all::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* VIEW ALL SVG: muted grey label + outline on dark carousel */
+.videos-page-legacy .videos-view-all-svg {
+  display: block;
+  cursor: pointer;
+  position: relative;
+  margin: 0 !important;
+  color: #a8abb2 !important;
+  width: auto !important;
+  max-width: 200px;
+  min-width: 148px;
+  height: 40px;
+
+  &:focus-visible {
+    outline: 2px solid #a8abb2;
+    outline-offset: 2px;
+  }
+
+  .videos-view-all-svg__frame {
+    fill: none;
+    stroke: #a8abb2;
+    stroke-width: 2;
+    stroke-dasharray: 422, 0;
+    transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .videos-view-all-svg__text {
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    pointer-events: none;
+    text-transform: uppercase;
+  }
+
+  &:hover .videos-view-all-svg__frame,
+  &:focus-visible .videos-view-all-svg__frame {
+    stroke: #c9ccd4;
+    stroke-width: 5;
+    stroke-dasharray: 15, 310;
+    stroke-dashoffset: 55;
+    transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: #c9ccd4 !important;
+  }
+
+  &:hover .videos-view-all-svg__text,
+  &:focus-visible .videos-view-all-svg__text {
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+}
+
+@media (max-width: 767px) {
+  .videos-page-legacy .mobile-text-center {
+    text-align: center;
+  }
+
+  .videos-page-legacy .mobile-text-center .videos-view-all-svg.float-end {
+    float: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+.videos-tv-swiper-nav .swiper-button-prev,
+.videos-tv-swiper-nav .swiper-button-next {
+  width: 70px;
+  height: 60px;
+  color: transparent;
+  &::after {
+    display: none;
+  }
+}
+
+.videos-tv-swiper-nav .swiper-button-prev {
+  left: 4px;
+  background: url("/frontend/img/Grey-Left-Arrow.png") no-repeat center;
+  background-size: contain;
+}
+
+.videos-tv-swiper-nav .swiper-button-next {
+  right: 4px;
+  background: url("/frontend/img/Grey-Right-Arrow.png") no-repeat center;
+  background-size: contain;
+}
+
+.tv-inside-sidebar {
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: none;
+    @media (min-width: 768px) {
+      max-height: 70vh;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.28) rgba(0, 0, 0, 0.55);
+
+      &::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 999px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.22);
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.4);
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: rgba($brand-primary, 0.55);
+      }
+    }
+  }
+  a {
+    color: $white;
+    text-decoration: none;
+    &:hover {
+      color: $brand-primary;
+    }
+  }
+}
+
+/* TV-inside — tags + movies: same flat bg as page; staggered entrance, hover motion */
+@keyframes tv-inside-sidebar-h3 {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tv-inside-sidebar-li {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.videos-page-legacy.videos-tv-inside .tv-inside-sidebar__heading {
+  animation: tv-inside-sidebar-h3 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.videos-page-legacy.videos-tv-inside .tv-inside-sidebar__section--tags .tv-inside-sidebar__heading {
+  margin-top: 0;
+  animation-delay: 0.05s;
+}
+
+.videos-page-legacy.videos-tv-inside .tv-inside-sidebar__section--movies .tv-inside-sidebar__heading {
+  margin-top: 1.75rem;
+  animation-delay: 0.1s;
+}
+
+.videos-page-legacy.videos-tv-inside .tv-inside-sidebar__item a,
+.videos-page-legacy.videos-tv-inside .tv-inside-sidebar__item span.opacity-50 {
+  display: inline-block;
+  transition:
+    color 0.28s ease,
+    opacity 0.28s ease,
+    transform 0.28s ease;
+}
+
+.videos-page-legacy.videos-tv-inside .tv-inside-sidebar__item a:hover {
+  transform: translateX(5px);
+}
+
+/* Stagger list reveal (caps at 35 rows per block) */
+@for $i from 1 through 35 {
+  .videos-page-legacy.videos-tv-inside .tv-inside-sidebar__section--tags .tv-inside-sidebar__item:nth-child(#{$i}) {
+    animation: tv-inside-sidebar-li 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: #{80 + ($i - 1) * 38}ms;
+  }
+
+  .videos-page-legacy.videos-tv-inside .tv-inside-sidebar__section--movies .tv-inside-sidebar__item:nth-child(#{$i}) {
+    animation: tv-inside-sidebar-li 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: #{200 + ($i - 1) * 32}ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .videos-page-legacy.videos-tv-inside .tv-inside-sidebar__heading,
+  .videos-page-legacy.videos-tv-inside .tv-inside-sidebar__item {
+    animation: none !important;
+  }
+
+  .videos-page-legacy.videos-tv-inside .tv-inside-sidebar__item a:hover {
+    transform: none;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Home page (`frontend/views/content/home.html` — Next port)                */
+/* -------------------------------------------------------------------------- */
+
+.dharma-home {
+  overflow-x: hidden;
+}
+
+.dharma-home-hero-swiper {
+  width: 100%;
+  /* Reference layout: round orange nav + white chevrons */
+  --swiper-navigation-size: 22px;
+  --swiper-theme-color: #fff;
+
+  .swiper-slide {
+    line-height: 0;
+  }
+
+  /* Full-width hero; natural CMS aspect ratio */
+  .swiper-slide .img-responsive,
+  .swiper-slide img.img-responsive {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    vertical-align: top;
+  }
+
+  .swiper-button-next,
+  .swiper-button-prev {
+    width: 52px;
+    height: 52px;
+    margin-top: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: $brand-primary;
+    border-radius: 50%;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    opacity: 1 !important;
+    &::after {
+      font-size: var(--swiper-navigation-size);
+      font-weight: 700;
+    }
+    &:hover {
+      background: $dark-primary;
+      opacity: 1 !important;
+    }
+  }
+
+  .swiper-button-prev {
+    left: clamp(12px, 3.5vw, 36px);
+  }
+
+  .swiper-button-next {
+    right: clamp(12px, 3.5vw, 36px);
+  }
+
+  .swiper-pagination {
+    bottom: 60px !important;
+  }
+
+  .swiper-pagination-bullet {
+    width: 9px;
+    height: 9px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+  }
+
+  .swiper-pagination-bullet-active {
+    background: #fff;
+  }
+}
+
+@media (max-width: 767px) {
+  .dharma-home-hero-swiper {
+    .swiper-button-next,
+    .swiper-button-prev {
+      width: 44px;
+      height: 44px;
+      --swiper-navigation-size: 18px;
+      left: clamp(8px, 2vw, 20px);
+      right: clamp(8px, 2vw, 20px);
+    }
+
+    .swiper-button-prev {
+      right: auto;
+    }
+
+    .swiper-button-next {
+      left: auto;
+    }
+  }
+}
+
+/* Tabs under hero — split pill: active = orange gradient + white, inactive = charcoal + orange text */
+.dharma-home .home-slider .movie-tab.second {
+  bottom: 10px;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab {
+  display: inline-flex !important;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Remove legacy tight overlap between the two segments */
+.dharma-home .home-hero .movie-tab .up-tab li.mr2 {
+  margin-right: 0 !important;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab li {
+  margin: 0;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab li button {
+  display: block;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab li button h1 {
+  margin: 0;
+  font-size: clamp(0.8rem, 1.75vw, 1.15rem);
+  padding: 0.55rem clamp(1.35rem, 6vw, 4.25rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  font-family: "Hammersmith One", Georgia, "Times New Roman", serif;
+  border-radius: 0;
+  background: #1a1a1a;
+  color: $brand-primary !important;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab li:first-child button h1 {
+  border-radius: 999px 0 0 999px;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab li:last-child button h1 {
+  border-radius: 0 999px 999px 0;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab li.active-tab button h1 {
+  background: linear-gradient(165deg, #ff9a56 0%, $brand-primary 42%, $dark-primary 100%);
+  color: $white !important;
+}
+
+/* Non–home pages: keep existing Hammersmith + gradient image treatment */
+.movie-tab .up-tab li button h1 {
+  font-size: clamp(0.9rem, 2vw, 1.35rem);
+  padding: 0.45rem clamp(1rem, 5vw, 3.5rem);
+  background: #000;
+  color: $brand-primary;
+  border-radius: 0;
+  font-weight: 400;
+}
+
+.movie-tab .up-tab li.active-tab button h1 {
+  background: url("/frontend/img/bg-grediant.jpg") no-repeat;
+  background-size: 100% 100%;
+  color: $white !important;
+}
+
+.dharma-home-tv {
+  margin-top: calc(-1 * var(--dh-header-offset));
+  padding-top: calc(var(--dh-header-offset) + 48px);
+  padding-bottom: 72px;
+}
+
+.home-videos-title {
+  font-size: clamp(2.25rem, 7vw, 4.75rem);
+  line-height: 0.95;
+}
+
+.dharma-home-tv-feature a {
+  position: relative;
+  display: block;
+}
+
+.dharma-home-play-overlay {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  line-height: 0;
+}
+
+.dharma-home-subscribe-wrap {
+  position: relative;
+  z-index: 2;
+}
+
+.dharma-home-subscribe.subscribe {
+  background: #fff;
+  margin: -44px clamp(10px, 4vw, 72px) 0;
+  padding: 0 clamp(14px, 3vw, 48px);
+}
+
+@media (max-width: 767px) {
+  .dharma-home-subscribe.subscribe {
+    margin: -32px 10px 0;
+  }
+}
+
+.home-subscribe-form .form-control {
+  background: #f1f1f1;
+  border-color: #f1f1f1;
+  height: 50px;
+}
+
+.dhrarma-world .container.dh-absulate.middle {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 1140px;
+  pointer-events: none;
+
+  a,
+  button,
+  .btn,
+  input {
+    pointer-events: auto;
+  }
+}
+
+.dhrarma-world .top-right,
+.dhrarma-world .bottom-left {
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dharma-home .dharma-home-video-strip .swiper-button-next,
+.dharma-home .dharma-home-video-strip .swiper-button-prev {
+  color: $brand-primary;
+}
+
+/* DharmaNode `frontend/sass/main.scss` — news sun band (home) */
+.bg-sun.home-news-sun {
+  background: $brand-primary;
+  margin-top: -48px;
+  padding: 120px 0 48px;
+  position: relative;
+  z-index: 0;
+}
+
+@media (max-width: 767px) {
+  .bg-sun.home-news-sun {
+    margin-top: -32px;
+    padding: 80px 0 36px;
+  }
+}
+
+.home-news-title {
+  font-size: clamp(2.25rem, 6vw, 4rem);
+  line-height: 1;
+}
+
+.home-news-swiper .swiper-button-next,
+.home-news-swiper .swiper-button-prev {
+  color: #fff;
+  opacity: 0.9;
+}
+

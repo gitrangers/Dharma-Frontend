@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dharma Next Latest (`DharmaNextLatest`)
 
-## Getting Started
+Next.js **16** (App Router, React 19) frontend that mirrors the **Dharma Productions** marketing site styling while leaving the original **`dharmanodeRun`** Sails project untouched.
 
-First, run the development server:
+## Prerequisites
+
+- Node 20+
+- Running API from `dharmanodeRun` (default `http://localhost:1337/api/`) **or** Strapi / another backend that exposes the same JSON POST endpoints.
+
+## Setup
 
 ```bash
+cd DharmaNextLatest
+npm install
+cp .env.example .env.local
+# Edit NEXT_PUBLIC_API_URL if your API host differs
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What’s included
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Shared look & feel:** Orange header strip (`head-bg`), curved divider (`head-curve`), Hammersmith One / Karla fonts, footer chrome — styled with Bootstrap 5 + SCSS (`src/styles/_dharma.scss`) and Font Awesome.
+- **Assets:** `public/frontend/img/` copied from the legacy `frontend/img/` tree (run Robocopy again if you add art).
+- **Data:** Server-side `fetch` helpers (`src/lib/api.ts`) POST to the same endpoints the Angular app used (`homeslider/getAllHomeSlider`, `Movie/getAllUpcomingMovies`, `Movie/getAllRecentMovies`, `Dharmatv/getAll`, `movie/getMovieDetails`, …).
 
-## Learn More
+## Routes (starter parity)
 
-To learn more about Next.js, take a look at the following resources:
+| Path | Notes |
+|------|--------|
+| `/` | Home hero + upcoming/released grids |
+| `/movies` | Movie grid from API |
+| `/videos` | Dharmatv rows grouped by movie |
+| `/overview`, `/social`, `/news-events`, `/contact-us`, … | Placeholders — paste HTML from legacy views |
+| `/movie/[slug]` | Detail stub — wire `Movie/getOneMovie` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## CORS
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If the browser calls the API from another origin, enable CORS on the Sails side for `http://localhost:3000`. Server Components call the API from Node without CORS.
 
-## Deploy on Vercel
+## npm package name
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The npm package name is lowercase (`dharmanextlatest`) per npm rules; the folder is **`DharmaNextLatest`**.
