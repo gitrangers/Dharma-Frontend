@@ -26,6 +26,10 @@ export const metadata = {
     title: "Dharma Productions",
     description: "Dharma Productions — Official site (Next.js frontend)",
 };
+export const viewport = {
+    width: "device-width",
+    initialScale: 1,
+};
 export default function RootLayout({ children, }) {
     return (_jsx("html", { lang: "en", className: `${karla.variable} ${hammersmith.variable} ${montserrat.variable}`, children: _jsxs("body", { className: `${karla.className} bg-white d-flex flex-column min-vh-100`, children: [_jsx(SiteHeader, {}), _jsx("main", { className: "site-main flex-grow-1", children: children }), _jsx(SiteFooter, {})] }) }));
 }
