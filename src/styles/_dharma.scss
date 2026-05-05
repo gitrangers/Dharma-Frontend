@@ -1,8 +1,8 @@
 /* Bootstrap is loaded as compiled CSS from layout.tsx */
 
-$brand-primary: #f26522;
-$dark-primary: #d4550e;
-$movies-accent: #f26522;
+$brand-primary: #f37021;
+$dark-primary: #da4f09;
+$movies-accent: #f37021;
 $white: #ffffff;
 $black: #171717;
 $grey: #6f6f6e;
@@ -12,9 +12,9 @@ $grey: #6f6f6e;
   --dh-header-offset: 116px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767.98px) {
   :root {
-    --dh-header-offset: 106px;
+    --dh-header-offset: 118px;
   }
 }
 
@@ -118,92 +118,96 @@ body {
   position: relative;
 }
 
+/* Same as `frontend/sass/main.scss` `.head-bg` */
 .head-bg {
   background: $brand-primary;
+  padding: 5px 60px 0;
   margin: 0 60px;
-  /* Orange band only; `.head-curve` is the next sibling (legacy `header.html`). */
-  padding: clamp(10px, 1.35vw, 16px) 0 0;
   box-sizing: border-box;
   display: block;
 }
 
 @media (max-width: 1200px) {
   .head-bg {
+    padding: 5px 25px 0;
     margin: 0 35px;
   }
 
   .head-curve {
-    margin: -1px 35px 0;
-    background-size: 100% 100%;
+    margin: -1px 35px;
   }
 }
 
-@media (max-width: 767px) {
+/* Phones only: full-bleed bar + ribbon (tablets/iPad use inset bar like legacy desktop) */
+@media (max-width: 767.98px) {
   .head-bg {
-    margin: 0 10px;
+    margin: 0;
+    padding: 12px 0 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .head-curve {
+    margin: -1px 0 0;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: unset;
+    height: clamp(28px, 10vw, 38px);
+    min-height: 28px;
+    background-size: 100% auto;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+  }
+}
+
+/* Extra-narrow: keep bar flush; optional search insets */
+@media (max-width: 479px) {
+  .head-bg {
     padding: 10px 0 0;
   }
 
   .head-curve {
-    margin: -1px 10px 0;
     background-position-y: -10px;
   }
-}
 
-/* Bootstrap 5 “container” ≈ 1140/1320 — match legacy ~1170 content band */
-/* Horizontal band + optional search/drawer; ribbon curve is the following sibling */
-/* Tighter left gutter so logo sits farther left like localhost:1337 reference */
-.dh-header-inner.container {
-  max-width: 1170px;
-  padding-bottom: 6px;
-  padding-left: clamp(6px, 2.5vw, 14px);
-  padding-right: clamp(12px, 2.4vw, 22px);
-}
-
-@media (min-width: 768px) {
-  .dh-header-inner.container {
-    padding-left: 0;
+  .home .site-header-search.search-movie.my-search {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 
-.dh-header-main-row {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
+.dh-header-inner.container {
+  max-width: none;
   width: 100%;
-  gap: 0.5rem;
+  padding: 0;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.head-curve {
+  /* Asset head-curve.png is 1687×31 — never use 100% 100% (shears the ribbon on tablets). */
+  background: url("/frontend/img/head-curve.png") no-repeat center;
+  aspect-ratio: 1687 / 31;
+  height: auto;
+  background-size: 100% auto;
+  background-position: center -10px;
+  margin: -1px 60px;
+  display: block;
+  line-height: 0;
+  font-size: 0;
+  pointer-events: none;
+}
+
+/* Legacy `frontend/views/header.html` — BS3 `.row` inside `.head-bg`; keep bar height stable */
+.dh-header-main-row.row {
   min-height: 46px;
 }
 
-.dh-header-logo-col {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
 @media (min-width: 768px) {
-  .dh-header-main-row {
-    display: grid;
-    grid-template-columns: minmax(140px, 1fr) auto minmax(140px, 1fr);
-    align-items: center;
-    column-gap: clamp(0.5rem, 1.2vw, 1.15rem);
+  .dh-header-main-row.row {
     min-height: 48px;
-  }
-
-  .dh-header-logo-col {
-    flex: unset;
-    justify-content: flex-start;
-  }
-
-  .dh-header-nav-wrap {
-    justify-self: center;
-    max-width: min(760px, 94vw);
-  }
-
-  .dh-header-social-col {
-    justify-self: end;
   }
 }
 
@@ -216,18 +220,6 @@ body {
 
 .dh-header-toggler .navbar-toggler-icon {
   filter: brightness(0) invert(1);
-}
-
-/* Same as `frontend/sass/main.scss`: sibling under `.head-bg`, inset margins track orange band */
-.head-curve {
-  background: url("/frontend/img/head-curve.png") no-repeat center;
-  height: 30px;
-  background-size: cover;
-  background-position-y: -10px;
-  margin: -1px 60px 0;
-  display: block;
-  line-height: 0;
-  pointer-events: none;
 }
 
 .logo-img {
@@ -298,49 +290,43 @@ body {
   text-decoration: none;
 }
 
-/* Reference screenshot: white ring + white glyph (“ghost”), not filled pills */
+/* `frontend/sass/main.scss` — frosted circular glyphs (dharmanodeRun) */
 .head-social ul li a i {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  color: $white;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.66);
+  font-size: 14px;
   border-radius: 100%;
-  height: 24px;
-  width: 24px;
-  line-height: 1;
+  height: 22px;
+  width: 22px;
   text-align: center;
+  line-height: 24px;
+  color: $brand-primary;
+  display: inline-block;
+  box-sizing: border-box;
 }
 
 .head-social ul li a:hover i,
 .head-social ul li a:focus-visible i {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: $white;
+  filter: brightness(1.05);
 }
 
-/* Match icon rings — circular outline + centered glass icon */
-.head-social .my-main-btn {
+.head-social.dh-list .my-main-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-  padding: 0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  border-radius: 50%;
-  background: transparent;
+  min-width: 22px;
+  min-height: 22px;
+  padding: 4px !important;
+  border: none;
+  border-radius: 100%;
+  background: rgba(255, 255, 255, 0.66);
+  line-height: 0;
 }
 
 .head-social .my-main-btn:hover,
 .head-social .my-main-btn:focus-visible {
-  background: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
   outline: 0;
-  padding: 0 !important;
 }
 
 .head-social .my-main-btn img,
@@ -350,15 +336,52 @@ body {
   display: block;
 }
 
-@media (max-width: 767px) {
+.dh-header-mob-sub-toggler {
+  box-shadow: none !important;
+  text-decoration: none !important;
+  line-height: 1;
+}
+
+.dh-header-mob-sub-toggler:hover,
+.dh-header-mob-sub-toggler:focus-visible {
+  color: $white !important;
+  opacity: 0.92;
+}
+
+/* `frontend/views/menu.html` + BS5 — Social submenu */
+.dh-header-nav-dd .dh-header-dropdown {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  padding: 0.25rem 0;
+  min-width: 11rem;
+}
+
+.dh-header-nav-dd .dh-header-dropdown.show {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .dh-header-nav-dd .dh-header-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1040;
+  }
+}
+
+@media (max-width: 767.98px) {
   .head-social ul li {
     padding: 0;
   }
 
   .head-social ul li a i {
-    font-size: 11px;
-    height: 24px;
-    width: 24px;
+    font-size: 12px;
+    height: 22px;
+    width: 22px;
+    line-height: 24px;
+    color: $brand-primary;
   }
 }
 
@@ -369,42 +392,181 @@ body {
   max-width: 100%;
 }
 
-/* Header search: legacy `.my-search` is absolute + 25% wide; Next keeps the strip in flow. */
-.site-header-search.search-movie {
-  position: relative;
-  width: 100%;
-  max-width: 100%;
-  right: auto;
-  top: auto;
+/* `frontend/sass/main.scss` `.my-search` — float panel; mobile falls back to full-width strip */
+.home .site-header-search.search-movie.my-search {
+  position: absolute;
+  width: 25%;
+  min-width: 260px;
+  max-width: min(420px, 92vw);
+  right: 140px;
+  top: 60px;
+  z-index: 1040;
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
   gap: 8px;
-  margin: 6px 0 0;
-  padding: 0 0 8px;
+  margin: 0;
+  padding: 0 4px 8px;
   box-sizing: border-box;
 }
 
-.site-header-search .movie-search-pg {
+.home .site-header-search.my-search .movie-search-pg {
   flex: 1 1 auto;
   min-width: 0;
   position: relative;
 }
 
-.site-header-search .search-img {
-  position: relative;
-  top: auto;
-  left: auto;
-  flex-shrink: 0;
+.home .site-header-search.my-search .search-img {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  z-index: 99;
   line-height: 0;
 }
 
-.site-header-search .search-img2 {
+.home .site-header-search.my-search .search-img2 {
   position: relative;
   top: auto;
   right: auto;
   flex-shrink: 0;
   line-height: 0;
+}
+
+.home .site-header-search.my-search .search-img2 img {
+  width: 25px;
+  height: auto;
+}
+
+@media (max-width: 991px) {
+  .home .site-header-search.search-movie.my-search {
+    right: 72px;
+    width: 32%;
+    min-width: 240px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .home .site-header-search.search-movie.my-search {
+    position: relative;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    right: auto !important;
+    top: auto !important;
+    margin: 8px 0 0;
+    padding: 0 16px 10px;
+    box-sizing: border-box;
+  }
+}
+
+/* Compact header: phones only (navbar-expand-md) */
+@media (max-width: 767.98px) {
+  .home .dh-header-main-row.row {
+    min-height: 0;
+  }
+
+  .home .dh-header-logo-col {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .dh-header-mob-top {
+    padding-bottom: 2px;
+  }
+
+  .dh-header-mob-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .dh-header-mob-grid-spacer {
+    width: 100%;
+  }
+
+  .dh-header-mob-grid-logo {
+    justify-self: center;
+    text-align: center;
+  }
+
+  .dh-header-mob-grid-toggle {
+    justify-self: end;
+    margin-right: 2px;
+    padding: 0.4rem 0.55rem !important;
+  }
+
+  .home .dh-header-logo {
+    width: 150px;
+    max-width: 150px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+  }
+
+  .dh-header-mob-drawer {
+    border-top: 1px solid rgba(255, 255, 255, 0.28);
+    padding: 0 12px 14px;
+    text-align: center;
+  }
+
+  .dh-header-mob-drawer .nav-link,
+  .dh-header-mob-drawer .btn-link {
+    font-size: 14px !important;
+  }
+
+  .dh-header-mob-drawer .dh-header-nav-link {
+    padding: 0.45rem 0.35rem !important;
+  }
+
+  .dh-header-mob-drawer .nav-item .d-flex {
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .dh-header-mob-drawer .nav-item .d-flex .flex-grow-1 {
+    flex: 0 1 auto;
+    text-align: center;
+  }
+
+  .dh-header-mob-social .head-social.dh-list ul.dh-header-social-ul {
+    justify-content: center !important;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .dh-header-mob-social {
+    text-align: center;
+  }
+}
+
+/* Narrow phones — ribbon tweak + slightly smaller mark */
+@media (max-width: 480px) {
+  .head-curve {
+    margin: -1px 0 0;
+    background-size: 100% auto;
+    background-position: center -13px;
+  }
+
+  .home .dh-header-logo {
+    width: 128px;
+    max-width: 128px;
+  }
+
+  .dh-header-mob-grid-toggle {
+    padding: 5px !important;
+    margin-right: 4px;
+  }
+}
+
+@media (max-width: 479px) {
+  .home .dh-header-logo {
+    width: 120px;
+    max-width: 120px;
+  }
 }
 
 /* frontend/sass/main.scss `.search-in` — white type on orange bar */
@@ -480,7 +642,7 @@ body {
   }
 }
 
-/* Mid widths: tighter copy so seven items + 2.0 stay one row */
+/* Mid widths: tighter copy so seven items + 2.0 stay one row (iPad portrait / small laptop) */
 @media (min-width: 768px) and (max-width: 991px) {
   .dh-header-inner .custom-menu.dh-header-nav-list li a {
     padding: 5px 5px !important;
@@ -731,6 +893,7 @@ body {
 
 .movies-page-hero {
   position: relative;
+  z-index: 1;
   background: transparent;
 }
 
@@ -753,6 +916,35 @@ body {
   background: url("/frontend/img/movie-bottom.jpg") no-repeat;
   background-size: cover;
   padding: 40px 0 60px;
+}
+
+/* Tablets/phones: middle bands — width-scaled (no side gaps). */
+@media (max-width: 991.98px) {
+  .dharma-movies-bg2,
+  .dharma-movies-bg3 {
+    background-size: 100% auto;
+    background-position: center top;
+  }
+}
+
+/*
+ * Movies hero (`movie-up.jpg`): `100% auto` often leaves #ececec below the bitmap and keeps
+ * only the ceiling strip — the spotlight “stage” reads as missing. Use cover + a downward
+ * focal shift so the main art stays in frame (legacy used a taller padding + cover).
+ */
+@media (max-width: 991.98px) {
+  .dharma-movies-bg {
+    background-size: cover;
+    background-position: center 22%;
+    min-height: clamp(300px, 56vh, 520px);
+  }
+}
+
+@media (max-width: 575px) {
+  .dharma-movies-bg {
+    background-position: center 26%;
+    min-height: clamp(260px, 50vh, 440px);
+  }
 }
 
 .orange-bg.movies-orange-band {
