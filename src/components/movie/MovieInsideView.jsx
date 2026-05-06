@@ -144,7 +144,7 @@ export function MovieInsideView({ data }) {
     : "/videos";
     return (_jsxs(_Fragment, { children: [_jsxs("section", { className: "movie-inside-bg", style: backgroundImage
                     ? {
-                        backgroundImage: `url(${backgroundImage}), url("/frontend/img/main3.jpg")`,
+                        backgroundImage: `url(${backgroundImage})`,
                         backgroundSize: "cover, cover",
                         backgroundPosition: "top center, top center",
                         backgroundRepeat: "no-repeat, no-repeat",
