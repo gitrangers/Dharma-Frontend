@@ -114,6 +114,12 @@ export function MovieInsideView({ data }) {
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
     useEffect(() => {
+        const cur = tabs.find((t) => t.id === activeTab);
+        if (cur && !cur.enabled) {
+            setActiveTab(tabs.find((t) => t.enabled)?.id ?? "synopsis");
+        }
+    }, [tabs, activeTab]);
+    useEffect(() => {
         if (!openVideoId && !openLightbox)
             return;
         const onKey = (e) => {
@@ -172,9 +178,9 @@ export function MovieInsideView({ data }) {
                                                             paddingTop: 20,
                                                             paddingBottom: 30,
                                                         }
-                                                        : undefined, children: _jsxs("div", { className: "row", children: [_jsx("div", { className: "col-md-11 col-sm-10 col-12", children: _jsx("div", { className: "all-movies movie-news-grid", children: news.map((item, i) => (_jsx(Link, { href: `/news/${String(item._id)}`, className: "masonry-brick masonry-link", target: "_blank", children: _jsxs("div", { className: "masonry-box padd20", children: [resolveUploadUrl(item.image) ? (
-                                                                                // eslint-disable-next-line @next/next/no-img-element
-                                                                                _jsx("img", { src: resolveUploadUrl(item.image), alt: item.title || "Dharma Production" })) : null, _jsx("div", { className: "news-title mt10", children: _jsx("h4", { className: "margin0 color-black font-karla", children: shorten(item.title, 50) }) }), _jsx("div", { className: "news-date", children: _jsx("span", { className: "color-black f12 font-karla", children: formatNewsDate(item.date) }) })] }) }, `news-${i}`))) }) }), _jsx("div", { className: "col-md-1 col-sm-2 d-none d-sm-block", children: _jsx(SocialShare, {}) })] }) }) })) : null, activeTab === "gallery" ? _jsx(MovieInsideImageMasonryPane, { cutImage, items: gallery, idPrefix: "gal", onImageClick: setOpenLightbox }) : null, activeTab === "scene" ? _jsx(MovieInsideImageMasonryPane, { cutImage, items: behindTheScenes, idPrefix: "bts", onImageClick: setOpenLightbox }) : null, activeTab === "video" ? (_jsx("div", { className: "video", children: _jsx("div", { className: "movie-inside-date bg-cast cast-credit", style: cutImage
+                                                        : undefined, children: _jsxs("div", { className: "row", children: [_jsx("div", { className: "col-md-11 col-sm-10 col-12", children: _jsx("div", { className: "all-movies movie-news-grid movie-news-grid--animated", children: news.map((item, i) => {
+                                                                                const thumb = resolveUploadUrl(item.image) || resolveUploadUrl(item.banner) || "";
+                                                                                return _jsx(Link, { href: `/news-events/${String(item._id)}`, className: "masonry-brick masonry-link movie-news-card text-decoration-none text-reset", children: _jsxs("div", { className: "masonry-box padd20", children: [thumb ? (_jsxs("div", { className: "img-animates dh-relative", children: [_jsx("img", { src: thumb, alt: item.title || "Dharma Production", className: "img-responsive width100 img-hv" }), _jsxs("div", { className: "overlay dh-absulate", children: [_jsx("div", { className: "pos-middle", children: _jsx("span", { className: "color-white font-hammersmith", children: shorten(item.title || "Read article", 72) }) }), _jsx("div", { className: "bottom-right dh-absulate ply-post", children: _jsx("span", { className: "movie-trailor-play movie-trailor-play--sm", "aria-hidden": "true", children: "\u2197" }) })] })] })) : null, _jsx("div", { className: "news-title mt10", children: _jsx("h4", { className: "margin0 color-black font-karla", children: shorten(item.title || "", 50) }) }), _jsx("div", { className: "news-date", children: _jsx("span", { className: "color-black f12 font-karla", children: formatNewsDate(item.date) }) })] }) }, `news-${i}`); }) }) }), _jsx("div", { className: "col-md-1 col-sm-2 d-none d-sm-block", children: _jsx(SocialShare, {}) })] }) }) })) : null, activeTab === "gallery" ? _jsx(MovieInsideImageMasonryPane, { cutImage, items: gallery, idPrefix: "gal", onImageClick: setOpenLightbox }) : null, activeTab === "scene" ? _jsx(MovieInsideImageMasonryPane, { cutImage, items: behindTheScenes, idPrefix: "bts", onImageClick: setOpenLightbox }) : null, activeTab === "video" ? (_jsx("div", { className: "video", children: _jsx("div", { className: "movie-inside-date bg-cast cast-credit", style: cutImage
                                                         ? {
                                                             background: `url(${cutImage}) no-repeat`,
                                                             backgroundSize: "contain",
