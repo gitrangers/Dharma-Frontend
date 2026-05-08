@@ -3,6 +3,8 @@ import NewsEventsGridClient from "@/components/news/NewsEventsGridClient";
 
 const NEWS_API = "https://dharmacms2.tinglabs.in/api/news-lists";
 const PAGE_SIZE = 100;
+/** Data cache reduces TTFB on repeat navigations vs `no-store` every time */
+const NEWS_FETCH = { next: { revalidate: 120 } };
 
 function toSingle(value) {
   if (Array.isArray(value)) return value[0] || "";
@@ -91,7 +93,7 @@ async function fetchNewsList(filters) {
     const allItems = [];
 
     do {
-      const res = await fetch(buildListUrl({ ...filters, page }), { cache: "no-store" });
+      const res = await fetch(buildListUrl({ ...filters, page }), NEWS_FETCH);
       if (!res.ok) break;
       const json = await res.json();
       const rows = Array.isArray(json?.data) ? json.data : [];
@@ -112,7 +114,7 @@ async function fetchMonthYearOptions() {
     params.set("pagination[page]", "1");
     params.set("pagination[pageSize]", "5000");
     params.set("fields[0]", "date");
-    const res = await fetch(`${NEWS_API}?${params.toString()}`, { cache: "no-store" });
+    const res = await fetch(`${NEWS_API}?${params.toString()}`, NEWS_FETCH);
     if (!res.ok) return { months: [], years: [] };
     const json = await res.json();
     const months = new Set();

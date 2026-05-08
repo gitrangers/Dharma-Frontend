@@ -20,24 +20,38 @@ function slideHrefForHero(s) {
   return youtubeWatchUrl(raw) || null;
 }
 
-function HeroSlideContent({ s, img }) {
+function HeroSlideContent({ s, imageSrc, slideIndex }) {
   const slug = s.movieSlug ? String(s.movieSlug).trim() : "";
   const external = slideHrefForHero(s);
+  const heroInner = (
+    <div className="position-relative w-100 dh-hero-slide-frame overflow-hidden rounded-0">
+      <Image
+        src={imageSrc}
+        alt={slideIndex === 0 ? "Dharma Productions" : ""}
+        fill
+        className="object-fit-cover"
+        sizes="100vw"
+        priority={slideIndex === 0}
+        fetchPriority={slideIndex === 0 ? "high" : "low"}
+        quality={slideIndex === 0 ? 85 : 70}
+      />
+    </div>
+  );
   if (slug) {
     return (
       <Link href={`/movie/${encodeURIComponent(slug)}`} className="d-block">
-        {img}
+        {heroInner}
       </Link>
     );
   }
   if (external) {
     return (
       <a href={external} target="_blank" rel="noopener noreferrer" className="d-block">
-        {img}
+        {heroInner}
       </a>
     );
   }
-  return img;
+  return heroInner;
 }
 
 function formatRelease(d) {
@@ -76,13 +90,18 @@ function MovieThumbCard({ item, released }) {
   const src = released ?
       resolveUploadUrl(item.recentSmall || item.smallImage)
     : resolveUploadUrl(item.upcomingSmall || item.smallImage);
+  const thumbSrc = src || "/frontend/img/logo.png";
   const imgEl = (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src || "/frontend/img/logo.png"}
-      alt={item.name || "Dharma Productions"}
-      className="img-responsive"
-    />
+    <div className="position-relative w-100 dh-movie-thumb-frame overflow-hidden mx-auto rounded-0">
+      <Image
+        src={thumbSrc}
+        alt={item.name || "Dharma Productions"}
+        fill
+        className="object-fit-cover"
+        sizes="(max-width: 767px) 42vw, 200px"
+        loading="lazy"
+      />
+    </div>
   );
   const caption = released ?
     (
@@ -167,8 +186,8 @@ export function HomePageContent({
 
   return (
     <div className="dharma-home">
-      <section className="home-hero d-none d-md-block">
-        <div className="home-slider dh-relative">
+      <section className="home-hero">
+        <div className="home-slider dh-relative width-auto">
           <Swiper
             modules={[Autoplay, Pagination, Navigation]}
             slidesPerView={1}
@@ -181,13 +200,9 @@ export function HomePageContent({
             {slides.map((s, i) => {
               const imgSrc =
                 resolveUploadUrl(s.image) || s.image || youtubeThumbnailUrl(s.url) || "/frontend/img/logo.png";
-              const img = (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imgSrc} alt="Dharma Productions" className="img-responsive width100" />
-              );
               return (
                 <SwiperSlide key={`${s.order}-${i}`}>
-                  <HeroSlideContent s={s} img={img} />
+                  <HeroSlideContent s={s} imageSrc={imgSrc} slideIndex={i} />
                 </SwiperSlide>
               );
             })}
@@ -202,53 +217,14 @@ export function HomePageContent({
                     setTab("upcoming");
                   }}
                 >
-                  <h1 className="margin0 font-hammersmith">UPCOMING</h1>
+                  <span className="margin0 font-hammersmith d-none d-md-block h1">UPCOMING</span>
+                  <span className="margin0 font-hammersmith h6 text-up d-md-none">UPCOMING</span>
                 </button>
               </li>
               <li className={tab === "released" ? "active-tab" : ""}>
                 <button type="button" className="border-0 bg-transparent p-0" onClick={() => setTab("released")}>
-                  <h1 className="margin0 font-hammersmith">RELEASED</h1>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-hero d-md-none">
-        <div className="home-slider dh-relative width-auto">
-          <Swiper
-            modules={[Autoplay, Pagination]}
-            slidesPerView={1}
-            loop={slides.length > 1}
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            className="dharma-home-hero-swiper"
-          >
-            {slides.map((s, i) => {
-              const imgSrc =
-                resolveUploadUrl(s.image) || s.image || youtubeThumbnailUrl(s.url) || "/frontend/img/logo.png";
-              const img = (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={imgSrc} alt="" className="img-responsive" />
-              );
-              return (
-                <SwiperSlide key={`m-${s.order}-${i}`}>
-                  <HeroSlideContent s={s} img={img} />
-                </SwiperSlide>
-              );
-            })}
-          </Swiper>
-          <div className="movie-tab text-center dh-absulate dh-list second">
-            <ul className="padding0 margin0 up-tab list-unstyled d-flex justify-content-center flex-wrap mb-0">
-              <li className={`mr2${tab === "upcoming" ? " active-tab" : ""}`}>
-                <button type="button" className="border-0 bg-transparent p-0" onClick={() => setTab("upcoming")}>
-                  <h1 className="margin0 font-hammersmith h6 text-up">UPCOMING</h1>
-                </button>
-              </li>
-              <li className={tab === "released" ? "active-tab" : ""}>
-                <button type="button" className="border-0 bg-transparent p-0" onClick={() => setTab("released")}>
-                  <h1 className="margin0 font-hammersmith h6 text-up">RELEASED</h1>
+                  <span className="margin0 font-hammersmith d-none d-md-block h1">RELEASED</span>
+                  <span className="margin0 font-hammersmith h6 text-up d-md-none">RELEASED</span>
                 </button>
               </li>
             </ul>
@@ -330,8 +306,16 @@ export function HomePageContent({
                       className="d-block position-relative"
                     >
                       {featureThumb ?
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={featureThumb} alt="" className="img-responsive width100" />
+                        <span className="d-block position-relative w-100 dh-home-feature-thumb">
+                          <Image
+                            src={featureThumb}
+                            alt=""
+                            fill
+                            className="object-fit-cover img-responsive width100 rounded-0"
+                            sizes="(max-width: 768px) 100vw, 1200px"
+                            loading="lazy"
+                          />
+                        </span>
                       : null}
                       <span className="dharma-home-play-overlay dh-absulate">
                         <Image src="/frontend/img/play-world.png" alt="Play" width={120} height={120} className="img-fluid" />
@@ -373,8 +357,16 @@ export function HomePageContent({
                                 <div className="video-slide-img">
                                   <div className="img-animate dh-relative">
                                     {thumb ?
-                                      // eslint-disable-next-line @next/next/no-img-element
-                                      <img src={thumb} alt="" className="img-responsive width100" />
+                                      <span className="position-relative d-block dh-home-strip-thumb rounded-0">
+                                        <Image
+                                          src={thumb}
+                                          alt=""
+                                          fill
+                                          className="object-fit-cover width100 rounded-0"
+                                          sizes="(max-width: 576px) 45vw, (max-width: 1200px) 33vw, 360px"
+                                          loading="lazy"
+                                        />
+                                      </span>
                                     : null}
                                   </div>
                                 </div>
@@ -407,9 +399,16 @@ export function HomePageContent({
             <div className="container">
               <div className="row align-items-center gy-3">
                 <div className="col-md-6 text-center col-sm-7">
-                  <div className="display-inline up-img">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/frontend/img/subscribe.png" alt="" className="img-fluid" />
+                  <div className="display-inline up-img dh-home-subscribe-illus">
+                    <Image
+                      src="/frontend/img/subscribe.png"
+                      alt=""
+                      width={360}
+                      height={140}
+                      className="img-fluid"
+                      sizes="360px"
+                      loading="lazy"
+                    />
                   </div>
                   <div className="sub-text display-inline mt20 text-start text-sm-center">
                     <h3 className="font-hammersmith color-primary text-up margin0">SUBSCribe NOW</h3>
@@ -506,8 +505,16 @@ export function HomePageContent({
                         <div className="video-slide-img">
                           <div className="img-animate">
                             {n.image ?
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={n.image} alt="" className="img-responsive" />
+                              <span className="position-relative d-block dh-home-strip-thumb dh-home-news-thumb">
+                                <Image
+                                  src={n.image}
+                                  alt=""
+                                  fill
+                                  className="object-fit-cover rounded-0 img-responsive"
+                                  sizes="(max-width: 576px) 90vw, (max-width: 1200px) 42vw, 420px"
+                                  loading="lazy"
+                                />
+                              </span>
                             : null}
                           </div>
                         </div>
@@ -531,14 +538,28 @@ export function HomePageContent({
 
       <section className="d-none d-md-block">
         <div className="dhrarma-world dh-relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/frontend/img/news-bg.jpg" alt="" className="img-fluid w-100" />
+          <Image
+            src="/frontend/img/news-bg.jpg"
+            alt=""
+            width={1920}
+            height={720}
+            className="img-fluid w-100 h-auto"
+            sizes="100vw"
+            loading="lazy"
+          />
           <div className="container dh-absulate middle">
             <div className="row justify-content-center">
               <div className="col-lg-10 text-center">
                 <div className="dharma-world-text">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/frontend/img/dharma-img.png" alt="Dharma Productions" className="img-fluid margin-auto d-block mx-auto" />
+                  <Image
+                    src="/frontend/img/dharma-img.png"
+                    alt="Dharma Productions"
+                    width={520}
+                    height={180}
+                    className="img-fluid margin-auto d-block mx-auto"
+                    sizes="(max-width: 1200px) 80vw, 520px"
+                    loading="lazy"
+                  />
                 </div>
                 <div className="pad-inner text-center mt-3">
                   <p className="color-white margin0">For those whose dharma is Dharma, welcome home.</p>
@@ -558,20 +579,26 @@ export function HomePageContent({
             </div>
           </div>
           <div className="top-right dh-absulate d-none d-lg-block">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/frontend/img/top-right.png" alt="" className="img-fluid" />
+            <Image src="/frontend/img/top-right.png" alt="" width={280} height={280} className="img-fluid" loading="lazy" />
           </div>
           <div className="bottom-left dh-absulate d-none d-lg-block">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/frontend/img/bottom-left.png" alt="" className="img-fluid" />
+            <Image src="/frontend/img/bottom-left.png" alt="" width={280} height={280} className="img-fluid" loading="lazy" />
           </div>
         </div>
       </section>
 
       <section className="d-md-none bg-dark text-center py-5">
         <div className="container px-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/frontend/img/dharma-img.png" alt="" className="img-fluid mx-auto mb-3" style={{ maxWidth: 220 }} />
+          <Image
+            src="/frontend/img/dharma-img.png"
+            alt=""
+            width={440}
+            height={152}
+            className="img-fluid mx-auto mb-3"
+            style={{ maxWidth: 220, height: "auto" }}
+            sizes="220px"
+            loading="lazy"
+          />
           <p className="color-white mb-2">For those whose dharma is Dharma, welcome home.</p>
           <Link href="/social" className="btn-1 font-hammersmith btn color-primary text-decoration-none">
             <svg aria-hidden="true" focusable="false">

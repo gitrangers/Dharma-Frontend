@@ -53,7 +53,13 @@ export default function NewsEventsGridClient({ items }) {
             <div className="masonry-box">
               <div className="img-animate">
                 {item.imageUrl ? (
-                  <img src={item.imageUrl} alt={item.title} className="img-responsive" />
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="img-responsive"
+                    loading={index < 6 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
                 ) : null}
               </div>
               <div className="padd10">

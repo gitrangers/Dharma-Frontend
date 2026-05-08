@@ -4897,5 +4897,39 @@ img.doneLoading {
   opacity: 0.9;
 }
 
+/* Homepage `next/image`: aspect frames + hero nav polish (Core Web Vitals / PSI) */
+.dh-hero-slide-frame {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-height: min(85vh, 900px);
+  background: #0a0a0a;
+}
+
+.dh-movie-thumb-frame {
+  aspect-ratio: 2 / 3;
+  max-width: 200px;
+}
+
+.dh-home-feature-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: #111;
+}
+
+@media (max-width: 767.98px) {
+  .dharma-home-hero-swiper .swiper-button-next,
+  .dharma-home-hero-swiper .swiper-button-prev {
+    display: none !important;
+  }
+}
+
+.dh-home-strip-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  background: #151515;
+}
+
 
 
