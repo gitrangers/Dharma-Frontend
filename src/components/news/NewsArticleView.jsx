@@ -177,7 +177,7 @@ export function NewsArticleView({ article, related = [] }) {
         <div className="container">
           <div className="row">
             <div className="col-12">
-              <div className="movie-inside-curve m15-top" id="top-scroll" />
+              <div className="movie-inside-curve m16-top" id="top-scroll" />
               <div className="movie-inner-bg mrgin-20 news-detail-card">
                 <h1 className="font-karla text-capitalize color-black margin0 news-detail-title">
                   {article.title}
@@ -253,7 +253,7 @@ export function NewsArticleView({ article, related = [] }) {
 
               {related.length > 0 ? (
                 <div className="pb40 related-articles-section">
-                  <h1 className="font-hammersmith text-up margin0 ml15 related-articles-title">
+                  <h1 className="color-white font-hammersmith text-up line45 margin0 ml15">
                     Related Articles
                   </h1>
                   <div className="mobs-slider nav-cl mob-top-em">

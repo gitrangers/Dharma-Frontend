@@ -7,7 +7,7 @@ import { MovieInsideGalleryMasonry } from "@/components/movie/MovieInsideGallery
 function youtubeThumb(id) {
     if (!id)
         return undefined;
-    return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    return `https://img.youtube.com/vi/${id}/sddefault.jpg`;
 }
 function youtubeEmbed(id) {
     if (!id)

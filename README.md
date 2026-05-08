@@ -1,11 +1,11 @@
 # Dharma Next Latest (`DharmaNextLatest`)
 
-Next.js **16** (App Router, React 19) frontend that mirrors the **Dharma Productions** marketing site styling while leaving the original **`dharmanodeRun`** Sails project untouched.
+Next.js **16** (App Router, React 19) frontend that mirrors the **Dharma Productions** marketing site styling with a Strapi-backed data layer.
 
 ## Prerequisites
 
 - Node 20+
-- Running API from `dharmanodeRun` (default `http://localhost:1337/api/`) **or** Strapi / another backend that exposes the same JSON POST endpoints.
+- Running Strapi API with the content types used by this app.
 
 ## Setup
 
@@ -13,7 +13,7 @@ Next.js **16** (App Router, React 19) frontend that mirrors the **Dharma Product
 cd DharmaNextLatest
 npm install
 cp .env.example .env.local
-# Edit NEXT_PUBLIC_API_URL if your API host differs
+# Edit STRAPI_URL / STRAPI_API_TOKEN for your environment
 npm run dev
 ```
 
@@ -23,7 +23,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 - **Shared look & feel:** Orange header strip (`head-bg`), curved divider (`head-curve`), Hammersmith One / Karla fonts, footer chrome — styled with Bootstrap 5 + SCSS (`src/styles/_dharma.scss`) and Font Awesome.
 - **Assets:** `public/frontend/img/` copied from the legacy `frontend/img/` tree (run Robocopy again if you add art).
-- **Data:** Server-side `fetch` helpers (`src/lib/api.ts`) POST to the same endpoints the Angular app used (`homeslider/getAllHomeSlider`, `Movie/getAllUpcomingMovies`, `Movie/getAllRecentMovies`, `Dharmatv/getAll`, `movie/getMovieDetails`, …).
+- **Data:** Server-side fetch helpers load home, movies, and videos from Strapi.
 
 ## Routes (starter parity)
 
@@ -34,10 +34,6 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/videos` | Dharmatv rows grouped by movie |
 | `/overview`, `/social`, `/news-events`, `/contact-us`, … | Placeholders — paste HTML from legacy views |
 | `/movie/[slug]` | Detail stub — wire `Movie/getOneMovie` |
-
-## CORS
-
-If the browser calls the API from another origin, enable CORS on the Sails side for `http://localhost:3000`. Server Components call the API from Node without CORS.
 
 ## npm package name
 
