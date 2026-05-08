@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { apiPost } from "@/lib/api";
 import { resolveUploadUrl } from "@/lib/media";
 import {
@@ -158,23 +159,24 @@ function normalizeStrapiNewsDetail(
 
 /**
  * Single news article for `/news-events/[id]` — Strapi when enabled, else Sails `News/getOneNews`.
+ * Wrapped with `cache` so `generateMetadata` + page do one backend round-trip per request.
  */
-export async function fetchNewsDetailPage(
-  id: string,
-): Promise<NewsDetailPayload | null> {
-  const trimmed = (id || "").trim();
-  if (!trimmed) return null;
+export const fetchNewsDetailPage = cache(
+  async (id: string): Promise<NewsDetailPayload | null> => {
+    const trimmed = (id || "").trim();
+    if (!trimmed) return null;
 
-  if (isStrapiMoviesEnabled()) {
-    const strapi = await strapiTryFetchNewsArticle(trimmed);
-    const normalized = normalizeStrapiNewsDetail(strapi);
-    if (normalized) return normalized;
-  }
+    if (isStrapiMoviesEnabled()) {
+      const strapi = await strapiTryFetchNewsArticle(trimmed);
+      const normalized = normalizeStrapiNewsDetail(strapi);
+      if (normalized) return normalized;
+    }
 
-  try {
-    const raw = await apiPost<unknown>("News/getOneNews", { _id: trimmed });
-    return parseLegacyNewsDetail(raw);
-  } catch {
-    return null;
-  }
-}
+    try {
+      const raw = await apiPost<unknown>("News/getOneNews", { _id: trimmed });
+      return parseLegacyNewsDetail(raw);
+    } catch {
+      return null;
+    }
+  },
+);

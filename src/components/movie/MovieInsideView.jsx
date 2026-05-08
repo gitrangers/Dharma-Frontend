@@ -235,10 +235,10 @@ function SocialShare() {
                                 if (typeof window !== "undefined") {
                                     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, "_blank");
                                 }
-                            }, "aria-label": "Share on Facebook", children: _jsx("i", { className: "fa fa-facebook" }) }) }), _jsx("li", { children: _jsx("a", { href: "#", target: "_blank", rel: "noopener noreferrer", onClick: (e) => {
+                            }, "aria-label": "Share on Facebook", children: _jsx("i", { className: "fa-brands fa-facebook-f" }) }) }), _jsx("li", { children: _jsx("a", { href: "#", target: "_blank", rel: "noopener noreferrer", onClick: (e) => {
                                 e.preventDefault();
                                 if (typeof window !== "undefined") {
                                     window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}`, "_blank");
                                 }
-                            }, "aria-label": "Share on Twitter", children: _jsx("i", { className: "fa fa-twitter" }) }) })] })] }));
+                            }, "aria-label": "Share on Twitter", children: _jsx("i", { className: "fa-brands fa-twitter" }) }) })] })] }));
 }
