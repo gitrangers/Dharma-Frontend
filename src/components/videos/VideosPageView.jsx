@@ -401,7 +401,7 @@ export function VideosPageView({ slider, videos, movieTitleLookups = null, initi
           ))
         : !search.trim() ?
           <p className="text-center color-white mt-4 pt-3">
-            No videos loaded — ensure the Sails API is running and set NEXT_PUBLIC_API_URL.
+            No videos loaded — ensure Strapi is running and check STRAPI_URL / STRAPI_API_TOKEN.
           </p>
         : null}
 
