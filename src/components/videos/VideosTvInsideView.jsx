@@ -135,16 +135,13 @@ export function VideosTvInsideView({
                   <ul className="list-none color-white padding0 tv-inside-sidebar__list">
                     {allMovies.map((m) => {
                       const id = String(m._id ?? "");
-                      const hasVideos =
-                        Array.isArray(m.videos) ? m.videos.length > 0 : Boolean(m.videos);
                       const isCurrent = id === movieKey;
                       return (
                         <li key={id || String(m.name)} className="mb-1 tv-inside-sidebar__item">
                           {isCurrent ?
                             <span className="color-primary fw-semibold">{m.name}</span>
-                          : hasVideos ?
-                            <Link href={`/videos/${encodeURIComponent(id)}`}>{m.name}</Link>
-                          : <span className="opacity-50">{m.name}</span>}
+                          : <Link href={`/videos/${encodeURIComponent(id)}`}>{m.name}</Link>
+                          }
                         </li>
                       );
                     })}

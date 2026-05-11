@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { Pagination } from "swiper/modules";
+import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -258,10 +258,19 @@ export function NewsArticleView({ article, related = [] }) {
                   </h1>
                   <div className="mobs-slider nav-cl mob-top-em">
                     <Swiper
-                      modules={[Pagination]}
+                      modules={[Pagination, Autoplay]}
                       slidesPerView={1}
                       spaceBetween={20}
                       loop={related.length > 3}
+                      autoplay={
+                        related.length > 3
+                          ? {
+                              delay: 4500,
+                              disableOnInteraction: false,
+                              pauseOnMouseEnter: true,
+                            }
+                          : false
+                      }
                       pagination={{ clickable: true }}
                       breakpoints={{
                         576: { slidesPerView: 1.4 },
