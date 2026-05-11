@@ -1,4 +1,4 @@
-const DEFAULT_API = "http://localhost:1337/api/";
+const DEFAULT_API = "https://dharmacms2.tinglabs.in/";
 
 export function getApiBase(): string {
   const u =
