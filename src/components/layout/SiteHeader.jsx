@@ -12,7 +12,9 @@ const links = [
   {
     name: "Social",
     href: "/social",
-    subnav: [{ name: "Fan Corner", href: "/fan-landing" }],
+    subnav: [
+      { name: "Fan Corner", href: "/fan-landing" },
+    ],
   },
   { name: "News & Events", href: "/news-events" },
   { name: "Contact Us", href: "/contact-us" },
@@ -82,13 +84,13 @@ export function SiteHeader() {
 
   return (
     <header className="home">
-      <nav className="navbar navbar-expand-lg navbar-dark fixed-top border-0 dh-site-navbar">
+      <nav className="navbar navbar-expand-md navbar-dark fixed-top border-0 dh-site-navbar">
         <div className="container-fluid mob-pad0 px-0 dh-header-shell">
           <div className="head-bg dh-relative">
             <div className="container dh-header-inner">
               <div className="row align-items-center g-0 dh-header-main-row">
-                <div className="col-12 col-lg-2 text-center px-0 px-lg-2 dh-header-logo-col">
-                  <div className="d-lg-none dh-header-mob-top w-100">
+                <div className="col-12 col-md-2 text-center px-0 px-md-2 dh-header-logo-col">
+                  <div className="d-md-none dh-header-mob-top w-100">
                     {/* Legacy BS3 navbar-header: logo + toggler (`frontend/views/header.html`) */}
                     {/* Mobile: centered mark + right hamburger (`minmax + auto + minmax`) — parity with branded mobile shell */}
                     <div className="dh-header-mob-bar dh-header-mob-bar--triple dh-navbar-header w-100">
@@ -122,7 +124,7 @@ export function SiteHeader() {
                       </button>
                     </div>
                   </div>
-                  <div className="d-none d-lg-flex align-items-center justify-content-lg-center gap-2 w-100">
+                  <div className="d-none d-md-flex align-items-center justify-content-md-center gap-2 w-100">
                     <Link className="d-inline-block" href="/" onClick={() => setMenuOpen(false)}>
                       <Image
                         src="/frontend/img/logo.png"
@@ -135,10 +137,10 @@ export function SiteHeader() {
                     </Link>
                   </div>
                 </div>
-                <div className="col-12 col-lg-8">
-                  <div className="collapse navbar-collapse text-center d-lg-block" id="nav-collapse-main">
-                    <div className="template menu d-none d-lg-inline-block text-start text-lg-center w-100">
-                      <ul className="nav navbar-nav mt18 custom-menu dh-header-nav-list mb-0 d-flex flex-column flex-lg-row align-items-lg-center justify-content-lg-center">
+                <div className="col-12 col-md-8">
+                  <div className="collapse navbar-collapse text-center d-md-block" id="nav-collapse-main">
+                    <div className="template menu d-none d-md-inline-block text-start text-md-center w-100">
+                      <ul className="nav navbar-nav mt18 custom-menu dh-header-nav-list mb-0 d-flex flex-column flex-md-row align-items-md-center justify-content-md-center">
                         {links.map((item) =>
                           item.subnav?.length ?
                             <li
@@ -187,13 +189,13 @@ export function SiteHeader() {
                     </div>
                   </div>
                 </div>
-                <div className="col-lg-2 d-none d-lg-block main-pad0 text-end">
+                <div className="col-md-2 d-none d-md-block main-pad0 text-end">
                   <div className="head-social dh-list pull-right mt15 m24-mob fl-main">{renderHeaderIconList()}</div>
                 </div>
               </div>
             </div>
             {menuOpen ?
-              <div className="d-lg-none dh-header-mob-drawer text-center" id="nav-collapse">
+              <div className="d-md-none dh-header-mob-drawer text-center" id="nav-collapse">
                 <ul className="nav navbar-nav mt18 custom-menu list-unstyled mb-0 w-100">
                   {links.map((item) =>
                     item.subnav?.length ?

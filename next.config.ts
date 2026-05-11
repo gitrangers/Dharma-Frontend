@@ -23,11 +23,17 @@ function hostnameFromEnv(url: string | undefined): string | undefined {
   }
 }
 
+function isLoopbackHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
 /** Allow `next/image` for CMS uploads, YouTube thumbs, and env-configured hosts. */
 function remoteImagePatterns(): NonNullable<
   NonNullable<NextConfig["images"]>["remotePatterns"]
 > {
   const fromEnv = [
+    hostnameFromEnv(process.env.NEXT_PUBLIC_API_URL),
+    hostnameFromEnv(process.env.API_URL),
     hostnameFromEnv(process.env.NEXT_PUBLIC_UPLOAD_BASE),
     hostnameFromEnv(process.env.NEXT_PUBLIC_STRAPI_ASSETS_URL),
     hostnameFromEnv(process.env.NEXT_PUBLIC_IMAGE_URL),
@@ -44,11 +50,15 @@ function remoteImagePatterns(): NonNullable<
     "i.ytimg.com",
   ]);
 
-  return Array.from(hosts).map((hostname) => ({
-    protocol: "https" as const,
-    hostname,
-    pathname: "/**",
-  }));
+  return Array.from(hosts).flatMap((hostname) => {
+    if (isLoopbackHost(hostname)) {
+      return [
+        { protocol: "http" as const, hostname, pathname: "/**" as const },
+        { protocol: "https" as const, hostname, pathname: "/**" as const },
+      ];
+    }
+    return [{ protocol: "https" as const, hostname, pathname: "/**" as const }];
+  });
 }
 
 const nextConfig: NextConfig = {
