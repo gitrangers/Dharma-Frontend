@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -221,9 +222,9 @@ export function MovieInsideView({ data }) {
                                         const img = resolveUploadUrl(item.recentSmall) ||
                                             resolveUploadUrl(item.smallImage) ||
                                             resolveUploadUrl(item.upcomingSmall);
-                                        const card = (_jsx("div", { className: "img-pads", children: img ? (
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            _jsx("img", { src: img, alt: item.name || "Dharma Productions", className: "img-responsive width100" })) : null }));
+                                        const card = (_jsx("div", { className: "img-pads", children: img ?
+                                            _jsx("div", { className: "position-relative movies-past-thumb-inner w-100", children: _jsx(Image, { src: img, alt: item.name || "Dharma Productions", fill: true, className: "object-fit-cover img-responsive w-100", sizes: "(max-width: 575px) 50vw, (max-width: 991px) 33vw, 20vw", loading: "lazy", quality: 78 }) })
+                                            : null }));
                                         return (_jsx("div", { className: "col-flex", children: item.status && item.urlName ? (_jsx(Link, { href: `/movie/${encodeURIComponent(item.urlName)}`, className: "text-decoration-none", children: card })) : (card) }, item._id));
                                     }) })] }) })) : null] }), showBackToTop ? (_jsx("button", { type: "button", className: "back-to-top show", onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }), "aria-label": "Scroll to top", children: _jsx("img", { src: "/frontend/img/top-scroll.png", alt: "" }) })) : null, openVideoId ? (_jsx("div", { className: "dh-modal-backdrop", onClick: () => setOpenVideoId(null), role: "presentation", children: _jsxs("div", { className: "dh-modal-frame", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", children: [_jsx("button", { type: "button", className: "dh-modal-close", onClick: () => setOpenVideoId(null), "aria-label": "Close", children: "\u00D7" }), _jsx("iframe", { src: youtubeEmbed(openVideoId), title: "Trailer", frameBorder: 0, allow: "autoplay; encrypted-media; picture-in-picture", allowFullScreen: true })] }) })) : null, openLightbox ? (_jsx("div", { className: "dh-modal-backdrop", onClick: () => setOpenLightbox(null), role: "presentation", children: _jsxs("div", { className: "dh-modal-image-frame", onClick: (e) => e.stopPropagation(), role: "dialog", "aria-modal": "true", children: [_jsx("button", { type: "button", className: "dh-modal-close", onClick: () => setOpenLightbox(null), "aria-label": "Close", children: "\u00D7" }), _jsx("img", { src: openLightbox, alt: "Gallery preview" })] }) })) : null] }));
 }

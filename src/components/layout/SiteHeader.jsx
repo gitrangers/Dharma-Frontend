@@ -33,13 +33,14 @@ export function SiteHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [q, setQ] = useState("");
   const [socialDeskOpen, setSocialDeskOpen] = useState(false);
-  const [socialMobOpen, setSocialMobOpen] = useState(false);
+  /** Matches legacy `menu.html` ng-click showSub(menu) — one open submenu key at a time. */
+  const [openMobSubKey, setOpenMobSubKey] = useState(null);
 
   useEffect(() => {
     setMenuOpen(false);
     setSearchOpen(false);
     setSocialDeskOpen(false);
-    setSocialMobOpen(false);
+    setOpenMobSubKey(null);
   }, [pathname]);
 
   function submitHeaderSearch(e) {
@@ -50,7 +51,7 @@ export function SiteHeader() {
     router.push(t ? `/movies?q=${encodeURIComponent(t)}` : "/movies");
   }
 
-  function renderHeaderIconList(extraClass = "") {
+  function renderHeaderIconList(extraClass = "", { includeSearch = true } = {}) {
     return (
       <ul className={`dh-header-social-ul padding0 margin0 mb-0 ${extraClass}`.trim()}>
         {headerIconLinks.map((s) => (
@@ -60,19 +61,21 @@ export function SiteHeader() {
             </a>
           </li>
         ))}
-        <li>
-          <button
-            type="button"
-            className="my-main-btn"
-            aria-label="Search movies"
-            onClick={() => {
-              setSearchOpen((v) => !v);
-              setMenuOpen(false);
-            }}
-          >
-            <Image src="/frontend/img/search-light.png" alt="" width={18} height={18} className="w15" />
-          </button>
-        </li>
+        {includeSearch ?
+          <li>
+            <button
+              type="button"
+              className="my-main-btn"
+              aria-label="Search movies"
+              onClick={() => {
+                setSearchOpen((v) => !v);
+                setMenuOpen(false);
+              }}
+            >
+              <Image src="/frontend/img/search-light.png" alt="" width={18} height={18} className="w15" />
+            </button>
+          </li>
+        : null}
       </ul>
     );
   }
@@ -86,9 +89,12 @@ export function SiteHeader() {
               <div className="row align-items-center g-0 dh-header-main-row">
                 <div className="col-12 col-lg-2 text-center px-0 px-lg-2 dh-header-logo-col">
                   <div className="d-lg-none dh-header-mob-top w-100">
-                    <div className="dh-header-mob-grid">
+                    {/* Legacy BS3 navbar-header: logo + toggler (`frontend/views/header.html`) */}
+                    {/* Mobile: centered mark + right hamburger (`minmax + auto + minmax`) — parity with branded mobile shell */}
+                    <div className="dh-header-mob-bar dh-header-mob-bar--triple dh-navbar-header w-100">
+                      <span className="dh-header-mob-sym-slot" aria-hidden />
                       <Link
-                        className="d-inline-block dh-header-mob-grid-logo"
+                        className="d-inline-block dh-header-mob-brand dh-header-mob-brand--centered"
                         href="/"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -97,13 +103,13 @@ export function SiteHeader() {
                           alt="Dharma Productions"
                           width={168}
                           height={44}
-                          className="img-fluid dh-header-logo"
+                          className="img-fluid dh-header-logo logo-img"
                           priority
                         />
                       </Link>
                       <button
                         type="button"
-                        className="navbar-toggler border-0 shadow-none dh-header-toggler dh-header-mob-grid-toggle"
+                        className="navbar-toggler collapsed border-0 shadow-none dh-header-toggler dh-header-mob-toggle"
                         aria-label="Toggle navigation"
                         aria-controls="nav-collapse"
                         aria-expanded={menuOpen}
@@ -112,7 +118,7 @@ export function SiteHeader() {
                           setSocialDeskOpen(false);
                         }}
                       >
-                        <span className="navbar-toggler-icon" />
+                        <span className="navbar-toggler-icon" aria-hidden />
                       </button>
                     </div>
                   </div>
@@ -187,35 +193,30 @@ export function SiteHeader() {
               </div>
             </div>
             {menuOpen ?
-              <div className="d-lg-none dh-header-mob-drawer" id="nav-collapse">
-                <ul className="nav navbar-nav list-unstyled mb-0 py-3 px-2">
+              <div className="d-lg-none dh-header-mob-drawer text-center" id="nav-collapse">
+                <ul className="nav navbar-nav mt18 custom-menu list-unstyled mb-0 w-100">
                   {links.map((item) =>
                     item.subnav?.length ?
-                      <li key={item.href} className="nav-item mb-1">
-                        <div className="d-flex align-items-center gap-1 w-100">
-                          <Link
-                            className="nav-link text-up color-white font-hammersmith dh-header-nav-link flex-grow-1"
-                            href={item.href}
-                            onClick={() => setMenuOpen(false)}
-                          >
-                            {item.name}
-                          </Link>
-                          <button
-                            type="button"
-                            className="btn btn-link text-white p-2 dh-header-mob-sub-toggler"
-                            aria-expanded={socialMobOpen}
-                            aria-label="Toggle Fan Corner links"
-                            onClick={() => setSocialMobOpen((v) => !v)}
-                          >
-                            <i className={`fa-solid ${socialMobOpen ? "fa-angle-up" : "fa-angle-down"}`} aria-hidden />
-                          </button>
-                        </div>
-                        {socialMobOpen ?
-                          <ul className="list-none mob-mn padding0 ms-3 mb-2">
+                      <li key={item.href} className="nav-item dh-relative">
+                        <button
+                          type="button"
+                          className="nav-link text-up color-white font-hammersmith dh-header-nav-link dh-relative dh-mob-has-sub-btn w-100 border-0 bg-transparent"
+                          aria-expanded={openMobSubKey === item.href}
+                          aria-controls={`mob-sub-${item.href.replace(/\W/g, "")}`}
+                          onClick={() => setOpenMobSubKey((k) => (k === item.href ? null : item.href))}
+                        >
+                          {item.name}
+                          &nbsp;
+                          <span>
+                            <i className="fa-solid fa-angle-down" aria-hidden />
+                          </span>
+                        </button>
+                        {openMobSubKey === item.href ?
+                          <ul className="list-none mob-mn padding0" id={`mob-sub-${item.href.replace(/\W/g, "")}`}>
                             {item.subnav.map((sub) => (
                               <li key={sub.href} className="min-f-tp">
                                 <Link
-                                  className="nav-link text-white py-1"
+                                  className="nav-link text-up color-white dh-mob-submenu-link text-center"
                                   href={sub.href}
                                   onClick={() => setMenuOpen(false)}
                                 >
@@ -226,9 +227,9 @@ export function SiteHeader() {
                           </ul>
                         : null}
                       </li>
-                    : <li key={`mob-${item.href}`} className="nav-item mb-2">
+                    : <li key={`mob-${item.href}`} className="nav-item dh-relative">
                         <Link
-                          className="nav-link text-up color-white font-hammersmith dh-header-nav-link"
+                          className="nav-link text-up color-white font-hammersmith dh-header-nav-link dh-relative"
                           href={item.href}
                           onClick={() => setMenuOpen(false)}
                         >
@@ -236,9 +237,9 @@ export function SiteHeader() {
                         </Link>
                       </li>,
                   )}
-                  <li className="nav-item mb-2">
+                  <li className="nav-item dh-relative">
                     <a
-                      className="nav-link text-up color-white font-hammersmith dh-header-nav-link"
+                      className="nav-link text-up color-white font-hammersmith dh-header-nav-link dh-relative"
                       href="https://dharma2pointo.com/"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -246,8 +247,18 @@ export function SiteHeader() {
                       2.0
                     </a>
                   </li>
-                  <li className="nav-item mt-3 pt-2 border-top border-white border-opacity-25 dh-header-mob-social">
-                    <div className="head-social dh-list">{renderHeaderIconList("dh-header-social-ul--start")}</div>
+                  <li className="nav-item dh-header-mob-soc-li">
+                    <div className="head-social dh-list float-end mt15">
+                      <ul className="padding0 main-m-marg dh-header-social-ul margin0 mb-0">
+                        {headerIconLinks.map((s) => (
+                          <li key={s.href}>
+                            <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}>
+                              <i className={s.icon} />
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </li>
                 </ul>
               </div>

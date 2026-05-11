@@ -1,7 +1,124 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+
+/** Mirrors `frontend/views/footer.html` (dharmanodeRun). */
+
+const FOOTER_SOCIAL = [
+  {
+    href: "https://www.facebook.com/DharmaMovies/?fref=ts",
+    icon: "fa-brands fa-facebook-f",
+    label: "Facebook",
+  },
+  {
+    href: "https://twitter.com/DharmaMovies",
+    icon: "fa-brands fa-twitter",
+    label: "Twitter",
+  },
+  {
+    href: "https://www.instagram.com/dharmamovies/?hl=en",
+    icon: "fa-brands fa-instagram",
+    label: "Instagram",
+  },
+  {
+    href: "https://www.youtube.com/c/dharmamovies",
+    icon: "fa-brands fa-youtube",
+    label: "YouTube",
+  },
+  {
+    href: "https://www.pinterest.com/dharmamovies/",
+    icon: "fa-brands fa-pinterest-p",
+    label: "Pinterest",
+  },
+];
+
 export function SiteFooter() {
-    const year = new Date().getFullYear();
-    return (_jsx("footer", { className: "footer mt-auto", children: _jsx("div", { className: "container py-3", children: _jsxs("div", { className: "row align-items-center flex-column flex-md-row gy-3", children: [_jsxs("div", { className: "col-md-6 text-center text-md-start", children: [_jsx("div", { className: "footer-data dh-list mobile-center", children: _jsxs("ul", { className: "padding0 margin0", children: [_jsx("li", { children: _jsx(Link, { href: "/privacy-policy", className: "text-decoration-none", children: "Privacy Policy" }) }), _jsx("li", { children: _jsx(Link, { href: "/disclaimer", className: "text-decoration-none", children: "Disclaimer" }) })] }) }), _jsx("div", { className: "footer-social dh-list mt-3 mobile-center", children: _jsxs("ul", { className: "padding0 margin0", children: [_jsx("li", { children: _jsx("a", { href: "https://www.facebook.com/DharmaMovies/?fref=ts", target: "_blank", rel: "noopener noreferrer", children: _jsx("i", { className: "fa-brands fa-facebook-f" }) }) }), _jsx("li", { children: _jsx("a", { href: "https://twitter.com/DharmaMovies", target: "_blank", rel: "noopener noreferrer", children: _jsx("i", { className: "fa-brands fa-twitter" }) }) }), _jsx("li", { children: _jsx("a", { href: "https://www.instagram.com/dharmamovies/?hl=en", target: "_blank", rel: "noopener noreferrer", children: _jsx("i", { className: "fa-brands fa-instagram" }) }) }), _jsx("li", { children: _jsx("a", { href: "https://www.youtube.com/c/dharmamovies", target: "_blank", rel: "noopener noreferrer", children: _jsx("i", { className: "fa-brands fa-youtube" }) }) }), _jsx("li", { children: _jsx("a", { href: "https://www.pinterest.com/dharmamovies/", target: "_blank", rel: "noopener noreferrer", children: _jsx("i", { className: "fa-brands fa-pinterest-p" }) }) }), _jsx("li", { children: _jsx("a", { href: "http://www.dailymotion.com/DharmaMovies", target: "_blank", rel: "noopener noreferrer", children: _jsx(Image, { src: "/frontend/img/daily.png", alt: "Dailymotion", width: 28, height: 28, className: "mt-1" }) }) })] }) })] }), _jsx("div", { className: "col-md-6 text-center text-md-end", children: _jsxs("div", { className: "copy mt-2 mt-md-0", children: [_jsxs("p", { className: "small mb-1", children: ["Copyright \u00A9 ", year, " Dharma Productions Pvt. Ltd."] }), _jsx("p", { className: "mb-0", children: _jsx("a", { href: "https://www.ting.in/", target: "_blank", rel: "noopener noreferrer", className: "text-decoration-none", children: _jsxs("span", { className: "d-inline-flex align-items-center gap-2 foot-right ting-unit-wrap", children: [_jsxs("span", { className: "made-by-text text-secondary small text-start", children: [_jsx("span", { className: "d-block", children: "made" }), _jsx("span", { className: "d-block", children: "by" })] }), _jsx(Image, { src: "/frontend/img/ting-img.png", alt: "Ting", width: 120, height: 40, className: "img-fluid" })] }) }) })] }) })] }) }) }));
+  const year = new Date().getFullYear();
+
+  return (
+    <footer className="footer mt-auto">
+      <div className="container">
+        <div className="row">
+          <div className="col-md-6 col-sm-12">
+            <div className="footer-data dh-list mobile-center">
+              <ul className="padding0 margin0">
+                <li className="pointer">
+                  <Link href="/privacy-policy">Privacy Policy</Link>
+                </li>
+                <li className="pointer">
+                  <Link href="/disclaimer">Disclaimer</Link>
+                </li>
+              </ul>
+            </div>
+
+            <div className="footer-social dh-list mt15 mobile-center pd10">
+              <ul className="padding0 margin0">
+                {FOOTER_SOCIAL.map((item) => (
+                  <li key={item.href}>
+                    <a href={item.href} target="_blank" rel="noopener noreferrer" aria-label={item.label}>
+                      <i className={item.icon} aria-hidden />
+                    </a>
+                  </li>
+                ))}
+                <li>
+                  <a
+                    href="http://www.dailymotion.com/DharmaMovies"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Dailymotion"
+                    className="footer-daily-link"
+                  >
+                    <span className="footer-daily-imgwrap">
+                      <Image
+                        src="/frontend/img/daily.png"
+                        alt=""
+                        width={35}
+                        height={35}
+                        className="mt-7 daily-image"
+                      />
+                      <Image
+                        src="/frontend/img/daily_hover.png"
+                        alt=""
+                        width={35}
+                        height={35}
+                        className="mt-7 hover-daily"
+                      />
+                    </span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="col-md-6 col-sm-12">
+            <div className="float-right copy mt15 mobile-center pd18 footer-copy-col">
+              <p>Copyright © {year} Dharma Productions Pvt. Ltd.</p>
+              <p className="float-right mobile-center ting-line mb-0">
+                <a
+                  href="https://www.ting.in/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="footer-ting-anchor text-decoration-none"
+                >
+                  <span className="foot-right ting-unit-wrap d-inline-flex">
+                    <span className="made-by-text">
+                      <span className="made-by-text__line">made</span>
+                      <span className="made-by-text__line">by</span>
+                    </span>
+                    <Image
+                      src="/frontend/img/ting-img.png"
+                      alt="Ting"
+                      width={90}
+                      height={32}
+                      className="img-responsive footer-ting-logo"
+                      sizes="90px"
+                    />
+                  </span>
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
 }
