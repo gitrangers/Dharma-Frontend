@@ -78,11 +78,11 @@ function PastReleaseCard({ item, mobile = false }) {
     </>
   );
   if (mobile) {
-    return (
-      <Link href={`/movie/${encodeURIComponent(movieSlug(item))}`} className="text-decoration-none">
-        {inner}
-      </Link>
-    );
+    return item.status ?
+        <Link href={`/movie/${encodeURIComponent(movieSlug(item))}`} className="text-decoration-none">
+          {inner}
+        </Link>
+      : inner;
   }
   return item.status ?
       <Link href={`/movie/${encodeURIComponent(movieSlug(item))}`} className="text-decoration-none">
@@ -104,7 +104,8 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
 
   const goMovie = (m) => {
     const slug = movieSlug(m);
-    if (slug) router.push(`/movie/${encodeURIComponent(slug)}`);
+    if (!slug || !m?.status) return;
+    router.push(`/movie/${encodeURIComponent(slug)}`);
   };
 
   return (
