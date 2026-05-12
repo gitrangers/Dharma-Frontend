@@ -46,7 +46,7 @@ export default function NewsEventsGridClient({ items }) {
       {items.map((item, index) => (
         <article
           className="masonry-brick masonry-link"
-          key={item._id}
+          key={item._id ? item._id : `news-${index}`}
           style={{ transitionDelay: `${Math.min(index % 12, 11) * 45}ms` }}
         >
           <Link href={`/news-events/${item._id}`}>

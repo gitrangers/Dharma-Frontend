@@ -128,7 +128,7 @@ function MovieThumbCard({ item, released }) {
     </>
   );
 
-  if (item.status !== false && slug) {
+  if (item.status && slug) {
     return (
       <Link href={`/movie/${encodeURIComponent(slug)}`} className="text-decoration-none text-reset d-block">
         {inner}

@@ -21,7 +21,9 @@ export function MovieSearchCombobox({ movies, onSelect, parentSearchBanner, onCl
             setQuery("");
     }, [parentSearchBanner]);
     const sortedSource = useMemo(() => {
-        return [...movies].sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
+        return [...movies]
+            .filter((m) => m.status)
+            .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { sensitivity: "base" }));
     }, [movies]);
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();

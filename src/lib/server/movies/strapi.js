@@ -5,6 +5,7 @@ import {
   resolveMovieUrlSlug,
 } from "@/lib/movieModel";
 import { cmsAssetOriginForServer } from "@/lib/media";
+import { fetchWithRevalidate } from "@/lib/server/fetchJson";
 
 /**
  * Strapi movies: values come straight from `.env` / `.env.local` (`process.env`).
@@ -280,14 +281,11 @@ async function strapiGetCollection(resource, searchParams, opts) {
     if (v !== undefined && v !== "") url.searchParams.set(k, String(v));
   }
 
-  /** @type {Record<string, string>} */
-  const headers = { Accept: "application/json" };
   if (token) {
     warnIfSuspiciousApiToken(token);
-    headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await fetch(url.toString(), { headers, next: { revalidate: 60 } });
+  const res = await fetchWithRevalidate(url.toString(), 60);
   const text = await res.text().catch(() => "");
   let json = {};
   try {
@@ -348,14 +346,11 @@ async function strapiGetCollectionAllPages(resource, baseParams = {}, pageSize =
     url.searchParams.set("pagination[page]", String(page));
     url.searchParams.set("pagination[pageSize]", String(size));
 
-    /** @type {Record<string, string>} */
-    const headers = { Accept: "application/json" };
     if (token) {
       warnIfSuspiciousApiToken(token);
-      headers.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(url.toString(), { headers, next: { revalidate: 60 } });
+    const res = await fetchWithRevalidate(url.toString(), 60);
     const text = await res.text().catch(() => "");
     let json = {};
     try {
@@ -557,13 +552,7 @@ async function strapiGetMany(searchParams) {
     if (v !== undefined && v !== "") url.searchParams.set(k, v);
   }
 
-  /** @type {Record<string, string>} */
-  const headers = {
-    Accept: "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-
-  const res = await fetch(url.toString(), { headers, next: { revalidate: 60 } });
+  const res = await fetchWithRevalidate(url.toString(), 60);
   const text = await res.text().catch(() => "");
   let json = {};
   try {
@@ -635,6 +624,17 @@ function mapStrapiRowToMovieFields(item) {
   };
 
   applyMovieImageFallbacks(row);
+
+  const cmsStatus = typeof item.status === "boolean" ? item.status : true;
+  const synopsisOk =
+    String(row.synopsis || "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\u00a0/g, " ")
+      .trim()
+      .length > 0;
+  const backgroundOk = String(row.backgroundImage || "").trim().length > 0;
+  row.status = cmsStatus && synopsisOk && backgroundOk;
+
   return row;
 }
 
@@ -703,8 +703,8 @@ function detailPopulateParams() {
 /**
  * Do not cache the movie list in module scope: Strapi edits (e.g. releaseType)
  * would never appear until the Next process restarts. Dedupe per request with
- * React `cache`; cross-request freshness uses `fetch(..., { next: { revalidate } })`
- * in {@link strapiGetMany}.
+ * React `cache`; cross-request freshness uses `fetchWithRevalidate` from
+ * `@/lib/server/fetchJson` (ISR `revalidate`).
  */
 const loadAllMoviesForList = cache(async () => {
   let raw = [];

@@ -1,10 +1,11 @@
 import { resolveUploadUrl } from "@/lib/media";
 import NewsEventsGridClient from "@/components/news/NewsEventsGridClient";
+import { fetchJsonWithRevalidate } from "@/lib/server/fetchJson";
 
 const NEWS_API = "https://dharmacms2.tinglabs.in/api/news-lists";
 const PAGE_SIZE = 100;
-/** Data cache reduces TTFB on repeat navigations vs `no-store` every time */
-const NEWS_FETCH = { next: { revalidate: 120 } };
+/** Data cache: ISR revalidate (seconds) for news list + filter options */
+const NEWS_REVALIDATE_SEC = 120;
 
 function toSingle(value) {
   if (Array.isArray(value)) return value[0] || "";
@@ -54,6 +55,21 @@ function mapNewsItem(item) {
   };
 }
 
+/** Same Strapi id can appear on multiple pages if sort ties (e.g. same `date`). */
+function dedupeNewsItemsById(items) {
+  const seen = new Set();
+  const out = [];
+  for (const it of items) {
+    const id = String(it._id || "").trim();
+    if (id) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+    }
+    out.push(it);
+  }
+  return out;
+}
+
 function monthName(monthNum) {
   const dt = new Date(`2000-${String(monthNum).padStart(2, "0")}-01T00:00:00Z`);
   return dt.toLocaleString("en-US", { month: "short", timeZone: "UTC" });
@@ -93,16 +109,22 @@ async function fetchNewsList(filters) {
     const allItems = [];
 
     do {
-      const res = await fetch(buildListUrl({ ...filters, page }), NEWS_FETCH);
-      if (!res.ok) break;
-      const json = await res.json();
+      let json;
+      try {
+        json = await fetchJsonWithRevalidate(
+          buildListUrl({ ...filters, page }),
+          NEWS_REVALIDATE_SEC,
+        );
+      } catch {
+        break;
+      }
       const rows = Array.isArray(json?.data) ? json.data : [];
       allItems.push(...rows.map(mapNewsItem));
       totalPages = Number(json?.meta?.pagination?.pageCount || 1);
       page += 1;
     } while (page <= totalPages);
 
-    return { items: allItems };
+    return { items: dedupeNewsItemsById(allItems) };
   } catch {
     return { items: [] };
   }
@@ -114,9 +136,15 @@ async function fetchMonthYearOptions() {
     params.set("pagination[page]", "1");
     params.set("pagination[pageSize]", "5000");
     params.set("fields[0]", "date");
-    const res = await fetch(`${NEWS_API}?${params.toString()}`, NEWS_FETCH);
-    if (!res.ok) return { months: [], years: [] };
-    const json = await res.json();
+    let json;
+    try {
+      json = await fetchJsonWithRevalidate(
+        `${NEWS_API}?${params.toString()}`,
+        NEWS_REVALIDATE_SEC,
+      );
+    } catch {
+      return { months: [], years: [] };
+    }
     const months = new Set();
     const years = new Set();
     const rows = Array.isArray(json?.data) ? json.data : [];
