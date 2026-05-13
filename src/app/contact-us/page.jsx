@@ -2,6 +2,7 @@ import Image from "next/image";
 
 import { ContactDeptIcon } from "@/components/contact/ContactDeptIcon";
 import { ContactMapSection } from "@/components/contact/ContactMapSection";
+import { CONTACT_GOOGLE_MAPS_URL } from "@/lib/contactOfficeMap";
 
 export const metadata = {
   title: "Contact Us — Dharma Productions",
@@ -113,6 +114,16 @@ export default function ContactUsPage() {
               <p className="margin0">201 &amp; 202, 2nd Floor, Supreme Chambers,</p>
               <p className="margin0">Off Veera Desai Road, 17/18 Shah Industrial Estate,</p>
               <p className="margin0">Andheri (W), Mumbai- 400053, India</p>
+              <p className="margin0 mt-3">
+                <a
+                  href={CONTACT_GOOGLE_MAPS_URL}
+                  className="text-white text-decoration-underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open in Google Maps
+                </a>
+              </p>
             </div>
           </div>
         </div>
