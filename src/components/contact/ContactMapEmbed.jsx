@@ -8,6 +8,8 @@
 
 import { useEffect, useRef } from "react";
 
+import { CONTACT_GOOGLE_MAPS_URL } from "@/lib/contactOfficeMap";
+
 const LOCATION = Object.freeze({ lat: 19.133687, lng: 72.836493 });
 
 const MAP_THEME = Object.freeze([
@@ -132,21 +134,25 @@ export function ContactMapEmbed() {
 
   if (!apiKey) {
     return (
-      <div className="contact-page__map-fallback" ref={rootRef}>
-        <p className="margin0">
+      <div className="contact-page__map-root">
+        <iframe
+          className="contact-page__map-canvas contact-page__map-iframe"
+          src="https://maps.google.com/maps?q=19.133687,72.836493&z=17&output=embed"
+          title="Dharma Productions office location"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+        />
+        <div className="contact-page__map-iframe-open">
           <a
-            className="text-white text-decoration-underline"
-            href="https://www.google.com/maps/search/?api=1&query=19.133687,72.836493"
+            href={CONTACT_GOOGLE_MAPS_URL}
             target="_blank"
             rel="noopener noreferrer"
+            className="contact-page__map-iframe-link"
           >
-            Open map &amp; directions
+            Open in Google Maps ↗
           </a>
-        </p>
-        <p className="small mt-2 mb-0 opacity-75">
-          Add <code className="text-white">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to enable the live
-          map.
-        </p>
+        </div>
       </div>
     );
   }

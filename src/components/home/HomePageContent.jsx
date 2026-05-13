@@ -8,6 +8,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { resolveUploadUrl } from "@/lib/media";
 import { movieSlug } from "@/lib/moviesLayout";
 import { youtubeThumbnailUrl, youtubeWatchUrl } from "@/lib/youtube";
+import { CONTACT_GOOGLE_MAPS_URL } from "@/lib/contactOfficeMap";
 
 import "swiper/css";
 import "swiper/css/navigation";
@@ -535,6 +536,99 @@ export function HomePageContent({
           </div>
         </section>
       : null}
+
+      <section className="dharma-title-bg home-map-section">
+        <div className="container">
+          <div className="row">
+            <div className="col-md-8 offset-md-2">
+              <div className="title">
+                <h1 className="color-primary font-hammersmith f90 line45">LET&apos;S TALK</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="maps dh-relative">
+          <div className="contact-page__map-root">
+            <iframe
+              className="contact-page__map-canvas contact-page__map-iframe"
+              src="https://maps.google.com/maps?q=19.133687,72.836493&z=17&output=embed"
+              title="Dharma Productions office location"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+            />
+            <div className="contact-page__map-iframe-open">
+              <a
+                href={CONTACT_GOOGLE_MAPS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contact-page__map-iframe-link"
+              >
+                Open in Google Maps ↗
+              </a>
+            </div>
+          </div>
+
+          <div className="dh-absulate add-show">
+            <h4 className="margin0 font-karla">Dharma Productions Pvt. Ltd.</h4>
+            <div className="mt15 font-karla">
+              <p className="margin0">201 &amp; 202, 2nd Floor, Supreme Chambers,</p>
+              <p className="margin0">Off Veera Desai Road, 17/18 Shah Industrial Estate,</p>
+              <p className="margin0">Andheri (W), Mumbai- 400053, India</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-contact">
+        <div className="container">
+          <div className="padd-all-side">
+            <div className="row g-4">
+              {[
+                { key: "info", title: "INFO", src: "/frontend/img/info.png", w: 25, h: 25, email: "info@dharma-production.com", label: "For info related queries email us on" },
+                { key: "creative", title: "CREATIVE", src: "/frontend/img/creativity.png", w: 30, h: 33, email: "creative@dharma-production.com", label: "For creative related queries email us on" },
+                { key: "marketing", title: "MARKETING", src: "/frontend/img/marketing.png", w: 25, h: 29, email: "marketing@dharma-production.com", label: "For marketing related queries email us on" },
+              ].map((b) => (
+                <div key={b.key} className="col-md-4 col-sm-12">
+                  <div className="contact-info text-center">
+                    <div className="info-icon display-inline">
+                      <Image src={b.src} alt="" width={b.w} height={b.h} />
+                    </div>
+                    <div className="info-text display-inline">
+                      <h2 className="color-primary font-karla font-bold">{b.title}</h2>
+                    </div>
+                    <div className="descp">
+                      <p>{b.label}<br /><a href={`mailto:${b.email}`}>{b.email}</a></p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="row mt20 g-4 justify-content-center">
+              <div className="d-none d-md-block col-md-2" aria-hidden />
+              {[
+                { key: "syndication", title: "SYNDICATION", src: "/frontend/img/syndication.png", w: 28, h: 28, email: "syndication@dharma-production.com", label: "For syndication related queries email us on" },
+                { key: "legal", title: "LEGAL", src: "/frontend/img/legal.png", w: 27, h: 33, email: "legal@dharma-production.com", label: "For legal related queries contact us on" },
+              ].map((b) => (
+                <div key={b.key} className="col-12 col-md-4">
+                  <div className="contact-info text-center">
+                    <div className="info-icon display-inline">
+                      <Image src={b.src} alt="" width={b.w} height={b.h} />
+                    </div>
+                    <div className="info-text display-inline">
+                      <h2 className="color-primary font-karla font-bold">{b.title}</h2>
+                    </div>
+                    <div className="descp">
+                      <p>{b.label}<br /><a href={`mailto:${b.email}`}>{b.email}</a></p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="d-none d-md-block">
         <div className="dhrarma-world dh-relative">
