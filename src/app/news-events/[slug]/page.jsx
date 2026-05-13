@@ -3,8 +3,8 @@ import { NewsArticleView } from "@/components/news/NewsArticleView";
 import { fetchNewsDetailPage } from "@/lib/server/newsDetail";
 
 export async function generateMetadata({ params }) {
-  const { id } = await params;
-  const data = await fetchNewsDetailPage(id);
+  const { slug } = await params;
+  const data = await fetchNewsDetailPage(slug);
   const title = data?.article?.title?.trim();
   if (!title) {
     return { title: "News | Dharma Productions" };
@@ -13,8 +13,8 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function NewsArticlePage({ params }) {
-  const { id } = await params;
-  const data = await fetchNewsDetailPage(id);
+  const { slug } = await params;
+  const data = await fetchNewsDetailPage(slug);
   if (!data?.article?._id) notFound();
 
   return (

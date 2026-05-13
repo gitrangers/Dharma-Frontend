@@ -2,3 +2,31 @@
 @import "@fortawesome/fontawesome-free/css/fontawesome.min.css";
 @import "@fortawesome/fontawesome-free/css/brands.min.css";
 @import "@fortawesome/fontawesome-free/css/solid.min.css";
+
+/*
+ * Override FontAwesome @font-face descriptors to add font-display:swap.
+ * Fonts are served from /public/fonts/fa/ (copied there at build time) so the
+ * absolute path is predictable and avoids Turbopack node_modules URL issues.
+ * This redeclaration wins because it appears after the FA CSS imports above.
+ */
+@font-face {
+  font-family: "Font Awesome 6 Brands";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/fa/fa-brands-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Font Awesome 6 Free";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/fa/fa-regular-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Font Awesome 6 Free";
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("/fonts/fa/fa-solid-900.woff2") format("woff2");
+}

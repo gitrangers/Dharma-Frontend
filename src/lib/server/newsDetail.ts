@@ -22,6 +22,8 @@ export type NewsRelatedCard = {
   title: string;
   dateIso: string;
   imageUrl?: string;
+  /** Strapi URL segment when present (preferred over `_id` in links). */
+  slug?: string;
 };
 
 export type NewsDetailPayload = {
@@ -144,26 +146,33 @@ function normalizeStrapiNewsDetail(
             title: string;
             dateIso: string;
             image: string;
+            slug?: string;
           };
           const im = (row.image || "").trim();
+          const slug = typeof row.slug === "string" ? row.slug.trim() : "";
           return {
             _id: String(row._id || ""),
             title: typeof row.title === "string" ? row.title : "",
             dateIso: typeof row.dateIso === "string" ? row.dateIso : "",
             imageUrl: im || undefined,
+            ...(slug ? { slug } : {}),
           };
         })
       : [],
   };
 }
 
+function isLikelyMongoObjectId(s: string): boolean {
+  return /^[a-fA-F0-9]{24}$/.test(s);
+}
+
 /**
- * Single news article for `/news-events/[id]` — Strapi when enabled, else Sails `News/getOneNews`.
+ * Single news article for `/news-events/[slug]` — Strapi when enabled, else Sails `News/getOneNews`.
  * Wrapped with `cache` so `generateMetadata` + page do one backend round-trip per request.
  */
 export const fetchNewsDetailPage = cache(
-  async (id: string): Promise<NewsDetailPayload | null> => {
-    const trimmed = (id || "").trim();
+  async (segment: string): Promise<NewsDetailPayload | null> => {
+    const trimmed = (segment || "").trim();
     if (!trimmed) return null;
 
     if (isStrapiMoviesEnabled()) {
@@ -173,7 +182,10 @@ export const fetchNewsDetailPage = cache(
     }
 
     try {
-      const raw = await apiPost<unknown>("News/getOneNews", { _id: trimmed });
+      const body = isLikelyMongoObjectId(trimmed)
+        ? { _id: trimmed }
+        : { slug: trimmed };
+      const raw = await apiPost<unknown>("News/getOneNews", body);
       return parseLegacyNewsDetail(raw);
     } catch {
       return null;

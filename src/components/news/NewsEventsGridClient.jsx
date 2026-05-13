@@ -49,7 +49,7 @@ export default function NewsEventsGridClient({ items }) {
           key={item._id ? item._id : `news-${index}`}
           style={{ transitionDelay: `${Math.min(index % 12, 11) * 45}ms` }}
         >
-          <Link href={`/news-events/${item._id}`}>
+          <Link href={`/news-events/${encodeURIComponent(item.slug || item._id)}`}>
             <div className="masonry-box">
               <div className="img-animate">
                 {item.imageUrl ? (
