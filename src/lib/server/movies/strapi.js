@@ -888,6 +888,8 @@ function mapMovieNews(rows) {
     if (date) row.date = date;
     if (text) row.text = text;
     if (link) row.link = link;
+    const slugRaw = typeof o.slug === "string" && o.slug.trim() ? o.slug.trim() : "";
+    if (slugRaw) row.slug = slugRaw;
     out.push(row);
   }
   return byOrder(out);
@@ -1742,21 +1744,24 @@ function mapRelatedCardForDetailPage(raw) {
   }
   const image =
     mediaUrl(o.image) || mediaUrl(o.banner) || mediaUrl(o.thumbnail) || "";
-  return { _id, title, dateIso, image };
+  const slug = typeof o.slug === "string" && o.slug.trim() ? o.slug.trim() : "";
+  return { _id, title, dateIso, image, ...(slug ? { slug } : {}) };
 }
 
 /**
  * @returns {{ row: unknown, resource: string } | null}
  */
-async function strapiFindNewsArticleRow(rawId) {
-  const id = String(rawId || "").trim();
-  if (!id) return null;
+async function strapiFindNewsArticleRow(rawSegment) {
+  const segment = String(rawSegment || "").trim();
+  if (!segment) return null;
   if (!strapiBase() || !strapiToken()) return null;
 
   const paramsBase = { populate: "*", "pagination[pageSize]": "5" };
+  /** Prefer URL slug; keep documentId / numeric id for bookmarks and CMS links. */
   const variants = [
-    { ...paramsBase, "filters[documentId][$eq]": id },
-    { ...paramsBase, "filters[id][$eq]": id },
+    { ...paramsBase, "filters[slug][$eq]": segment },
+    { ...paramsBase, "filters[documentId][$eq]": segment },
+    { ...paramsBase, "filters[id][$eq]": segment },
   ];
   for (const resource of NEWS_LIST_COLLECTIONS) {
     for (const params of variants) {
@@ -1805,7 +1810,7 @@ async function strapiFetchRelatedNewsByArticle(articleRow, resource, excludeId) 
 
 /**
  * Single news article + same-movie related list (legacy `News/getOneNews` shape).
- * @param {string} articleId Strapi `documentId` / numeric id, or legacy Mongo `_id`.
+ * @param {string} articleId Strapi `slug` (preferred), `documentId`, numeric `id`, or legacy Mongo `_id`.
  */
 export async function strapiTryFetchNewsArticle(articleId) {
   const hit = await strapiFindNewsArticleRow(articleId);

@@ -4905,6 +4905,11 @@ img.doneLoading {
   position: relative;
   display: block;
   width: 100%;
+  /*
+   * Declare 16:9 on the frame so Lighthouse / browser can pre-allocate the
+   * exact height before the hero thumbnail loads → no CLS from hero slides.
+   */
+  aspect-ratio: 16 / 9;
   height: auto;
   min-height: 0;
   line-height: 0;
@@ -5045,28 +5050,34 @@ img.doneLoading {
 }
 
 .videos-page-legacy .em-box {
-  height: 148px;
-  width: auto;
+  /*
+   * Reserve 16:9 space before the thumbnail loads → eliminates CLS from
+   * late-loading YouTube thumbnails (PSI "Cumulative Layout Shift" fix).
+   * The fixed height approach previously caused a large layout shift when
+   * the image resolved at a different intrinsic height.
+   */
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
   overflow: hidden;
   margin: 0 auto;
   position: relative;
+  background-color: #0a0a0a;
 }
 
 .videos-page-legacy .em-box img {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   width: 100%;
-  height: auto;
-  min-height: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
 }
 
 @media (max-width: 767px) {
+  /* aspect-ratio is already responsive — no override needed */
   .videos-page-legacy .em-box {
-    height: 125px;
+    aspect-ratio: 16 / 9;
   }
 }
 

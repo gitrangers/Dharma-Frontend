@@ -1,11 +1,15 @@
-import { resolveUploadUrl } from "@/lib/media";
 import NewsEventsGridClient from "@/components/news/NewsEventsGridClient";
 import { fetchJsonWithRevalidate } from "@/lib/server/fetchJson";
+import {
+  mapStrapiNewsListItem,
+  NEWS_LIST_REVALIDATE_SEC,
+  STRAPI_NEWS_LISTS_URL,
+} from "@/lib/server/strapiNewsList";
 
-const NEWS_API = "https://dharmacms2.tinglabs.in/api/news-lists";
+const NEWS_API = STRAPI_NEWS_LISTS_URL;
 const PAGE_SIZE = 100;
 /** Data cache: ISR revalidate (seconds) for news list + filter options */
-const NEWS_REVALIDATE_SEC = 120;
+const NEWS_REVALIDATE_SEC = NEWS_LIST_REVALIDATE_SEC;
 
 function toSingle(value) {
   if (Array.isArray(value)) return value[0] || "";
@@ -14,45 +18,6 @@ function toSingle(value) {
 
 function toRecord(v) {
   return v && typeof v === "object" ? v : {};
-}
-
-function pickMediaUrl(media) {
-  if (!media) return "";
-  if (typeof media === "string") return media;
-  if (typeof media !== "object") return "";
-  const top = toRecord(media);
-  if (typeof top.url === "string" && top.url.trim()) return top.url.trim();
-  const formats = toRecord(top.formats);
-  const f =
-    toRecord(formats.small) ||
-    toRecord(formats.medium) ||
-    toRecord(formats.large) ||
-    toRecord(formats.thumbnail);
-  if (typeof f.url === "string" && f.url.trim()) return f.url.trim();
-  const inner = toRecord(top.data);
-  if (typeof inner.url === "string" && inner.url.trim()) return inner.url.trim();
-  const attrs = toRecord(inner.attributes);
-  if (typeof attrs.url === "string" && attrs.url.trim()) return attrs.url.trim();
-  const attrsFormats = toRecord(attrs.formats);
-  const af =
-    toRecord(attrsFormats.small) ||
-    toRecord(attrsFormats.medium) ||
-    toRecord(attrsFormats.large) ||
-    toRecord(attrsFormats.thumbnail);
-  if (typeof af.url === "string" && af.url.trim()) return af.url.trim();
-  return "";
-}
-
-function mapNewsItem(item) {
-  const source = toRecord(item?.attributes || item);
-  const rawImage = pickMediaUrl(source.image) || pickMediaUrl(source.banner) || "";
-  return {
-    _id: String(source.documentId || source.id || item?.id || ""),
-    title: String(source.title || ""),
-    date: source.date || "",
-    text: String(source.text || ""),
-    imageUrl: resolveUploadUrl(rawImage) || rawImage || "",
-  };
 }
 
 /** Same Strapi id can appear on multiple pages if sort ties (e.g. same `date`). */
@@ -119,7 +84,7 @@ async function fetchNewsList(filters) {
         break;
       }
       const rows = Array.isArray(json?.data) ? json.data : [];
-      allItems.push(...rows.map(mapNewsItem));
+      allItems.push(...rows.map(mapStrapiNewsListItem));
       totalPages = Number(json?.meta?.pagination?.pageCount || 1);
       page += 1;
     } while (page <= totalPages);
@@ -178,7 +143,7 @@ export default async function NewsEventsPage({ searchParams }) {
   ]);
 
   return (
-    <section className="news-events-page bg-primary min-vh-content">
+    <section className="news-events-page min-vh-content">
       <div className="container">
         <div className="row">
           <div className="col-md-4 col-sm-4 col-xs-12">

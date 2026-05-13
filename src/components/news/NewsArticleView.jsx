@@ -284,7 +284,7 @@ export function NewsArticleView({ article, related = [] }) {
                         return (
                           <SwiperSlide key={item._id}>
                             <Link
-                              href={`/news-events/${item._id}`}
+                              href={`/news-events/${encodeURIComponent(item.slug || item._id)}`}
                               className="text-decoration-none text-reset d-block"
                             >
                               <div className="black-bg makePointer h-100 related-article-card">

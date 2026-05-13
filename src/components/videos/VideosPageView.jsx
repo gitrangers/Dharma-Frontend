@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Autoplay, Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -74,7 +74,16 @@ function groupByMovieKey(rows, movieTitleLookups) {
   });
 }
 
-function VideoTile({ item }) {
+/**
+ * YouTube thumbnail dimensions:
+ *   hqdefault  → 480 × 360 (4:3)
+ *   maxresdefault → 1280 × 720 (16:9, may 404)
+ * We declare 16:9 so the browser reserves space before the image loads → no CLS.
+ */
+const THUMB_W = 480;
+const THUMB_H = 270;
+
+function VideoTile({ item, eager = false }) {
   const watch = youtubeWatchUrl(item.url);
   const thumb =
     resolveUploadUrl(item.thumbnail) || youtubeThumbnailUrl(item.url) || "";
@@ -93,7 +102,15 @@ function VideoTile({ item }) {
             <div className="img-inside-box em-box hover-sec">
               {thumb ?
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={thumb} alt="" className="img-responsive width100" />
+                <img
+                  src={thumb}
+                  alt=""
+                  width={THUMB_W}
+                  height={THUMB_H}
+                  className="img-responsive width100"
+                  loading={eager ? "eager" : "lazy"}
+                  decoding="async"
+                />
               : null}
             </div>
           </div>
@@ -107,17 +124,41 @@ function VideoTile({ item }) {
 }
 
 function VideoRowSwiper({ items }) {
+  const wrapRef = useRef(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
   return (
-    <div className="videos-tv-swiper-nav min-tp-nm">
+    <div className="videos-tv-swiper-nav min-tp-nm" ref={wrapRef}>
       <Swiper
-        modules={[Navigation, Autoplay]}
+        modules={[Navigation, ...(inView ? [Autoplay] : [])]}
         navigation
         loop={items.length > 3}
-        autoplay={{
-          delay: 4200,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        }}
+        {...(inView ? {
+          autoplay: {
+            delay: 4200,
+            disableOnInteraction: false,
+            pauseOnMouseEnter: true,
+          },
+        } : {})}
         slidesPerView={1.15}
         spaceBetween={12}
         breakpoints={{
@@ -129,7 +170,7 @@ function VideoRowSwiper({ items }) {
       >
         {items.map((item, idx) => (
           <SwiperSlide key={`${youtubeVideoId(item.url)}-${idx}`}>
-            <VideoTile item={item} />
+            <VideoTile item={item} eager={idx === 0} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -160,11 +201,13 @@ function HeroSlideImage({ uploadSrc, videoUrl, eager }) {
     <img
       src={src}
       alt=""
+      width={1280}
+      height={720}
       className="videos-hero-slide__img img-responsive width100 flexslider-slides-img"
       sizes="(max-width: 575px) 88vw, 78vw"
       loading={eager ? "eager" : "lazy"}
       {...(eager ? { fetchPriority: "high" } : {})}
-      decoding="async"
+      decoding={eager ? "sync" : "async"}
       draggable={false}
       onError={tryFallback}
     />
@@ -235,7 +278,7 @@ function MovieVideoBlock({ movie, movieKey, items }) {
         : <div className="row g-3">
             {items.map((item, idx) => (
               <div key={`${movie}-${idx}`} className="col-6 col-md-3">
-                <VideoTile item={item} />
+                <VideoTile item={item} eager={idx < 4} />
               </div>
             ))}
           </div>

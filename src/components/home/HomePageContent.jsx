@@ -501,7 +501,7 @@ export function HomePageContent({
               >
                 {newsItems.map((n) => (
                   <SwiperSlide key={n.id}>
-                    <Link href={`/news-events?id=${encodeURIComponent(n.id)}`} className="text-decoration-none text-reset">
+                    <Link href={`/news-events/${encodeURIComponent(n.slug || n.id)}`} className="text-decoration-none text-reset">
                       <div className="video-box">
                         <div className="video-slide-img">
                           <div className="img-animate">

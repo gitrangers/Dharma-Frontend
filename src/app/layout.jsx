@@ -31,6 +31,11 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${karla.variable} ${hammersmith.variable}`}>
+      <head>
+        {/* Preload FA woff2 fonts so they're ready when the lazy CSS fires */}
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/fa/fa-brands-400.woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" type="font/woff2" href="/fonts/fa/fa-solid-900.woff2" crossOrigin="anonymous" />
+      </head>
       <body className={`${karla.className} bg-white d-flex flex-column min-vh-100`}>
         <SiteHeader />
         <main className="site-main flex-grow-1">{children}</main>

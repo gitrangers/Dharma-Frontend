@@ -1,5 +1,11 @@
 import "server-only";
 import {
+  mapStrapiNewsListItem,
+  NEWS_LIST_REVALIDATE_SEC,
+  STRAPI_NEWS_LISTS_URL,
+} from "@/lib/server/strapiNewsList";
+import { fetchJsonWithRevalidate } from "@/lib/server/fetchJson";
+import {
   fetchStrapiDharmaSliderHeroSlides,
   fetchStrapiDharmaTvsFlattenedRows,
 } from "@/lib/server/movies/strapi";
@@ -34,6 +40,8 @@ export type HomeNewsItem = {
   title: string;
   image?: string;
   date?: string;
+  /** Strapi slug for `/news-events/[slug]`; falls back to `id` in links when absent. */
+  slug?: string;
 };
 
 export type HomePageData = {
@@ -73,6 +81,49 @@ function normalizeUpcomingMovies(rows: unknown[]): Record<string, unknown>[] {
   return patched.sort((a, b) => upcomingSortKey(a) - upcomingSortKey(b));
 }
 
+const HOME_NEWS_COUNT = 10;
+
+async function fetchHomeNewsItems(): Promise<HomeNewsItem[]> {
+  const params = new URLSearchParams();
+  params.set("pagination[page]", "1");
+  params.set("pagination[pageSize]", String(HOME_NEWS_COUNT));
+  params.set("sort[0]", "date:desc");
+  params.set("populate", "*");
+  const url = `${STRAPI_NEWS_LISTS_URL}?${params.toString()}`;
+  try {
+    const json = (await fetchJsonWithRevalidate(
+      url,
+      NEWS_LIST_REVALIDATE_SEC,
+    )) as { data?: unknown[] };
+    const rows = Array.isArray(json?.data) ? json.data : [];
+    return rows.map((row) => {
+      const m = mapStrapiNewsListItem(row);
+      let dateLabel = "";
+      if (m.date) {
+        const dt = new Date(String(m.date));
+        if (!Number.isNaN(dt.getTime())) {
+          dateLabel = new Intl.DateTimeFormat("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            timeZone: "UTC",
+          }).format(dt);
+        }
+      }
+      const slug = m.slug.trim();
+      return {
+        id: m._id,
+        ...(slug ? { slug } : {}),
+        title: m.title,
+        ...(m.imageUrl ? { image: m.imageUrl } : {}),
+        ...(dateLabel ? { date: dateLabel } : {}),
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 
 function mapCmsHeroToHome(
   slides: { url?: string; image?: string; order?: number }[]
@@ -93,10 +144,11 @@ export async function loadHomePageData(): Promise<HomePageData> {
 
   const cmsHero = mapCmsHeroToHome(cmsHeroRaw as { url?: string; image?: string; order?: number }[]);
 
-  const [upcomingMovies, recentMovies, strapiVideoRows] = await Promise.all([
+  const [upcomingMovies, recentMovies, strapiVideoRows, newsItems] = await Promise.all([
     fetchAllUpcomingMovies().catch(() => []),
     fetchAllRecentMovies().catch(() => []),
     fetchStrapiDharmaTvsFlattenedRows().catch(() => []),
+    fetchHomeNewsItems(),
   ]);
 
   const heroSlides: HomeHeroSlide[] = cmsHero.length > 0 ? cmsHero : [];
@@ -116,6 +168,6 @@ export async function loadHomePageData(): Promise<HomePageData> {
     recentMovies: recentMovies as Record<string, unknown>[],
     videoFeature: null,
     videoRows,
-    newsItems: [],
+    newsItems,
   };
 }
