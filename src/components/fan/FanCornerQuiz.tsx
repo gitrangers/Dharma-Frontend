@@ -13,6 +13,53 @@ import {
 
 const STORAGE_FORM_ID = "dharmaFanCornerFormId";
 
+const FAN_NAME_MAX = 80;
+const FAN_EMAIL_MAX = 120;
+
+/** Letter + letters/spaces/hyphen/apostrophe (Latin + common Indic scripts). */
+const FAN_NAME_RE =
+  /^[\u0041-\u005A\u0061-\u007A\u00C0-\u024F\u0900-\u097F\u0980-\u09FF\u0A00-\u0A7F\u0B80-\u0BFF][\u0041-\u005A\u0061-\u007A\u00C0-\u024F\u0900-\u097F\u0980-\u09FF\u0A00-\u0A7F\u0B80-\u0BFF '\-\u2019]*$/;
+
+const FAN_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+
+type FanRegisterFieldErrors = Partial<Record<"firstName" | "lastName" | "email", string>>;
+
+function validateFanRegisterFields(
+  firstName: string,
+  lastName: string,
+  email: string,
+): FanRegisterFieldErrors | null {
+  const err: FanRegisterFieldErrors = {};
+
+  if (!firstName) err.firstName = "Please enter your first name.";
+  else if (firstName.length < 2) err.firstName = "Use at least 2 characters.";
+  else if (firstName.length > FAN_NAME_MAX) err.firstName = `Maximum ${FAN_NAME_MAX} characters.`;
+  else if (!FAN_NAME_RE.test(firstName)) err.firstName = "Use letters only; spaces, hyphen and apostrophe are allowed.";
+
+  if (!lastName) err.lastName = "Please enter your last name.";
+  else if (lastName.length < 2) err.lastName = "Use at least 2 characters.";
+  else if (lastName.length > FAN_NAME_MAX) err.lastName = `Maximum ${FAN_NAME_MAX} characters.`;
+  else if (!FAN_NAME_RE.test(lastName)) err.lastName = "Use letters only; spaces, hyphen and apostrophe are allowed.";
+
+  if (!email) err.email = "Please enter your email.";
+  else if (email.length > FAN_EMAIL_MAX) err.email = `Maximum ${FAN_EMAIL_MAX} characters.`;
+  else if (!FAN_EMAIL_RE.test(email)) err.email = "Enter a valid email address.";
+
+  return Object.keys(err).length ? err : null;
+}
+
+/** Strapi unique / duplicate wording from proxy */
+function apiErrorLooksDuplicate(msg: string) {
+  const m = msg.toLowerCase();
+  return (
+    m.includes("unique") ||
+    m.includes("duplicate") ||
+    m.includes("already exist") ||
+    m.includes("already registered") ||
+    m.includes("e11000")
+  );
+}
+
 type Phase = "intro" | "quiz" | "score";
 
 function drawTimerArc(canvas: HTMLCanvasElement | null, remaining: number, total: number) {
@@ -34,6 +81,7 @@ export function FanCornerQuiz() {
   const [showModal, setShowModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [formError, setFormError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FanRegisterFieldErrors>({});
   const [formBusy, setFormBusy] = useState(false);
   const [questions, setQuestions] = useState<FanQuestion[]>([]);
   const [qIdx, setQIdx] = useState(0);
@@ -49,6 +97,12 @@ export function FanCornerQuiz() {
   useEffect(() => {
     if (typeof window !== "undefined") setShareUrl(window.location.href);
   }, []);
+
+  useEffect(() => {
+    if (!showModal) return;
+    setFormError("");
+    setFieldErrors({});
+  }, [showModal]);
 
   useEffect(() => {
     drawTimerArc(canvasRef.current, timer, FAN_RAPID_TOTAL_SECONDS);
@@ -140,25 +194,37 @@ export function FanCornerQuiz() {
   async function submitRegister(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError("");
+    setFieldErrors({});
     const fd = new FormData(e.currentTarget);
     const firstName = String(fd.get("firstName") || "").trim();
     const lastName = String(fd.get("lastName") || "").trim();
     const email = String(fd.get("email") || "").trim();
-    if (!firstName || !lastName || !email) {
-      setFormError("Please fill all fields.");
+
+    const localErr = validateFanRegisterFields(firstName, lastName, email);
+    if (localErr) {
+      setFieldErrors(localErr);
       return;
     }
+
+    const emailNorm = email.toLowerCase();
     setFormBusy(true);
     try {
       const res = await fetch("/api/forms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email }),
+        body: JSON.stringify({ firstName, lastName, email: emailNorm }),
       });
-      const json = (await res.json()) as { ok?: boolean; _id?: string };
+      const json = (await res.json()) as { ok?: boolean; _id?: string; error?: string };
       const id = typeof json._id === "string" ? json._id : "";
       if (!json.ok || !id) {
-        setFormError("Could not register. Try again.");
+        const apiMsg = typeof json.error === "string" ? json.error : "";
+        if (apiMsg && apiErrorLooksDuplicate(apiMsg)) {
+          setFormError("This email is already registered.");
+        } else if (apiMsg) {
+          setFormError(apiMsg);
+        } else {
+          setFormError("Could not register. Try again.");
+        }
         setFormBusy(false);
         return;
       }
@@ -408,7 +474,7 @@ export function FanCornerQuiz() {
                 Enter your details
               </h2>
             </div>
-            <form onSubmit={submitRegister} className="plc-hld">
+            <form onSubmit={submitRegister} className="plc-hld" noValidate>
               <div className="row pop-pad g-3">
                 <div className="col-12">
                   <input
@@ -416,9 +482,18 @@ export function FanCornerQuiz() {
                     placeholder="First Name"
                     name="firstName"
                     className="form-control fan-form-control"
-                    required
+                    maxLength={FAN_NAME_MAX}
                     autoComplete="given-name"
+                    spellCheck={false}
+                    aria-invalid={fieldErrors.firstName ? true : undefined}
+                    aria-describedby={fieldErrors.firstName ? "fan-err-firstName" : undefined}
+                    onInput={() => setFieldErrors((prev) => ({ ...prev, firstName: undefined }))}
                   />
+                  {fieldErrors.firstName ?
+                    <div id="fan-err-firstName" className="fan-form-error" role="alert">
+                      {fieldErrors.firstName}
+                    </div>
+                  : null}
                 </div>
                 <div className="col-12">
                   <input
@@ -426,9 +501,18 @@ export function FanCornerQuiz() {
                     placeholder="Last Name"
                     name="lastName"
                     className="form-control fan-form-control"
-                    required
+                    maxLength={FAN_NAME_MAX}
                     autoComplete="family-name"
+                    spellCheck={false}
+                    aria-invalid={fieldErrors.lastName ? true : undefined}
+                    aria-describedby={fieldErrors.lastName ? "fan-err-lastName" : undefined}
+                    onInput={() => setFieldErrors((prev) => ({ ...prev, lastName: undefined }))}
                   />
+                  {fieldErrors.lastName ?
+                    <div id="fan-err-lastName" className="fan-form-error" role="alert">
+                      {fieldErrors.lastName}
+                    </div>
+                  : null}
                 </div>
                 <div className="col-12">
                   <input
@@ -436,12 +520,27 @@ export function FanCornerQuiz() {
                     placeholder="Email"
                     name="email"
                     className="form-control fan-form-control"
-                    required
+                    maxLength={FAN_EMAIL_MAX}
                     autoComplete="email"
+                    aria-invalid={fieldErrors.email ? true : undefined}
+                    aria-describedby={fieldErrors.email ? "fan-err-email" : undefined}
+                    onInput={() => {
+                      setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                      setFormError("");
+                    }}
                   />
+                  {fieldErrors.email ?
+                    <div id="fan-err-email" className="fan-form-error" role="alert">
+                      {fieldErrors.email}
+                    </div>
+                  : null}
                 </div>
               </div>
-              {formError ? <p className="text-danger text-center small mb-2">{formError}</p> : null}
+              {formError ?
+                <p className="fan-form-error text-center small mb-2" role="alert">
+                  {formError}
+                </p>
+              : null}
               <div className="text-center pb-3">
                 <button className="btn btn-primary px-5" type="submit" disabled={formBusy}>
                   {formBusy ? "Please wait..." : "SUBMIT"}

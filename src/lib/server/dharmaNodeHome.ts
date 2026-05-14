@@ -6,7 +6,8 @@ import {
 } from "@/lib/server/strapiNewsList";
 import { fetchJsonWithRevalidate } from "@/lib/server/fetchJson";
 import {
-  fetchStrapiDharmaSliderHeroSlides,
+  fetchStrapiHomeSliderSlides,
+  fetchStrapiDharmaSliders,
   fetchStrapiDharmaTvsFlattenedRows,
 } from "@/lib/server/movies/strapi";
 import {
@@ -16,9 +17,13 @@ import {
 
 export type HomeHeroSlide = {
   order: number;
+  /** Desktop landscape image (1600 × 713) */
   image: string;
+  /** Portrait image shown on mobile (705 × 1087) */
+  mobileImage?: string;
   /** YouTube id or URL when slide opens a clip */
   url: string;
+  /** `urlName` of the linked movie — drives internal `/movie/[slug]` link */
   movieSlug?: string | null;
 };
 
@@ -52,6 +57,8 @@ export type HomePageData = {
   videoFeature: HomeVideoFeature | null;
   videoRows: HomeVideoRow[];
   newsItems: HomeNewsItem[];
+  /** True when CMS has more than 10 articles — shows “More stories” tile like legacy home. */
+  newsShowMoreStories: boolean;
 };
 
 function upcomingSortKey(n: Record<string, unknown>): number {
@@ -81,12 +88,17 @@ function normalizeUpcomingMovies(rows: unknown[]): Record<string, unknown>[] {
   return patched.sort((a, b) => upcomingSortKey(a) - upcomingSortKey(b));
 }
 
-const HOME_NEWS_COUNT = 10;
+const HOME_NEWS_MAX = 10;
+/** Fetch one extra row so we know whether to show the legacy “More stories” tile */
+const HOME_NEWS_FETCH_PAGE_SIZE = HOME_NEWS_MAX + 1;
 
-async function fetchHomeNewsItems(): Promise<HomeNewsItem[]> {
+async function fetchHomeNewsPayload(): Promise<{
+  newsItems: HomeNewsItem[];
+  newsShowMoreStories: boolean;
+}> {
   const params = new URLSearchParams();
   params.set("pagination[page]", "1");
-  params.set("pagination[pageSize]", String(HOME_NEWS_COUNT));
+  params.set("pagination[pageSize]", String(HOME_NEWS_FETCH_PAGE_SIZE));
   params.set("sort[0]", "date:desc");
   params.set("populate", "*");
   const url = `${STRAPI_NEWS_LISTS_URL}?${params.toString()}`;
@@ -96,7 +108,7 @@ async function fetchHomeNewsItems(): Promise<HomeNewsItem[]> {
       NEWS_LIST_REVALIDATE_SEC,
     )) as { data?: unknown[] };
     const rows = Array.isArray(json?.data) ? json.data : [];
-    return rows.map((row) => {
+    const mapped = rows.map((row) => {
       const m = mapStrapiNewsListItem(row);
       let dateLabel = "";
       if (m.date) {
@@ -119,55 +131,90 @@ async function fetchHomeNewsItems(): Promise<HomeNewsItem[]> {
         ...(dateLabel ? { date: dateLabel } : {}),
       };
     });
+
+    const hasMoreThanMax = mapped.length > HOME_NEWS_MAX;
+    const newsItems = hasMoreThanMax ? mapped.slice(0, HOME_NEWS_MAX) : mapped;
+
+    return { newsItems, newsShowMoreStories: hasMoreThanMax };
   } catch {
-    return [];
+    return { newsItems: [], newsShowMoreStories: false };
   }
 }
 
 
-function mapCmsHeroToHome(
-  slides: { url?: string; image?: string; order?: number }[]
+function mapHomeSliderToHero(
+  slides: { url?: string; image?: string; mobileImage?: string; order?: number; movieSlug?: string | null }[]
 ): HomeHeroSlide[] {
   if (!Array.isArray(slides) || slides.length === 0) return [];
   return slides
-    .filter((s) => s && (String(s.url || "").trim() || String(s.image || "").trim()))
+    .filter((s) => s && (String(s.image || "").trim() || String(s.mobileImage || "").trim()))
     .map((s, i) => ({
       order: Number(s.order) || i,
       image: String(s.image ?? ""),
+      mobileImage: s.mobileImage ? String(s.mobileImage) : undefined,
       url: String(s.url ?? ""),
-      movieSlug: null,
+      movieSlug: s.movieSlug ?? null,
     }));
 }
 
 export async function loadHomePageData(): Promise<HomePageData> {
-  const cmsHeroRaw = await fetchStrapiDharmaSliderHeroSlides().catch(() => []);
+  const cmsHeroRaw: unknown[] = await Promise.resolve(fetchStrapiHomeSliderSlides() as unknown).then(
+    (v) => (Array.isArray(v) ? v : []),
+    () => [],
+  );
 
-  const cmsHero = mapCmsHeroToHome(cmsHeroRaw as { url?: string; image?: string; order?: number }[]);
+  const cmsHero = mapHomeSliderToHero(
+    cmsHeroRaw as { url?: string; image?: string; mobileImage?: string; order?: number; movieSlug?: string | null }[]
+  );
 
-  const [upcomingMovies, recentMovies, strapiVideoRows, newsItems] = await Promise.all([
+  const [
+    upcomingMovies,
+    recentMovies,
+    dharmaSliderRows,
+    dharmaTvRows,
+    newsPayload,
+  ] = await Promise.all([
     fetchAllUpcomingMovies().catch(() => []),
     fetchAllRecentMovies().catch(() => []),
-    fetchStrapiDharmaTvsFlattenedRows().catch(() => []),
-    fetchHomeNewsItems(),
+    (fetchStrapiDharmaSliders as () => Promise<unknown[]>)().catch(() => []),
+    (fetchStrapiDharmaTvsFlattenedRows as () => Promise<unknown[]>)().catch(() => []),
+    fetchHomeNewsPayload(),
   ]);
+  const { newsItems, newsShowMoreStories } = newsPayload;
 
   const heroSlides: HomeHeroSlide[] = cmsHero.length > 0 ? cmsHero : [];
 
-  const videoRows: HomeVideoRow[] = (strapiVideoRows as HomeVideoRow[]).map((r) => ({
-    url: String(r.url ?? ""),
-    title: String(r.title ?? ""),
-    thumbnail: r.thumbnail,
-    order: Number(r.order) || 0,
-    movieOrder: Number(r.movieOrder) || 0,
-  }));
+  // dharma-sliders sorted desc by order — first item = featured big video
+  type SliderRow = { order: number; url: string; image: string; title: string };
+  const sliderRows = (dharmaSliderRows as SliderRow[]).filter(
+    (r) => r && (r.url || r.image)
+  );
+
+  const videoFeature: HomeVideoFeature | null =
+    sliderRows.length > 0
+      ? { image: sliderRows[0].image, url: sliderRows[0].url }
+      : null;
+
+  // dharma-tvs — only the fields needed for the strip: url, title, thumbnail
+  type TvRow = { url: string; title: string; thumbnail?: string; order?: number; movieOrder?: number };
+  const videoRows: HomeVideoRow[] = (dharmaTvRows as TvRow[])
+    .filter((r) => r && r.url)
+    .map((r) => ({
+      url: String(r.url ?? ""),
+      title: String(r.title ?? ""),
+      thumbnail: r.thumbnail || "",
+      order: Number(r.order) || 0,
+      movieOrder: Number(r.movieOrder) || 0,
+    }));
 
   return {
     source: "strapi",
     heroSlides,
     upcomingMovies: upcomingMovies as Record<string, unknown>[],
     recentMovies: recentMovies as Record<string, unknown>[],
-    videoFeature: null,
+    videoFeature,
     videoRows,
     newsItems,
+    newsShowMoreStories,
   };
 }

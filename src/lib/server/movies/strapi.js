@@ -1070,6 +1070,84 @@ export async function fetchStrapiDharmaSliderHeroSlides() {
 }
 
 /**
+ * Home-page hero slides from `dharma-slider-homes?populate=*`.
+ * Each entry has: order, url (may be empty), image (landscape 1600×713),
+ * mobileImage (portrait 705×1087), movie.urlName (for internal link).
+ *
+ * @returns {{ order:number, url:string, image:string, mobileImage:string, movieSlug:string|null }[]}
+ */
+export async function fetchStrapiHomeSliderSlides() {
+  try {
+    const origin = strapiSliderCmsOrigin();
+    const rows = await strapiGetCollection("dharma-slider-homes", { populate: "*" }, { origin });
+    /** @type {{ order:number, url:string, image:string, mobileImage:string, movieSlug:string|null }[]} */
+    const slides = [];
+    for (const raw of rows) {
+      if (!raw || typeof raw !== "object") continue;
+      const row = /** @type {Record<string,unknown>} */ (raw);
+      const img = mediaUrlWithOrigin(row.image, origin) || mediaUrl(row.image) || "";
+      const mobImg = mediaUrlWithOrigin(row.mobileImage, origin) || mediaUrl(row.mobileImage) || "";
+      if (!img && !mobImg) continue;
+      const movie = row.movie && typeof row.movie === "object" ? row.movie : null;
+      const movieSlug =
+        movie && typeof (/** @type {any} */ (movie)).urlName === "string"
+          ? String((/** @type {any} */ (movie)).urlName).trim() || null
+          : null;
+      slides.push({
+        order: Number(row.order) || 0,
+        url: String(row.url ?? "").trim(),
+        image: img,
+        mobileImage: mobImg,
+        movieSlug,
+      });
+    }
+    slides.sort((a, b) => a.order - b.order);
+    return plain(slides);
+  } catch (err) {
+    console.error("[Strapi] dharma-slider-homes:", err);
+    return [];
+  }
+}
+
+/**
+ * Fetch all rows from `dharma-sliders?populate=*` sorted by `order` descending (highest = latest/featured).
+ * Returns plain objects: { order, url (YouTube ID), image (absolute URL), title }.
+ * The first element is intended as the home-page featured video; the rest feed the strip.
+ *
+ * @see https://dharmacms2.tinglabs.in/api/dharma-sliders?populate=*
+ */
+export async function fetchStrapiDharmaSliders() {
+  try {
+    const origin = strapiSliderCmsOrigin();
+    const rows = await strapiGetCollection(
+      "dharma-sliders",
+      { populate: "*", "sort[0]": "order:desc" },
+      { origin }
+    );
+    /** @type {{ order:number, url:string, image:string, title:string }[]} */
+    const results = [];
+    for (const raw of rows) {
+      if (!raw || typeof raw !== "object") continue;
+      const row = /** @type {Record<string,unknown>} */ (raw);
+      const img = mediaUrlWithOrigin(row.image, origin) || mediaUrl(row.image) || "";
+      const ytUrl = String(row.url ?? "").trim();
+      results.push({
+        order: Number(row.order) || 0,
+        url: ytUrl,
+        image: img,
+        title: String(row.title ?? "").trim(),
+      });
+    }
+    // ensure descending by order (Strapi sort may not be guaranteed across pages)
+    results.sort((a, b) => b.order - a.order);
+    return plain(results);
+  } catch (err) {
+    console.error("[Strapi] dharma-sliders:", err);
+    return [];
+  }
+}
+
+/**
  * Hero-band slides compatible with {@link VideosPageView} — from `movie_film_videos` where `isbanner` is true.
  */
 export async function fetchStrapiDharmaTvHeroSlides() {
@@ -1169,18 +1247,19 @@ const dedupeMovieNewsRows = dedupeMovieAwardRows;
 
 function mapAwards(rel) {
   const items = strapiRelatedToArray(rel);
+  /** Strapi `movie-awards`: `title` = ceremony/show (accordion), `awardname` = category line inside. */
   const rows = [];
   for (const raw of items) {
     if (!raw || typeof raw !== "object") continue;
     const o = normalizeStrapiDoc(raw);
-    const awardname = typeof o.awardname === "string" ? o.awardname : "";
-    const title = typeof o.title === "string" ? o.title : "";
-    const winner = typeof o.winner === "string" ? o.winner : "";
+    const ceremony = typeof o.title === "string" ? o.title.trim() : "";
+    const category = typeof o.awardname === "string" ? o.awardname.trim() : "";
+    const winner = typeof o.winner === "string" ? o.winner.trim() : "";
     // Omit unpopulated relation stubs (id-only) so list+API merge can replace them.
-    if (!awardname.trim() && !title.trim() && !winner.trim()) continue;
+    if (!ceremony && !category && !winner) continue;
     rows.push({
-      awardname,
-      title,
+      ceremony,
+      category,
       note: typeof o.note === "string" ? o.note : "",
       winner,
       year: typeof o.year === "number" ? o.year : Number(o.year) || 0,
@@ -1188,7 +1267,8 @@ function mapAwards(rel) {
   }
   const groups = new Map();
   for (const r of rows) {
-    const key = `${r.awardname ?? ""}\0${r.year ?? ""}`;
+    const key =
+      r.ceremony ? `${r.ceremony}\0${r.year}` : `${r.category}\0${r.year}\0${r.winner}`;
     const g = groups.get(key) ?? [];
     g.push(r);
     groups.set(key, g);
@@ -1197,17 +1277,22 @@ function mapAwards(rel) {
   for (const [, g] of groups) {
     const head = g[0];
     if (!head) continue;
+    const name = head.ceremony || head.category || "Awards";
     out.push({
-      _id: `${head.awardname}-${head.year}`,
-      name: head.awardname,
+      _id: `${name}-${head.year}-${g.map((x) => x.category).join(",").slice(0, 120)}`,
+      name,
       year: head.year,
       award: g.map((x) => ({
-        awardname: x.title,
+        awardname: x.category,
         winner: x.winner,
         note: x.note,
       })),
     });
   }
+  out.sort(
+    (a, b) =>
+      (Number(b.year) || 0) - (Number(a.year) || 0) || String(a.name).localeCompare(String(b.name)),
+  );
   return out;
 }
 

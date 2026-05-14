@@ -143,7 +143,7 @@ export function ContactMapEmbed() {
           referrerPolicy="no-referrer-when-downgrade"
           allowFullScreen
         />
-        <div className="contact-page__map-iframe-open">
+        {/* <div className="contact-page__map-iframe-open">
           <a
             href={CONTACT_GOOGLE_MAPS_URL}
             target="_blank"
@@ -152,7 +152,7 @@ export function ContactMapEmbed() {
           >
             Open in Google Maps ↗
           </a>
-        </div>
+        </div> */}
       </div>
     );
   }

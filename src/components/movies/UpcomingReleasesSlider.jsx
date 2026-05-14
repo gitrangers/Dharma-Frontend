@@ -10,63 +10,22 @@ import { resolveUploadUrl } from "@/lib/media";
 import "swiper/css";
 import "swiper/css/pagination";
 
-function ordinalSuffix(day) {
-  const j = day % 10;
-  const k = day % 100;
-  if (k >= 11 && k <= 13) return "th";
-  if (j === 1) return "st";
-  if (j === 2) return "nd";
-  if (j === 3) return "rd";
-  return "th";
-}
-
-/** e.g. "22nd January 2026" — matches legacy presentation */
-function formatReleaseLine(d) {
-  if (d === undefined || d === null || d === "") return "";
-  const dt = typeof d === "string" ? new Date(d) : d;
-  if (Number.isNaN(dt.getTime())) return "";
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const day = dt.getDate();
-  return `${day}${ordinalSuffix(day)} ${months[dt.getMonth()]} ${dt.getFullYear()}`;
-}
-
 function UpcomingMetaBar({ item }) {
-  const release = formatReleaseLine(item.releaseDate);
   const director = item.director?.trim();
   const cast = item.mainCast?.trim();
-  if (!release && !director && !cast) return null;
+  if (!director && !cast) return null;
   return (
     <div className="movies-upcoming-meta px-3 py-2 px-md-4">
       <div className="movies-upcoming-meta-inner font-karla small text-dark">
-        {release ?
-          <>
-            <span className="movies-upcoming-meta-label">Release Date: </span>
-            <span className="color-primary fw-semibold">{release}</span>
-          </>
-        : null}
         {director ?
           <>
-            {release ? <span className="movies-upcoming-meta-sep text-primary"> | </span> : null}
             <span className="movies-upcoming-meta-label">Director: </span>
             <span>{director}</span>
           </>
         : null}
         {cast ?
           <>
-            {release || director ? <span className="movies-upcoming-meta-sep text-primary"> | </span> : null}
+            {director ? <span className="movies-upcoming-meta-sep text-primary"> | </span> : null}
             <span className="movies-upcoming-meta-label">Main Cast: </span>
             <span>{cast}</span>
           </>

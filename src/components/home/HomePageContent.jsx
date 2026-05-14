@@ -2,14 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { resolveUploadUrl } from "@/lib/media";
 import { movieSlug } from "@/lib/moviesLayout";
 import { youtubeThumbnailUrl, youtubeWatchUrl } from "@/lib/youtube";
-import { CONTACT_GOOGLE_MAPS_URL } from "@/lib/contactOfficeMap";
-
+import { ContactDepartmentEmails } from "@/components/contact/ContactDepartmentEmails";
+import { ContactMapWithAddressPanel } from "@/components/contact/ContactMapWithAddressPanel";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -21,33 +21,53 @@ function slideHrefForHero(s) {
   return youtubeWatchUrl(raw) || null;
 }
 
-function HeroSlideContent({ s, imageSrc, slideIndex }) {
+/**
+ * Hero slide — uses a native <picture> element so the browser only downloads
+ * the image that matches the current viewport:
+ *   • ≤575 px  → mobileImage (portrait  705 × 1087)
+ *   • > 575 px → image       (landscape 1600 × 713)
+ * Linking priority: internal movie page > external URL > no link.
+ */
+function HeroSlideContent({ s, slideIndex }) {
   const slug = s.movieSlug ? String(s.movieSlug).trim() : "";
   const external = slideHrefForHero(s);
+
+  const desktopSrc = s.image || "";
+  const mobileSrc = s.mobileImage || desktopSrc;
+
   const heroInner = (
-    <div className="position-relative w-100 dh-hero-slide-frame overflow-hidden rounded-0">
-      <Image
-        src={imageSrc}
-        alt={slideIndex === 0 ? "Dharma Productions" : ""}
-        fill
-        className="object-fit-cover"
-        sizes="100vw"
-        priority={slideIndex === 0}
-        fetchPriority={slideIndex === 0 ? "high" : "low"}
-        quality={slideIndex === 0 ? 85 : 70}
-      />
+    <div className="dh-hero-slide-frame">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <picture>
+        {mobileSrc && mobileSrc !== desktopSrc ? (
+          <source media="(max-width: 575px)" srcSet={mobileSrc} />
+        ) : null}
+        {desktopSrc ? (
+          <img
+            src={desktopSrc}
+            alt={slideIndex === 0 ? "Dharma Productions" : ""}
+            className="dh-hero-slide-img"
+            width={1600}
+            height={713}
+            loading={slideIndex === 0 ? "eager" : "lazy"}
+            fetchPriority={slideIndex === 0 ? "high" : "auto"}
+            decoding={slideIndex === 0 ? "sync" : "async"}
+          />
+        ) : null}
+      </picture>
     </div>
   );
+
   if (slug) {
     return (
-      <Link href={`/movie/${encodeURIComponent(slug)}`} className="d-block">
+      <Link href={`/movie/${encodeURIComponent(slug)}`} className="d-block text-decoration-none">
         {heroInner}
       </Link>
     );
   }
   if (external) {
     return (
-      <a href={external} target="_blank" rel="noopener noreferrer" className="d-block">
+      <a href={external} target="_blank" rel="noopener noreferrer" className="d-block text-decoration-none">
         {heroInner}
       </a>
     );
@@ -75,12 +95,25 @@ function monthYearLabel(m) {
 
 function ViewAllMoviesLink() {
   return (
-    <div className="btn-view-more mt15">
-      <Link href="/movies" className="btn-1 font-hammersmith btn color-primary float-end mobile-center text-decoration-none">
-        <svg aria-hidden="true" focusable="false">
+    <div className="btn-view-more mt15 text-center">
+      <Link href="/movies" className="btn-1 dh-view-all-btn font-hammersmith mx-auto">
+        <svg aria-hidden="true" focusable="false" style={{ pointerEvents: "none" }}>
           <rect x="0" y="0" fill="none" width="100%" height="100%" />
         </svg>
-        VIEW ALL
+        <span className="dh-view-all-label">VIEW ALL</span>
+      </Link>
+    </div>
+  );
+}
+
+function ViewAllVideosLink() {
+  return (
+    <div className="btn-view-more mt15 text-center">
+      <Link href="/videos" className="btn-1 dh-view-all-btn font-hammersmith mx-auto">
+        <svg aria-hidden="true" focusable="false" style={{ pointerEvents: "none" }}>
+          <rect x="0" y="0" fill="none" width="100%" height="100%" />
+        </svg>
+        <span className="dh-view-all-label">VIEW ALL</span>
       </Link>
     </div>
   );
@@ -146,16 +179,25 @@ export function HomePageContent({
   videoRows = [],
   videoFeature = null,
   newsItems = [],
+  newsShowMoreStories = false,
 }) {
   const [tab, setTab] = useState("upcoming");
   const [subEmail, setSubEmail] = useState("");
   const [subMsg, setSubMsg] = useState("");
   const [subBusy, setSubBusy] = useState(false);
+  const [showSubModal, setShowSubModal] = useState(false);
+  const heroSwiperRef = useRef(null);
+  const newsSwiperRef = useRef(null);
+  const moviesSectionRef = useRef(null);
 
-  const slides = useMemo(() => {
-    if (Array.isArray(heroSlides) && heroSlides.length) return heroSlides;
-    return [{ url: "", image: "", order: 0 }];
-  }, [heroSlides]);
+  const scrollToMovies = () => {
+    moviesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const slides = useMemo(
+    () => (Array.isArray(heroSlides) && heroSlides.length ? heroSlides : []),
+    [heroSlides],
+  );
 
   const displayUpcoming = useMemo(() => (Array.isArray(upcomingMovies) ? upcomingMovies.slice(0, 10) : []), [upcomingMovies]);
   const displayRecent = useMemo(() => (Array.isArray(recentMovies) ? recentMovies.slice(0, 10) : []), [recentMovies]);
@@ -185,45 +227,64 @@ export function HomePageContent({
       })()
     : "";
 
+  const newsHomeSlideCount =
+    (Array.isArray(newsItems) ? newsItems.length : 0) + (newsShowMoreStories ? 1 : 0);
+
   return (
     <div className="dharma-home">
       <section className="home-hero">
         <div className="home-slider dh-relative width-auto">
-          <Swiper
-            modules={[Autoplay, Pagination, Navigation]}
-            slidesPerView={1}
-            loop={slides.length > 1}
-            autoplay={{ delay: 4500, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            navigation
-            className="dharma-home-hero-swiper"
-          >
-            {slides.map((s, i) => {
-              const imgSrc =
-                resolveUploadUrl(s.image) || s.image || youtubeThumbnailUrl(s.url) || "/frontend/img/logo.png";
-              return (
+          <div className="dh-hero-slider-wrap">
+            <Swiper
+              modules={[Autoplay, Pagination]}
+              slidesPerView={1}
+              loop={slides.length > 1}
+              autoplay={{ delay: 4500, disableOnInteraction: false }}
+              pagination={{ clickable: true }}
+              onSwiper={(swiper) => { heroSwiperRef.current = swiper; }}
+              className="dharma-home-hero-swiper"
+            >
+              {slides.map((s, i) => (
                 <SwiperSlide key={`${s.order}-${i}`}>
-                  <HeroSlideContent s={s} imageSrc={imgSrc} slideIndex={i} />
+                  <HeroSlideContent s={s} slideIndex={i} />
                 </SwiperSlide>
-              );
-            })}
-          </Swiper>
+              ))}
+            </Swiper>
+            {slides.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="movies-upcoming-arrow dh-hero-slider-arrow dh-hero-slider-arrow--prev"
+                  aria-label="Previous slide"
+                  onClick={() => heroSwiperRef.current?.slidePrev()}
+                >
+                  <i className="fa-solid fa-chevron-left movies-upcoming-arrow-icon" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  className="movies-upcoming-arrow dh-hero-slider-arrow dh-hero-slider-arrow--next"
+                  aria-label="Next slide"
+                  onClick={() => heroSwiperRef.current?.slideNext()}
+                >
+                  <i className="fa-solid fa-chevron-right movies-upcoming-arrow-icon" aria-hidden />
+                </button>
+              </>
+            )}
+          </div>
           <div className="movie-tab text-center dh-absulate dh-list second">
             <ul className="padding0 margin0 up-tab list-unstyled d-flex justify-content-center flex-wrap mb-0">
               <li className={`mr2${tab === "upcoming" ? " active-tab" : ""}`}>
                 <button
                   type="button"
                   className="border-0 bg-transparent p-0"
-                  onClick={() => {
-                    setTab("upcoming");
-                  }}
+                  onClick={() => { setTab("upcoming"); scrollToMovies(); }}
                 >
                   <span className="margin0 font-hammersmith d-none d-md-block h1">UPCOMING</span>
                   <span className="margin0 font-hammersmith h6 text-up d-md-none">UPCOMING</span>
                 </button>
               </li>
               <li className={tab === "released" ? "active-tab" : ""}>
-                <button type="button" className="border-0 bg-transparent p-0" onClick={() => setTab("released")}>
+                <button type="button" className="border-0 bg-transparent p-0" onClick={() => { setTab("released"); scrollToMovies(); }}>
                   <span className="margin0 font-hammersmith d-none d-md-block h1">RELEASED</span>
                   <span className="margin0 font-hammersmith h6 text-up d-md-none">RELEASED</span>
                 </button>
@@ -233,7 +294,7 @@ export function HomePageContent({
         </div>
       </section>
 
-      <section>
+      <section ref={moviesSectionRef}>
         <div className="container">
           <div className="tab-active">
             {tab === "upcoming" ?
@@ -289,16 +350,16 @@ export function HomePageContent({
       </section>
 
       <section className="dh-relative">
-        <div className="dharma-tv-bg dharma-home-tv pb-short">
+        <div className="dharma-tv-bg dharma-home-tv">
           <div className="container">
-            <div className="row">
-              <div className="dharma-title text-md-end titles mt30 col-12">
+            <div className="row justify-content-center">
+              <div className="dharma-title text-md-end titles mt30 col-12 col-lg-10">
                 <h1 className="margin0 color-primary font-hammersmith line45 home-videos-title">VIDEOS</h1>
               </div>
             </div>
             {feature ?
-              <div className="row">
-                <div className="col-12">
+              <div className="row justify-content-center">
+                <div className="col-12 col-lg-10">
                   <div className="dharma-home-tv-feature video-play text-shadow dh-relative">
                     <a
                       href={youtubeWatchUrl(feature.url) || slideHrefForHero(feature) || "#"}
@@ -328,8 +389,8 @@ export function HomePageContent({
             : null}
           </div>
           <div className="container">
-            <div className="row">
-              <div className="col-12">
+            <div className="row justify-content-center">
+              <div className="col-12 col-lg-10">
                 {strip.length > 0 ?
                   <div className="video-slider slider-nav mt30 min-tp-nm">
                     <Swiper
@@ -380,124 +441,127 @@ export function HomePageContent({
                         );
                       })}
                     </Swiper>
-                    <div className="text-center btn-view-all mt40">
-                      <Link href="/videos" className="btn-1 font-hammersmith btn color-primary text-decoration-none">
-                        <svg aria-hidden="true" focusable="false">
-                          <rect x="0" y="0" fill="none" width="100%" height="100%" />
-                        </svg>
-                        VIEW ALL
-                      </Link>
-                    </div>
+                    <ViewAllVideosLink />
                   </div>
                 : null}
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="container-fluid position-relative px-0 dharma-home-subscribe-wrap">
+          {/* Subscribe card inside dark section — keeps black background flush behind the card */}
+          <div className="container-fluid position-relative px-0 dharma-home-subscribe-wrap">
           <div className="subscribe dharma-home-subscribe">
             <div className="container">
-              <div className="row align-items-center gy-3">
-                <div className="col-md-6 text-center col-sm-7">
-                  <div className="display-inline up-img dh-home-subscribe-illus">
-                    <Image
-                      src="/frontend/img/subscribe.png"
-                      alt=""
-                      width={360}
-                      height={140}
-                      className="img-fluid"
-                      sizes="360px"
-                      loading="lazy"
-                    />
-                  </div>
-                  <div className="sub-text display-inline mt20 text-start text-sm-center">
-                    <h3 className="font-hammersmith color-primary text-up margin0">SUBSCribe NOW</h3>
-                    <h3 className="font-hammersmith color-primary text-up margin0">for MORE UPDATES</h3>
-                  </div>
-                </div>
-                <div className="col-md-6 col-sm-5">
-                  <form
-                    className="sub-input mt20 sub-text home-subscribe-form"
-                    onSubmit={async (e) => {
-                      e.preventDefault();
-                      setSubMsg("");
-                      const t = subEmail.trim();
-                      if (!t) return;
-                      setSubBusy(true);
-                      try {
-                        const r = await fetch("/api/subscribe", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email: t }),
-                        });
-                        const j = await r.json().catch(() => ({}));
-                        const data = j?.data;
-                        if (data && typeof data === "object" && data.message === "already exist") {
-                          setSubMsg("This email is already subscribed.");
-                        } else if (j?.value !== false) {
-                          setSubMsg("Thank you for subscribing.");
-                          setSubEmail("");
-                        } else {
-                          setSubMsg("Subscription could not be saved. Try again later.");
-                        }
-                      } catch {
-                        setSubMsg("Network error. Try again later.");
-                      } finally {
-                        setSubBusy(false);
-                      }
-                    }}
-                  >
-                    <div className="input-group">
-                      <input
-                        type="email"
-                        className="form-control"
-                        placeholder="Enter your email-id"
-                        name="email"
-                        autoComplete="email"
-                        value={subEmail}
-                        onChange={(e) => setSubEmail(e.target.value)}
-                        disabled={subBusy}
-                      />
-                      <button
-                        className="go-btn color-primary font-hammersmith px-3 border-0 bg-transparent"
-                        type="submit"
-                        disabled={subBusy}
-                      >
-                        GO
-                      </button>
+              {/* Same centred `col-lg-10` width as Videos feature strip — aligns subscribe.png with hero film art */}
+              <div className="row justify-content-center">
+                <div className="col-12 col-lg-10">
+                  <div className="row">
+                    <div className="col-md-6 text-center col-sm-7">
+                      <div className="display-inline up-img">
+                        <Image
+                          src="/frontend/img/subscribe.png"
+                          alt=""
+                          width={135}
+                          height={117}
+                          className="img-responsive"
+                          sizes="135px"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="sub-text display-inline mt20">
+                        <h3 className="font-hammersmith color-primary text-up margin0">SUBSCribe NOW</h3>
+                        <h3 className="font-hammersmith color-primary text-up margin0">for MORE UPDATES</h3>
+                      </div>
                     </div>
-                    {subMsg ?
-                      <p className="small mt-2 mb-0 color-primary" role="status">
-                        {subMsg}
-                      </p>
-                    : null}
-                  </form>
+                    <div className="col-md-6 col-sm-5">
+                      <form
+                        className="sub-input mt20 sub-text home-subscribe-form"
+                        onSubmit={async (e) => {
+                          e.preventDefault();
+                          setSubMsg("");
+                          const t = subEmail.trim();
+                          if (!t) return;
+                          setSubBusy(true);
+                          try {
+                            const r = await fetch("/api/subscribe", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ email: t }),
+                            });
+                            const j = await r.json().catch(() => ({}));
+                            const data = j?.data;
+                            if (data && typeof data === "object" && data.message === "already exist") {
+                              setSubMsg("This email is already subscribed.");
+                            } else if (j?.value !== false) {
+                              setSubEmail("");
+                              setSubMsg("");
+                              setShowSubModal(true);
+                            } else {
+                              setSubMsg("Subscription could not be saved. Try again later.");
+                            }
+                          } catch {
+                            setSubMsg("Network error. Try again later.");
+                          } finally {
+                            setSubBusy(false);
+                          }
+                        }}
+                      >
+                        <div className="input-group">
+                          <input
+                            type="email"
+                            className="form-control"
+                            placeholder="Enter your email-id"
+                            name="email"
+                            autoComplete="email"
+                            value={subEmail}
+                            onChange={(e) => setSubEmail(e.target.value)}
+                            disabled={subBusy}
+                          />
+                          <span className="input-group-text go-btn border-0 bg-transparent p-0">
+                            <button
+                              className="color-primary font-hammersmith border-0 bg-transparent"
+                              type="submit"
+                              disabled={subBusy}
+                            >
+                              GO
+                            </button>
+                          </span>
+                        </div>
+                        {subMsg ?
+                          <p className="small mt-2 mb-0 color-primary" role="status">
+                            {subMsg}
+                          </p>
+                        : null}
+                      </form>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+          </div>{/* closes dharma-home-subscribe-wrap */}
+        </div>{/* closes dharma-tv-bg dharma-home-tv */}
       </section>
 
       {newsItems && newsItems.length > 0 ?
         <section className="bg-sun home-news-sun">
           <div className="news">
-            <div className="title px-4 pt-4 pb-2">
-              <h1 className="font-hammersmith color-white margin0 home-news-title text-up">NEWS</h1>
+            <div className="title">
+              <h1 className="font-hammersmith color-white margin0 line45 home-news-title text-up">NEWS</h1>
             </div>
-            <div className="px-3 pb-5">
+            <div className="news-slider slider-right mt30">
               <Swiper
-                modules={[Navigation]}
-                spaceBetween={20}
-                slidesPerView={1.15}
-                navigation
+                spaceBetween={16}
+                slidesOffsetBefore={0}
+                slidesOffsetAfter={40}
+                slidesPerView={1.2}
+                onSwiper={(swiper) => { newsSwiperRef.current = swiper; }}
                 breakpoints={{
-                  576: { slidesPerView: 1.5, spaceBetween: 24 },
-                  768: { slidesPerView: 2.2, spaceBetween: 28 },
-                  1200: { slidesPerView: 3.2, spaceBetween: 40 },
+                  576: { slidesPerView: 2, spaceBetween: 16, slidesOffsetAfter: 48 },
+                  768: { slidesPerView: 3, spaceBetween: 20, slidesOffsetAfter: 56 },
+                  1200: { slidesPerView: "auto", spaceBetween: 60, slidesOffsetAfter: 64 },
                 }}
-                className="home-news-swiper px-1"
+                className="home-news-swiper"
               >
                 {newsItems.map((n) => (
                   <SwiperSlide key={n.id}>
@@ -506,13 +570,13 @@ export function HomePageContent({
                         <div className="video-slide-img">
                           <div className="img-animate">
                             {n.image ?
-                              <span className="position-relative d-block dh-home-strip-thumb dh-home-news-thumb">
+                              <span className="position-relative d-block dh-home-news-thumb">
                                 <Image
                                   src={n.image}
                                   alt=""
                                   fill
                                   className="object-fit-cover rounded-0 img-responsive"
-                                  sizes="(max-width: 576px) 90vw, (max-width: 1200px) 42vw, 420px"
+                                  sizes="(max-width: 576px) 90vw, (max-width: 768px) 45vw, (max-width: 1200px) 30vw, 300px"
                                   loading="lazy"
                                 />
                               </span>
@@ -520,188 +584,258 @@ export function HomePageContent({
                           </div>
                         </div>
                         <div className="video-name mt20 h40">
-                          <h4 className="color-white margin0 small">{n.title.slice(0, 55)}</h4>
+                          <h4 className="color-white margin0">{n.title.slice(0, 55)}</h4>
                         </div>
-                        {n.date ?
-                          <div className="video-date">
-                            <span className="color-black f12">{n.date}</span>
-                          </div>
-                        : null}
+                        <div className="video-date">
+                          {n.date ? <span className="color-black f12">{n.date}</span> : null}
+                        </div>
+                        <div className="video-desc"></div>
                       </div>
                     </Link>
                   </SwiperSlide>
                 ))}
+                {newsShowMoreStories ?
+                  <SwiperSlide key="__more-stories">
+                    <Link href="/news-events" className="dh-home-news-more-card text-decoration-none text-reset d-block">
+                      <div className="img-animate">
+                        <span className="position-relative d-block dh-home-news-thumb">
+                          <Image
+                            src="/frontend/img/more.jpg"
+                            alt="More stories"
+                            fill
+                            className="object-fit-cover rounded-0 img-responsive"
+                            sizes="(max-width: 576px) 90vw, (max-width: 768px) 45vw, (max-width: 1200px) 30vw, 300px"
+                            loading="lazy"
+                          />
+                        </span>
+                      </div>
+                    </Link>
+                  </SwiperSlide>
+                : null}
               </Swiper>
+              {newsHomeSlideCount > 1 ?
+                <>
+                  <button
+                    type="button"
+                    className="movies-upcoming-arrow home-news-slider-arrow home-news-slider-arrow--prev"
+                    aria-label="Previous news"
+                    onClick={() => newsSwiperRef.current?.slidePrev()}
+                  >
+                    <Image
+                      src="/frontend/img/news-right.png"
+                      alt=""
+                      width={40}
+                      height={47}
+                      className="home-news-slider-arrow-img"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    className="movies-upcoming-arrow home-news-slider-arrow home-news-slider-arrow--next"
+                    aria-label="Next news"
+                    onClick={() => newsSwiperRef.current?.slideNext()}
+                  >
+                    <Image
+                      src="/frontend/img/news-left.png"
+                      alt=""
+                      width={40}
+                      height={47}
+                      className="home-news-slider-arrow-img"
+                    />
+                  </button>
+                </>
+              : null}
             </div>
           </div>
         </section>
       : null}
 
-      <section className="dharma-title-bg home-map-section">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-8 offset-md-2">
-              <div className="title">
-                <h1 className="color-primary font-hammersmith f90 line45">LET&apos;S TALK</h1>
+      {/* Dharma World — legacy home.html: news-bg, two-row grid, corner PNGs, ENTER */}
+      <section className="d-none d-md-block home-dharma-world-desktop">
+        <div className="dhrarma-world dh-relative">
+          <span className="d-block w-100 home-dharma-world-hero">
+            <Image
+              src="/frontend/img/news-bg.jpg"
+              alt=""
+              width={1920}
+              height={720}
+              className="img-fluid w-100 h-auto d-block"
+              sizes="100vw"
+              loading="lazy"
+            />
+          </span>
+          <div className="container dh-absulate middle">
+            <div className="row">
+              <div className="col-12 offset-md-1 col-md-10 text-center">
+                <div className="dharma-world-text text-center">
+                  <div className="text-center">
+                    <Image
+                      src="/frontend/img/dharma-img.png"
+                      alt="Dharma Productions"
+                      width={529}
+                      height={171}
+                      className="img-fluid margin-auto d-block home-dharma-world-logo"
+                      sizes="(max-width: 768px) 92vw, (max-width: 1200px) 600px, 630px"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="maps dh-relative">
-          <div className="contact-page__map-root">
-            <iframe
-              className="contact-page__map-canvas contact-page__map-iframe"
-              src="https://maps.google.com/maps?q=19.133687,72.836493&z=17&output=embed"
-              title="Dharma Productions office location"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              allowFullScreen
-            />
-            <div className="contact-page__map-iframe-open">
-              <a
-                href={CONTACT_GOOGLE_MAPS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="contact-page__map-iframe-link"
-              >
-                Open in Google Maps ↗
-              </a>
-            </div>
-          </div>
-
-          <div className="dh-absulate add-show">
-            <h4 className="margin0 font-karla">Dharma Productions Pvt. Ltd.</h4>
-            <div className="mt15 font-karla">
-              <p className="margin0">201 &amp; 202, 2nd Floor, Supreme Chambers,</p>
-              <p className="margin0">Off Veera Desai Road, 17/18 Shah Industrial Estate,</p>
-              <p className="margin0">Andheri (W), Mumbai- 400053, India</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="home-contact">
-        <div className="container">
-          <div className="padd-all-side">
-            <div className="row g-4">
-              {[
-                { key: "info", title: "INFO", src: "/frontend/img/info.png", w: 25, h: 25, email: "info@dharma-production.com", label: "For info related queries email us on" },
-                { key: "creative", title: "CREATIVE", src: "/frontend/img/creativity.png", w: 30, h: 33, email: "creative@dharma-production.com", label: "For creative related queries email us on" },
-                { key: "marketing", title: "MARKETING", src: "/frontend/img/marketing.png", w: 25, h: 29, email: "marketing@dharma-production.com", label: "For marketing related queries email us on" },
-              ].map((b) => (
-                <div key={b.key} className="col-md-4 col-sm-12">
-                  <div className="contact-info text-center">
-                    <div className="info-icon display-inline">
-                      <Image src={b.src} alt="" width={b.w} height={b.h} />
-                    </div>
-                    <div className="info-text display-inline">
-                      <h2 className="color-primary font-karla font-bold">{b.title}</h2>
-                    </div>
-                    <div className="descp">
-                      <p>{b.label}<br /><a href={`mailto:${b.email}`}>{b.email}</a></p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="row mt20 g-4 justify-content-center">
-              <div className="d-none d-md-block col-md-2" aria-hidden />
-              {[
-                { key: "syndication", title: "SYNDICATION", src: "/frontend/img/syndication.png", w: 28, h: 28, email: "syndication@dharma-production.com", label: "For syndication related queries email us on" },
-                { key: "legal", title: "LEGAL", src: "/frontend/img/legal.png", w: 27, h: 33, email: "legal@dharma-production.com", label: "For legal related queries contact us on" },
-              ].map((b) => (
-                <div key={b.key} className="col-12 col-md-4">
-                  <div className="contact-info text-center">
-                    <div className="info-icon display-inline">
-                      <Image src={b.src} alt="" width={b.w} height={b.h} />
-                    </div>
-                    <div className="info-text display-inline">
-                      <h2 className="color-primary font-karla font-bold">{b.title}</h2>
-                    </div>
-                    <div className="descp">
-                      <p>{b.label}<br /><a href={`mailto:${b.email}`}>{b.email}</a></p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="d-none d-md-block">
-        <div className="dhrarma-world dh-relative">
-          <Image
-            src="/frontend/img/news-bg.jpg"
-            alt=""
-            width={1920}
-            height={720}
-            className="img-fluid w-100 h-auto"
-            sizes="100vw"
-            loading="lazy"
-          />
-          <div className="container dh-absulate middle">
-            <div className="row justify-content-center">
-              <div className="col-lg-10 text-center">
-                <div className="dharma-world-text">
-                  <Image
-                    src="/frontend/img/dharma-img.png"
-                    alt="Dharma Productions"
-                    width={520}
-                    height={180}
-                    className="img-fluid margin-auto d-block mx-auto"
-                    sizes="(max-width: 1200px) 80vw, 520px"
-                    loading="lazy"
-                  />
-                </div>
-                <div className="pad-inner text-center mt-3">
+            <div className="row home-dharma-world-copy-row">
+              <div className="col-12 offset-md-2 col-md-8">
+                <div className="pad-inner text-center">
                   <p className="color-white margin0">For those whose dharma is Dharma, welcome home.</p>
                   <p className="color-white mb-0">
                     Entertainment | Interaction | and much more; we bring to you the best of the Dharma Family.
                   </p>
                   <div className="btn-view-enter mt20 text-center mob-marg0">
-                    <Link href="/social" className="btn-1 font-hammersmith btn color-primary text-center text-decoration-none">
-                      <svg aria-hidden="true" focusable="false">
+                    <Link
+                      href="/social"
+                      className="btn-1 font-hammersmith btn border-0 color-white text-center text-decoration-none home-dharma-world-enter d-inline-block"
+                    >
+                      <svg aria-hidden="true" focusable="false" style={{ pointerEvents: "none" }}>
                         <rect x="0" y="0" fill="none" width="100%" height="100%" />
                       </svg>
-                      ENTER
+                      <span className="home-dharma-world-enter-label">ENTER</span>
                     </Link>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="top-right dh-absulate d-none d-lg-block">
-            <Image src="/frontend/img/top-right.png" alt="" width={280} height={280} className="img-fluid" loading="lazy" />
+          <div className="top-right dh-absulate home-dharma-world-corner home-dharma-world-corner--tr">
+            <Image
+              src="/frontend/img/top-right.png"
+              alt=""
+              width={280}
+              height={400}
+              className="d-block home-dharma-world-corner-img"
+              sizes="280px"
+              loading="lazy"
+            />
           </div>
-          <div className="bottom-left dh-absulate d-none d-lg-block">
-            <Image src="/frontend/img/bottom-left.png" alt="" width={280} height={280} className="img-fluid" loading="lazy" />
+          <div className="bottom-left dh-absulate home-dharma-world-corner home-dharma-world-corner--bl">
+            <Image
+              src="/frontend/img/bottom-left.png"
+              alt=""
+              width={303}
+              height={459}
+              className="d-block home-dharma-world-corner-img"
+              sizes="303px"
+              loading="lazy"
+            />
           </div>
         </div>
       </section>
 
-      <section className="d-md-none bg-dark text-center py-5">
-        <div className="container px-3">
-          <Image
-            src="/frontend/img/dharma-img.png"
-            alt=""
-            width={440}
-            height={152}
-            className="img-fluid mx-auto mb-3"
-            style={{ maxWidth: 220, height: "auto" }}
-            sizes="220px"
-            loading="lazy"
-          />
-          <p className="color-white mb-2">For those whose dharma is Dharma, welcome home.</p>
-          <Link href="/social" className="btn-1 font-hammersmith btn color-primary text-decoration-none">
-            <svg aria-hidden="true" focusable="false">
-              <rect x="0" y="0" fill="none" width="100%" height="100%" />
-            </svg>
-            ENTER
-          </Link>
+      <section className="d-md-none dh-home-dharma-world-xs">
+        <div className="dhrarma-world dh-relative bg-inner">
+          <div className="container">
+            <div className="row">
+              <div className="col-12 offset-md-1 col-md-10 text-center">
+                <div className="dharma-world-text text-center">
+                  <div className="text-center">
+                    <Image
+                      src="/frontend/img/dharma-img.png"
+                      alt="Dharma Productions"
+                      width={529}
+                      height={171}
+                      className="img-fluid margin-auto d-block home-dharma-world-logo"
+                      sizes="(max-width: 576px) 92vw, 630px"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="row home-dharma-world-copy-row">
+              <div className="col-12 offset-md-2 col-md-8">
+                <div className="pad-inner text-center">
+                  <p className="color-white margin0">For those whose dharma is Dharma, welcome home.</p>
+                  <p className="color-white mb-0">
+                    Entertainment | Interaction | and much more; we bring to you the best of the Dharma Family.
+                  </p>
+                  <div className="btn-view-enter mt20 text-center mob-marg0">
+                    <Link
+                      href="/social"
+                      className="btn-1 font-hammersmith btn border-0 color-white text-center text-decoration-none home-dharma-world-enter d-inline-block"
+                    >
+                      <svg aria-hidden="true" focusable="false" style={{ pointerEvents: "none" }}>
+                        <rect x="0" y="0" fill="none" width="100%" height="100%" />
+                      </svg>
+                      <span className="home-dharma-world-enter-label">ENTER</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      <section className="dharma-title-bg">
+        {/* legacy `home.html`: `.col-md-offset-2` + `.col-md-6` */}
+        <div className="container">
+          <div className="row">
+            <div className="col-md-6 offset-md-2">
+              <div className="title">
+                <h1 className="color-primary font-hammersmith f90 line45">LET&rsquo;S TALK</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Same interactive map + address overlay + dept tiles as `/contact-us` */}
+        <div className="contact-page">
+          <ContactMapWithAddressPanel />
+        </div>
+      </section>
+
+      <section className="home-contact">
+        <ContactDepartmentEmails />
+      </section>
+
+      {/* Subscribe success modal — matches legacy subscribe.html popup */}
+      {showSubModal && (
+        <div
+          className="dh-subscribe-modal-overlay"
+          onClick={() => setShowSubModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Subscription confirmed"
+        >
+          <div
+            className="dh-subscribe-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="closure"
+              aria-label="Close"
+              onClick={() => setShowSubModal(false)}
+            >
+              <i className="fa fa-times" aria-hidden="true" />
+            </button>
+            <div className="text-center h3-main">
+              <h3 className="text-up color-primary margin0">THANK YOU FOR SUBSCRIBING!</h3>
+              <h3 className="text-up color-primary margin0">WE PROMISE YOUR INBOX WON&apos;T BE DISAPPOINTED.</h3>
+              <div className="mt15 some-c">
+                <button
+                  type="button"
+                  onClick={() => setShowSubModal(false)}
+                  className="btn-1 dh-view-all-btn font-hammersmith color-primary mx-auto mt-3"
+                >
+                  <svg aria-hidden="true" focusable="false" style={{ pointerEvents: "none" }}>
+                    <rect x="0" y="0" fill="none" width="100%" height="100%" />
+                  </svg>
+                  <span className="dh-view-all-label">CONTINUE TO SITE</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
@@ -10,6 +9,7 @@ import { VideosSearchBar } from "@/components/videos/VideosSearchBar";
 import { resolveMovieUrlSlug } from "@/lib/movieModel";
 import { resolveUploadUrl } from "@/lib/media";
 import {
+  youtubeEmbedUrl,
   youtubeThumbnailUrl,
   youtubeThumbnailUrlMax,
   youtubeVideoId,
@@ -19,6 +19,9 @@ import { resolveMovieTitleFromTvRow } from "@/lib/videosTitles";
 
 import "swiper/css";
 import "swiper/css/navigation";
+
+/** Main /videos listing: newest-first by `order`, only preview this many clips per movie in the row swiper. */
+const SLIDER_PREVIEW_PER_MOVIE = 4;
 
 function shorten(s, max) {
   const t = s.trim();
@@ -68,9 +71,12 @@ function groupByMovieKey(rows, movieTitleLookups) {
 
   return order.map((movieKey) => {
     const g = map.get(movieKey);
-    const first = g.items[0];
+    const sorted = g.items;
+    const totalForMovie = sorted.length;
+    const items = sorted.slice(0, SLIDER_PREVIEW_PER_MOVIE);
+    const first = items[0];
     const movie = resolveMovieTitleFromTvRow(first, movieTitleLookups ?? null);
-    return { movie, movieKey: g.movieKey, items: g.items };
+    return { movie, movieKey: g.movieKey, items, totalForMovie };
   });
 }
 
@@ -83,20 +89,19 @@ function groupByMovieKey(rows, movieTitleLookups) {
 const THUMB_W = 480;
 const THUMB_H = 270;
 
-function VideoTile({ item, eager = false }) {
-  const watch = youtubeWatchUrl(item.url);
+function VideoTile({ item, eager = false, onOpen }) {
   const thumb =
     resolveUploadUrl(item.thumbnail) || youtubeThumbnailUrl(item.url) || "";
   const title = shorten(String(item.title ?? ""), 60);
 
   return (
     <div className="video-box">
-      <div className="video-slide-img em-box">
-        <a
-          href={watch || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="d-block text-decoration-none"
+      <div className="video-slide-img">
+        <button
+          type="button"
+          className="dh-video-popup-trigger d-block w-100 text-start text-decoration-none border-0 bg-transparent p-0"
+          aria-label={`Play — ${title}`}
+          onClick={() => onOpen(item)}
         >
           <div className="img-animated">
             <div className="img-inside-box em-box hover-sec">
@@ -117,13 +122,13 @@ function VideoTile({ item, eager = false }) {
           <div className="video-names mt10">
             <span className="color-white text-cap">{title}</span>
           </div>
-        </a>
+        </button>
       </div>
     </div>
   );
 }
 
-function VideoRowSwiper({ items }) {
+function VideoRowSwiper({ items, onOpen }) {
   const wrapRef = useRef(null);
   const [inView, setInView] = useState(false);
 
@@ -147,7 +152,7 @@ function VideoRowSwiper({ items }) {
   }, []);
 
   return (
-    <div className="videos-tv-swiper-nav min-tp-nm" ref={wrapRef}>
+    <div className="videos-tv-swiper-nav" ref={wrapRef}>
       <Swiper
         modules={[Navigation, ...(inView ? [Autoplay] : [])]}
         navigation
@@ -170,7 +175,7 @@ function VideoRowSwiper({ items }) {
       >
         {items.map((item, idx) => (
           <SwiperSlide key={`${youtubeVideoId(item.url)}-${idx}`}>
-            <VideoTile item={item} eager={idx === 0} />
+            <VideoTile item={item} eager={idx === 0} onOpen={onOpen} />
           </SwiperSlide>
         ))}
       </Swiper>
@@ -259,8 +264,8 @@ function VideosViewAllGraphic({ movieKey }) {
   );
 }
 
-function MovieVideoBlock({ movie, movieKey, items }) {
-  const showSlider = items.length > 4;
+function MovieVideoBlock({ movie, movieKey, items, totalForMovie, onOpenVideo }) {
+  const showSlider = totalForMovie > 3;
 
   return (
     <div className="upcoming-movie videos-movie-section search-movie-mar mx-auto w-100 pb-short">
@@ -274,11 +279,11 @@ function MovieVideoBlock({ movie, movieKey, items }) {
       </div>
       <div className="upcoming-slider tv-all-slider text-shadow cl-flex tv-ain-tp">
         {showSlider ?
-          <VideoRowSwiper items={items} />
+          <VideoRowSwiper items={items} onOpen={onOpenVideo} />
         : <div className="row g-3">
             {items.map((item, idx) => (
               <div key={`${movie}-${idx}`} className="col-6 col-md-3">
-                <VideoTile item={item} eager={idx < 4} />
+                <VideoTile item={item} eager={idx < 4} onOpen={onOpenVideo} />
               </div>
             ))}
           </div>
@@ -291,7 +296,7 @@ function MovieVideoBlock({ movie, movieKey, items }) {
   );
 }
 
-function HeroSlider({ slides }) {
+function HeroSlider({ slides, onVideoOpen }) {
   const sorted = [...slides].sort(
     (a, b) => (Number(b.order) || 0) - (Number(a.order) || 0)
   );
@@ -344,14 +349,13 @@ function HeroSlider({ slides }) {
               {sorted.map((s, i) => {
                 const uploadSrc =
                   typeof s.image === "string" ? resolveUploadUrl(s.image) || "" : "";
-                const watch = youtubeWatchUrl(s.url);
                 return (
                   <SwiperSlide key={i}>
-                    <a
-                      href={watch || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="videos-hero-slide-link d-block text-decoration-none"
+                    <button
+                      type="button"
+                      className="videos-hero-slide-link dh-video-popup-trigger d-block text-decoration-none w-100 border-0 bg-transparent p-0 text-start"
+                      aria-label={`Play hero video slide ${i + 1}`}
+                      onClick={() => onVideoOpen(s)}
                     >
                       <div className="videos-hero-slide-frame video-play dh-relative videos-hero-slide">
                         <HeroSlideImage
@@ -371,7 +375,7 @@ function HeroSlider({ slides }) {
                           />
                         </div>
                       </div>
-                    </a>
+                    </button>
                   </SwiperSlide>
                 );
               })}
@@ -413,6 +417,40 @@ export function VideosPageView({ slider, videos, movieTitleLookups = null, initi
   );
   const noMovieFound = search.trim().length > 0 && grouped.length === 0;
 
+  const [popupItem, setPopupItem] = useState(null);
+
+  function openClip(item) {
+    const embedSrc = youtubeEmbedUrl(item?.url);
+    if (embedSrc) {
+      setPopupItem(item);
+      return;
+    }
+    const watch = youtubeWatchUrl(item?.url) || String(item?.url ?? "").trim();
+    if (/^https?:\/\//i.test(watch)) {
+      window.open(watch, "_blank", "noopener,noreferrer");
+    }
+  }
+
+  function closePopup() {
+    setPopupItem(null);
+  }
+
+  useEffect(() => {
+    if (!popupItem) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") closePopup();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [popupItem]);
+
+  const embedSrc = popupItem ? youtubeEmbedUrl(popupItem.url) : "";
+
   return (
     <section className="dharma-top-bg videos-page-legacy">
       <div className="container">
@@ -430,7 +468,7 @@ export function VideosPageView({ slider, videos, movieTitleLookups = null, initi
           </div>
 
           {!search.trim() && slider.length > 0 ?
-            <HeroSlider slides={slider} />
+            <HeroSlider slides={slider} onVideoOpen={openClip} />
           : null}
         </div>
 
@@ -440,7 +478,14 @@ export function VideosPageView({ slider, videos, movieTitleLookups = null, initi
           </div>
         : grouped.length ?
           grouped.map((g) => (
-            <MovieVideoBlock key={g.movieKey} movie={g.movie} movieKey={g.movieKey} items={g.items} />
+            <MovieVideoBlock
+              key={g.movieKey}
+              movie={g.movie}
+              movieKey={g.movieKey}
+              items={g.items}
+              totalForMovie={g.totalForMovie}
+              onOpenVideo={openClip}
+            />
           ))
         : !search.trim() ?
           <p className="text-center color-white mt-4 pt-3">
@@ -449,6 +494,29 @@ export function VideosPageView({ slider, videos, movieTitleLookups = null, initi
         : null}
 
       </div>
+
+      {embedSrc ?
+        <div
+          className="dh-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Video player"
+          onClick={closePopup}
+        >
+          <div className="dh-modal-frame" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="dh-modal-close" onClick={closePopup} aria-label="Close video">
+              ×
+            </button>
+            <iframe
+              key={youtubeVideoId(popupItem?.url)}
+              title={String(popupItem?.title ?? popupItem?.name ?? "Video")}
+              src={embedSrc}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      : null}
     </section>
   );
 }
