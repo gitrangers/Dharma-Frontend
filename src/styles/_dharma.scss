@@ -746,6 +746,12 @@ body {
   padding: 0 5px;
 }
 
+.footer-social.dh-list ul {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .footer-social ul li a i {
   font-size: 20px;
   background: #424242;
@@ -776,9 +782,21 @@ body {
 }
 
 .footer-social ul li a {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  min-height: 17px;
+  min-height: 35px;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover,
+  &:focus,
+  &:visited,
+  &:active {
+    text-decoration: none;
+    color: inherit;
+  }
 }
 
 .footer-social ul li a:hover .hover-daily {
@@ -796,19 +814,28 @@ body {
   display: none;
 }
 
+.footer-daily-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .footer-daily-link .footer-daily-imgwrap {
   position: relative;
-  display: inline-block;
+  display: block;
+  width: 35px;
+  height: 35px;
+  flex-shrink: 0;
   line-height: 0;
 }
 
 .footer-daily-imgwrap .daily-image,
 .footer-daily-imgwrap .hover-daily {
   display: block;
-}
-
-.mt-7 {
-  margin-top: -7px;
+  width: 35px !important;
+  height: 35px !important;
+  max-width: none;
+  object-fit: contain;
 }
 
 .pd10 {
@@ -872,11 +899,30 @@ body {
     padding: 0 1px;
   }
 
+  .footer-social.dh-list.mobile-center ul {
+    justify-content: center;
+  }
+
+  .footer-social ul li a {
+    min-height: 32px;
+  }
+
   .footer-social ul li a i {
     font-size: 18px !important;
     height: 32px !important;
     width: 32px !important;
     line-height: 32px !important;
+  }
+
+  .footer-daily-link .footer-daily-imgwrap {
+    width: 32px;
+    height: 32px;
+  }
+
+  .footer-daily-imgwrap .daily-image,
+  .footer-daily-imgwrap .hover-daily {
+    width: 32px !important;
+    height: 32px !important;
   }
 
   .footer .ting-unit-wrap {
@@ -5049,6 +5095,53 @@ img.doneLoading {
     flex: 0 0 50%;
     max-width: 50%;
   }
+}
+
+.related-m-title {
+  line-height: 1.08;
+}
+
+.related-m-static-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.related-m-static-col {
+  flex: 0 0 215px;
+  max-width: 215px;
+  width: 215px;
+  padding: 6px;
+}
+
+.related-m-swiper-wrap {
+  width: 100%;
+}
+
+.related-movies-swiper {
+  overflow: visible;
+}
+
+.related-movies-swiper .swiper-slide.related-movies-slide {
+  width: 215px;
+  max-width: min(215px, 78vw);
+  height: auto;
+}
+
+.related-movies-swiper.related-movies-swiper--mob .swiper-slide.related-movies-slide {
+  width: 200px;
+  max-width: min(200px, 72vw);
+}
+
+.related-m-card-pad--empty {
+  min-height: 220px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.related-m-card-link:focus-visible .related-m-card-pad,
+.related-m-card-link:focus-visible.related-m-card-pad {
+  outline: 2px solid rgba(255, 255, 255, 0.95);
+  outline-offset: 3px;
 }
 
 /* Modal — replaces fancybox iframe / fancybox-thumb. */

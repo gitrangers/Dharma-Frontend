@@ -334,7 +334,6 @@ async function strapiGetCollectionAllPages(resource, baseParams = {}, pageSize =
   /** @type {Record<string, unknown>[]} */
   const all = [];
   let page = 1;
-  let pageCount = 1;
 
   const size = Math.min(Math.max(1, pageSize), 500);
 
@@ -372,13 +371,13 @@ async function strapiGetCollectionAllPages(resource, baseParams = {}, pageSize =
     }
 
     const d = json?.data;
-    if (!Array.isArray(d)) break;
+    if (!Array.isArray(d) || d.length === 0) break;
     all.push(...d.map((entry) => normalizeStrapiDoc(entry)));
-    const p = json?.meta?.pagination;
-    pageCount =
-      typeof p?.pageCount === "number" && Number.isFinite(p.pageCount) ? p.pageCount : page;
     page += 1;
-  } while (page <= pageCount);
+    /** Stop after a partial page — `meta.pagination.pageCount` can be wrong on some Strapi setups. */
+    if (d.length < size) break;
+    if (page > 600) break;
+  } while (true);
 
   return all;
 }
@@ -1296,6 +1295,72 @@ function mapAwards(rel) {
   return out;
 }
 
+/** Merge related movie docs: CMS `movie-related-links` first, then embedded `related_from_movies`. */
+function mergeRelatedDeduped(fromLinksMapped, fromEmbeddedMapped) {
+  const seen = new Set();
+  const out = [];
+  for (const list of [fromLinksMapped, fromEmbeddedMapped]) {
+    if (!Array.isArray(list)) continue;
+    for (const item of list) {
+      if (!item || typeof item !== "object") continue;
+      const k =
+        typeof item.urlName === "string" && item.urlName.trim() ?
+          item.urlName.trim()
+        : String(item._id || "").trim();
+      if (!k || seen.has(k)) continue;
+      seen.add(k);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+/** `/api/movie-related-links` rows for the current movie (`fromMovie` → `toMovie`). */
+async function strapiFetchMovieRelatedLinkRowsForPickedMovie(picked) {
+  if (!picked || typeof picked !== "object") return [];
+  const docId =
+    typeof picked.documentId === "string" && picked.documentId.trim() ?
+      picked.documentId.trim()
+    : "";
+  const numId =
+    picked.id != null && String(picked.id).trim() !== "" ? String(picked.id) : "";
+
+  if (!docId && !numId) return [];
+
+  const base = {
+    populate: "*",
+    "pagination[pageSize]": "200",
+  };
+
+  /** @type {Record<string, string | number | undefined>[]} */
+  const paramSets = [];
+  if (docId) {
+    paramSets.push({ ...base, "filters[fromMovie][documentId][$eq]": docId });
+    paramSets.push({ ...base, "filters[from_movie][documentId][$eq]": docId });
+  }
+  if (numId) {
+    paramSets.push({ ...base, "filters[fromMovie][id][$eq]": numId });
+    paramSets.push({ ...base, "filters[from_movie][id][$eq]": numId });
+  }
+
+  for (const params of paramSets) {
+    const rows = await strapiGetCollection("movie-related-links", params);
+    if (rows.length) return rows;
+  }
+
+  const all = await strapiGetCollectionAllPages("movie-related-links", { populate: "*" }, 150);
+
+  return all.filter((row) => {
+    if (!row || typeof row !== "object") return false;
+    const from = row.fromMovie ?? row.from_movie;
+    if (!from || typeof from !== "object") return false;
+    const f = normalizeStrapiDoc(from);
+    if (docId && String(f.documentId || "").trim() === docId) return true;
+    if (numId && String(f.id ?? "") === numId) return true;
+    return false;
+  });
+}
+
 function mapRelated(raw, byId) {
   if (!Array.isArray(raw)) return [];
 
@@ -1303,12 +1368,22 @@ function mapRelated(raw, byId) {
   for (const rawLink of raw) {
     if (!rawLink || typeof rawLink !== "object") continue;
     const link = normalizeStrapiDoc(rawLink);
-    const target = link.movie ?? link.to_movie ?? link.relatedMovie;
+    const target =
+      link.toMovie ??
+      link.to_movie ??
+      link.movie ??
+      link.relatedMovie;
     let doc = null;
     if (target && typeof target === "object") {
       const t = normalizeStrapiDoc(target);
       if (typeof t.name === "string" && t.name) {
         doc = mapStrapiRowToMovieFields(t);
+      } else {
+        const key =
+          typeof t.documentId === "string" && t.documentId.trim() ?
+            t.documentId.trim()
+          : t.id != null ? String(t.id) : "";
+        if (key) doc = byId.get(key) ?? null;
       }
     }
     if (!doc && (typeof target === "string" || typeof target === "number")) {
@@ -1323,7 +1398,11 @@ function mapRelated(raw, byId) {
     }
     if (!doc) continue;
     resolved.push({
-      order: Number(link.order) || 0,
+      order:
+        Number(link.order) ||
+        Number(link.sortOrder) ||
+        Number(link.sort_order) ||
+        0,
       doc: {
         _id: String(doc._id),
         name: doc.name,
@@ -1685,6 +1764,9 @@ export async function strapiTryFetchOneMovie(slug) {
   for (const r of rawRows) {
     const mapped = mapStrapiRowToMovieFields(r);
     summaryByKey.set(String(mapped._id), mapped);
+    if (mapped.id != null && String(mapped.id).trim() !== "") {
+      summaryByKey.set(String(mapped.id), mapped);
+    }
   }
 
   const mappedCore = mapStrapiRowToMovieFields(picked);
@@ -1742,6 +1824,18 @@ export async function strapiTryFetchOneMovie(slug) {
 
   const news = await strapiFetchNewsListForMoviePick(picked);
 
+  const relatedFromEmbedded = mapRelated(
+    strapiRelatedToArray(picked.related_from_movies),
+    summaryByKey,
+  );
+  let relatedFromLinks = [];
+  try {
+    const linkRows = await strapiFetchMovieRelatedLinkRowsForPickedMovie(picked);
+    relatedFromLinks = mapRelated(linkRows, summaryByKey);
+  } catch {
+    relatedFromLinks = [];
+  }
+
   const result = {
     movie,
     cast,
@@ -1750,7 +1844,7 @@ export async function strapiTryFetchOneMovie(slug) {
     wallpaper,
     videos,
     behindTheScenes,
-    related: mapRelated(picked.related_from_movies, summaryByKey),
+    related: mergeRelatedDeduped(relatedFromLinks, relatedFromEmbedded),
     news,
     award,
   };

@@ -73,14 +73,14 @@ export function SiteFooter() {
                         alt=""
                         width={35}
                         height={35}
-                        className="mt-7 daily-image"
+                        className="daily-image"
                       />
                       <Image
                         src="/frontend/img/daily_hover.png"
                         alt=""
                         width={35}
                         height={35}
-                        className="mt-7 hover-daily"
+                        className="hover-daily"
                       />
                     </span>
                   </a>
