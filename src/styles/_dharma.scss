@@ -26,6 +26,7 @@ $grey: #6f6f6e;
 
 html {
   -webkit-font-smoothing: antialiased;
+  overflow-x: clip; /* avoids subpixel widen + stray inner scrollbars beside viewport */
 }
 
 /* Legacy heading baseline from dharmanodeRun */
@@ -55,6 +56,7 @@ body {
   line-height: 1.428571429;
   color: #333333;
   background-color: #fff;
+  overflow-x: clip;
 }
 
 .font-hammersmith {
@@ -886,6 +888,11 @@ body {
 
 .home-slider {
   position: relative;
+  width: 100%;
+}
+
+.home-hero {
+  width: 100%;
 }
 
 .movie-tab {
@@ -1005,8 +1012,28 @@ img.doneLoading {
 }
 
 .dharma-tv-bg {
-  background: url("/frontend/img/video-bg.jpg") no-repeat center;
+  background-color: #0d0d0d; /* dark fallback + shows through on tall mobile sections */
+  background-image: url("/frontend/img/tv-bg.jpg");
+  background-repeat: no-repeat;
+  background-position: center center;
   background-size: cover;
+  background-attachment: scroll; /* fixed breaks on iOS */
+}
+
+/* Tablet portrait 576–991px (iPad Air 820×1180, 1+Tab 765×1071) */
+@media (min-width: 576px) and (max-width: 991px) {
+  .dharma-tv-bg {
+    background-position: 50% 20%;
+    background-size: cover;
+  }
+}
+
+/* Mobile ≤575px (412×915) — keep cover, anchor near top of image */
+@media (max-width: 575px) {
+  .dharma-tv-bg {
+    background-position: 50% 10%;
+    background-size: cover;
+  }
 }
 
 .my-main-btn {
@@ -1040,11 +1067,11 @@ img.doneLoading {
   min-height: 60vh;
 }
 
-/* Home map + contact block — mirrors legacy `.dharma-title-bg` / `.home-contact` */
+/* Matches `frontend/sass/main.scss` `.dharma-title-bg` (Next serves from `/public/frontend/img/`). */
 .dharma-title-bg {
-  background: url("/frontend/img/home-contact.jpg") no-repeat center center;
+  background: url("/frontend/img/home-contact.jpg") no-repeat;
   background-size: cover;
-  padding: 80px 0 0;
+  padding: 200px 0 0;
 
   .title h1 {
     font-size: clamp(42px, 7vw, 90px);
@@ -1053,6 +1080,29 @@ img.doneLoading {
 
 .home-contact {
   padding: 50px 0;
+
+  /*
+   * Same `.descp` as `.contact-page .contact-info` — homepage cannot wrap the whole strip in
+   * `.contact-page` (would apply `.contact-page .contact-info img { opacity: 0 }` to Next `<Image>`s).
+   */
+  .contact-info .descp {
+    margin-top: 10px;
+    clear: both;
+
+    p {
+      font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.428571429;
+      margin: 0;
+      color: #333333;
+    }
+
+    a {
+      color: $brand-primary;
+      font-weight: 700;
+      word-break: break-word;
+    }
+  }
 }
 
 /* Contact — `frontend/views/content/contact-us.html` + main.scss `.map` / `.add-show` */
@@ -1145,7 +1195,7 @@ img.doneLoading {
 
   .add-show {
     right: 0;
-    bottom: 40px;
+    bottom: 64px;
     padding: 30px;
     background-color: $brand-primary;
     color: $white;
@@ -1245,7 +1295,7 @@ img.doneLoading {
 
 @media (max-width: 767.98px) {
   .contact-page .min-add.add-show {
-    bottom: 0;
+    bottom: 16px;
   }
 
   .contact-page .add-show {
@@ -1264,9 +1314,14 @@ img.doneLoading {
   padding-top: var(--dh-header-offset);
 }
 
+/*
+ * layout.jsx: body is `d-flex flex-column min-vh-100`; main uses `flex-grow-1`.
+ * Default flex item `min-height: auto` can make <main> a secondary scroll container in some browsers
+ * → two vertical scrollbars. `min-height: 0` keeps page scroll on the viewport only.
+ */
 .site-main {
   padding-top: 0;
-  min-height: 50vh;
+  min-height: 0;
 }
 
 .btn-primary {
@@ -1347,10 +1402,11 @@ img.doneLoading {
   }
 }
 
-/* Hero: studio (`movie-up.jpg`). Top padding clears fixed header so art sits under the nav curve. */
+/* Hero: studio (`movie-up.jpg`). Top padding clears fixed header so art sits under the nav curve.
+ * No z-index here — a positive z-index was stacking the whole hero above the “Upcoming” swiper
+ * below (search + slider looked like the slider was hidden / covered on some viewports). */
 .movies-page-hero {
   position: relative;
-  z-index: 1;
   background-color: transparent;
   background-image: url("/frontend/img/movie-up.jpg");
   background-repeat: no-repeat;
@@ -1592,6 +1648,12 @@ img.doneLoading {
 .movies-search-combobox {
   position: relative;
   width: 100%;
+  /*
+   * Dropdown floats over page content (`z-index` on `.movies-search-dropdown`).
+   * Combobox establishes a stacking context so the open list reliably paints above the
+   * Upcoming Releases band without needing a high z-index on the entire `.movies-page-hero`.
+   */
+  z-index: 10;
 }
 
 .movies-search-field {
@@ -1683,6 +1745,25 @@ img.doneLoading {
 
 .movies-search-dropdown::-webkit-scrollbar-track {
   background: #ececec;
+}
+
+/* Chunked list (~3 rows); more rows load on scroll — see `MovieSearchCombobox.jsx` */
+.movies-search-dropdown.movies-search-dropdown--paginated {
+  max-height: min(248px, 42vh);
+}
+
+.movies-search-scroll-hint {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.movies-search-scroll-hint-inner {
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.04);
+  color: #555;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .movies-search-option {
@@ -1784,7 +1865,18 @@ img.doneLoading {
 
 .movies-upcoming-outer {
   width: 100%;
-  overflow: hidden;
+  /*
+   * Previously `overflow: hidden` clipped the Swiper (slides / pagination / gutters) —
+   * especially noticeable under the Movies hero search row; keep bleed visible horizontally.
+   */
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+@media (min-width: 768px) {
+  .movies-upcoming-outer {
+    overflow: visible;
+  }
 }
 
 .movies-upcoming-row {
@@ -1808,14 +1900,17 @@ img.doneLoading {
   padding-bottom: 8px;
   background: transparent !important;
   width: 100%;
+  overflow: visible;
 }
 
 .movies-upcoming-swiper-inner .swiper-wrapper {
   background: transparent;
+  align-items: flex-start;
 }
 
 .movies-upcoming-swiper-inner .swiper-slide {
   background: transparent;
+  height: auto;
 }
 
 .movies-upcoming-slide {
@@ -1960,59 +2055,131 @@ img.doneLoading {
 /* "VIEW ALL" button — port of frontend/sass/main.scss `.btn-view-more` / `.btn-1`.
    An SVG `<rect>` draws the 2px orange outline; on hover the rect's
    stroke-dasharray is animated for the chase effect. */
+/* On viewports ≤ xs max (767px), centred — matches legacy `_mobile.scss` + `$screen-xs-max` */
+@media (max-width: 767.98px) {
+  .btn-view-more .mobile-center,
+  .btn-view-all .mobile-center,
+  .btn-view-enter .mobile-center {
+    float: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center;
+  }
+}
+
 .btn-view-more {
-  .btn-1 {
-    background: transparent;
-    border: none;
-    font-weight: 100;
+  overflow: auto; /* clearfix — contains floated buttons where used */
+}
+
+/* VIEW ALL — same as frontend/sass/main.scss `.btn-view-more` + `.btn-1` + `.btn`
+   (no Bootstrap `.btn`; Hammersmith comes from `.font-hammersmith` on the element). */
+.dh-view-all-btn {
+  display: block;
+  position: relative;
+  background: transparent; /* `.btn-1` */
+  border: none;
+  border-radius: 0;
+  font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif;
+  font-size: 16px; /* `.btn` */
+  font-weight: 400; /* `.btn` wins over `.btn-1` font-weight: 100 in legacy source order */
+  line-height: 1.42857143;
+  text-decoration: none !important;
+  text-transform: uppercase;
+  text-align: center;
+  color: $brand-primary !important;
+  cursor: pointer;
+  width: 100%;
+  max-width: 160px;
+  padding: 10px 0 8px;
+  box-sizing: border-box;
+
+  &:is(button) {
+    -webkit-appearance: none;
+    appearance: none;
     cursor: pointer;
-    padding: 0;
-    &:hover {
-      background: rgba(225, 51, 45, 0);
-      font-weight: 900;
-      letter-spacing: 1px;
-      rect {
-        stroke-width: 5;
-        stroke-dasharray: 15, 310;
-        stroke-dashoffset: 55;
-        transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
-      }
-    }
-    svg {
-      height: 40px;
-      left: 0;
-      position: absolute;
-      top: 0;
-      width: 100%;
-      pointer-events: none;
-    }
+    font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif;
+    font-size: 16px;
+    font-weight: 400;
+  }
+
+  svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 40px;
+    overflow: visible;
+    pointer-events: none; /* CSS fallback — inline style on element is the hard guard */
+  }
+
+  rect {
+    fill: none;
+    stroke: $brand-primary;
+    stroke-width: 2;
+    stroke-dasharray: 422, 0;
+    transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  .dh-view-all-label {
+    position: relative;
+    z-index: 1;
+  }
+
+  &:hover {
+    background: rgba(225, 51, 45, 0);
+    color: $brand-primary !important;
+    font-weight: 900;
+    letter-spacing: 1px;
+    text-decoration: none !important;
+
     rect {
-      fill: none;
-      stroke: $brand-primary;
-      stroke-width: 2;
-      stroke-dasharray: 422, 0;
+      stroke-width: 5;
+      stroke-dasharray: 15, 310;
+      stroke-dashoffset: 55;
       transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
     }
   }
-  .btn {
-    color: $brand-primary;
-    cursor: pointer;
-    display: block;
-    font-size: 16px;
-    font-weight: 400;
-    position: relative;
-    text-decoration: none;
-    text-transform: uppercase;
-    vertical-align: middle;
-    width: 100%;
-    max-width: 160px;
-    padding: 10px 0 8px;
-    margin: 0 auto;
+}
+
+/* `.btn-view-all` — main.scss: grey outline + inline-block `.btn` */
+.btn-view-all .dh-view-all-btn {
+  display: inline-block;
+  width: auto;
+  max-width: 160px;
+  color: $grey !important;
+
+  rect {
+    stroke: $grey;
+  }
+
+  &:hover {
+    color: $grey !important;
+
+    rect {
+      stroke: $grey;
+    }
+  }
+}
+
+/* Legacy home videos: `.btn-view-all` + `.color-primary` on the same anchor → orange */
+.btn-view-all .dh-view-all-btn.color-primary {
+  color: $brand-primary !important;
+
+  rect {
+    stroke: $brand-primary;
+  }
+
+  &:hover {
+    color: $brand-primary !important;
+
+    rect {
+      stroke: $brand-primary;
+    }
   }
 }
 
 .display-inline {
-  display: inline-block;
+  display: inline-block !important;
 }
 
 .dharma-top-pad {
@@ -2236,7 +2403,10 @@ img.doneLoading {
   padding-top: var(--dh-header-offset);
 }
 
-/* Aspect + max height = stable CLS, readable title on short laptops (1440×700 etc.) */
+/* Hero band (`privacy.jpg` **1920×947**) — Privacy + Disclaimer.
+ * Reference widths: Desktop ~1440 / ~1536, iPad Air ~820, tablets ~765, phones ~412.
+ * Intrinsic height @ W ≈ `W × 947÷1920`; capped by viewport so short laptops (~1440×700)
+ * and tall phones/tablets stay usable (`dvh` includes mobile browser chrome). */
 .privacy-page .privacy-page__banner.banner.dh-relative,
 .disclaimer-page .disclaimer-page__banner.banner.dh-relative {
   position: relative;
@@ -2244,8 +2414,35 @@ img.doneLoading {
   width: 100%;
   overflow: hidden;
   aspect-ratio: 1920 / 947;
-  max-height: min(88vh, 720px);
   background-color: #1a1512;
+  max-height: min(
+    calc((100vw * 947) / 1920),
+    calc(94dvh - var(--dh-header-offset))
+  );
+}
+
+/* Short wide desktop (~1440×700, 1536×700-class) — keep fold + title visible */
+@media (min-width: 1200px) and (max-height: 760px) {
+  .privacy-page .privacy-page__banner.banner.dh-relative,
+  .disclaimer-page .disclaimer-page__banner.banner.dh-relative {
+    max-height: min(
+      calc((100vw * 947) / 1920),
+      calc(52dvh - (var(--dh-header-offset) * 0.35)),
+      500px
+    );
+  }
+}
+
+/* Roomier short desktop (~1440×780) — allow a bit more band than ultrashort laptops */
+@media (min-width: 1200px) and (min-height: 761px) and (max-height: 860px) {
+  .privacy-page .privacy-page__banner.banner.dh-relative,
+  .disclaimer-page .disclaimer-page__banner.banner.dh-relative {
+    max-height: min(
+      calc((100vw * 947) / 1920),
+      calc(62dvh - (var(--dh-header-offset) * 0.4)),
+      620px
+    );
+  }
 }
 
 .privacy-page .privacy-page__hero-img,
@@ -2254,20 +2451,15 @@ img.doneLoading {
   object-position: center center;
 }
 
-/* Short viewport height — keep hero shallow so fold content appears sooner */
-@media (min-width: 1024px) and (max-height: 780px) {
+/* Legacy extra-tight laptops — complements block above without double-clamping Disclaimer */
+@media (min-width: 1024px) and (max-width: 1199.98px) and (max-height: 780px) {
   .privacy-page .privacy-page__banner.banner.dh-relative,
   .disclaimer-page .disclaimer-page__banner.banner.dh-relative {
-    max-height: min(52vh, 460px);
-    aspect-ratio: auto;
-    min-height: 200px;
-  }
-}
-
-@media (min-width: 1440px) and (max-height: 760px) {
-  .privacy-page .privacy-page__banner.banner.dh-relative,
-  .disclaimer-page .disclaimer-page__banner.banner.dh-relative {
-    max-height: min(46vh, 420px);
+    max-height: min(
+      calc((100vw * 947) / 1920),
+      calc(50dvh),
+      440px
+    );
   }
 }
 
@@ -2462,14 +2654,14 @@ img.doneLoading {
 
 @media (max-width: 767.98px) {
   /*
-   * Navbar + `.head-curve` are fixed (high z-index) and overlap the top of this hero.
-   * True vertical center lands the first line inside that orange scallop (#2 screenshot).
-   * Bias downward so the headline sits entirely on the photo like legacy mobile (#1).
+   * Navbar / orange curve overlaps top of hero on phones & small tabs (~412→~820 wide).
+   * Bias headline slightly downward for **both** Privacy + Disclaimer vs pure 50%/50%.
    */
   .privacy-page .banner-title.middle,
   .disclaimer-page .banner-title.middle {
     width: 100%;
-    top: 57%;
+    top: 56%;
+    transform: translate(-50%, -50%);
   }
 
   .privacy-page .privacy-page__data-abt.data-abt p {
@@ -2491,30 +2683,34 @@ img.doneLoading {
   }
 }
 
-/* Short usable height — large phones small landscape, cramped tablet */
+/* Short landscape / cramped height — shrink band + tighten title (privacy + disclaimer). */
 @media (max-width: 900px) and (max-height: 520px) {
   .privacy-page .privacy-page__banner.banner.dh-relative,
   .disclaimer-page .disclaimer-page__banner.banner.dh-relative {
-    max-height: min(72vh, 320px);
+    max-height: min(72dvh, 300px);
   }
 
   .privacy-page .banner-title .f120,
   .disclaimer-page .banner-title .f120 {
-    font-size: clamp(1.875rem, 7vh + 0.75rem, 3.25rem) !important;
+    font-size: clamp(1.875rem, 8dvh + 0.65rem, 3.1rem) !important;
+    line-height: 1.05;
   }
 
   .privacy-page .banner-title.middle,
   .disclaimer-page .banner-title.middle {
-    top: 62%;
+    top: 58%;
+    transform: translate(-50%, -50%);
   }
 }
 
 @media (min-width: 1024px) and (max-height: 760px) {
   .privacy-page .banner-title .f120,
   .disclaimer-page .banner-title .f120 {
-    font-size: clamp(3rem, 8vh + 1.5rem, 5.75rem);
+    font-size: clamp(3rem, 8dvh + 1.25rem, 5.65rem);
   }
 }
+
+/* Typography + headline scales above target ~412-wide through ~1536-wide viewports. */
 
 /* ----------------------------------------------------------------------- */
 /* Movie inside page — parity with DharmaNodeRun frontend/sass/main.scss   */
@@ -2603,7 +2799,7 @@ img.doneLoading {
 @media (min-width: 768px) {
   .news-events-detail .news-search {
     padding-top: 150px;
-    max-width: 690px;
+    max-width: 700px;
   }
 }
 
@@ -2720,7 +2916,7 @@ img.doneLoading {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
     margin-top: 6px;
     margin-bottom: 14px;
@@ -2874,13 +3070,51 @@ img.doneLoading {
 .news-events-detail .mt15.mobile-text-center {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
 }
 
 .news-events-detail .mt15.mobile-text-center .date-select,
 .news-events-detail .mt15.mobile-text-center .btn-go {
   margin-left: 0 !important;
+}
+
+/* Same Karla stack as `/news-events` listing hero — keeps search + Month/Year + Go aligned. */
+.news-events-detail .news-search {
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+/* Underline dropdowns align with listing: same left edge / width as `.search-movie`, not floated center. */
+.news-events-detail .news-search .mt15.mobile-text-center {
+  justify-content: flex-start;
+  align-items: baseline;
+  width: 100%;
+  gap: 10px;
+}
+
+/* Angular `news-detail.html` clear control (legacy `.search-img2`) */
+.news-events-detail .search-movie .search-img2 img {
+  width: 25px;
+  height: auto;
+  display: block;
+}
+
+.news-events-detail .search-movie button.search-img2 {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+  z-index: 99;
+}
+
+/* Nested listing grid on detail (avoid double orange band — only reuse `.news-events-page` card styles). */
+.news-events-detail .news-events-detail__listing-skin.news-events-page {
+  background: transparent !important;
+  min-height: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 /* News list page (`/news-events`) — keep parity with legacy Angular styling. */
@@ -2967,8 +3201,10 @@ img.doneLoading {
   }
 }
 
+/* Legacy `main.scss`: body / filters use Karla; only `.custom-dropdown .dropdown-menu li a` uses Hammersmith. */
 .news-events-page .news-search {
   padding-top: 150px;
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
 }
 
 .news-events-page .search-movie .search-img {
@@ -2986,6 +3222,7 @@ img.doneLoading {
   padding: 0 12px 0 45px;
   color: #fff;
   font-size: 16px;
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
 }
 
 .news-events-page .search-movie .search-date::placeholder {
@@ -2994,6 +3231,108 @@ img.doneLoading {
 
 .news-events-page .search-movie .search-date:focus {
   outline: 0;
+}
+
+/* Legacy `news-events.html`: `.dropdown.custom-dropdown` + `ul.dropdown-menu` (not native `<select>`) */
+.news-events-page .news-search .custom-dropdown,
+.news-events-detail .news-search .custom-dropdown {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+
+  .dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+    background: transparent;
+    color: #fff;
+    border: none;
+    border-bottom: 1px solid #fff;
+    padding: 0 0 5px;
+    font-size: 20px;
+    line-height: 1.42857143;
+    font-weight: 400;
+    cursor: pointer;
+    font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
+    min-width: 5.5rem;
+    text-align: left;
+    box-shadow: none;
+
+    /* BS5 injects its own caret on `.dropdown-toggle::after`; legacy uses `select-arrow.png` only */
+    &::after,
+    &::before {
+      display: none !important;
+      content: none !important;
+    }
+
+    &:focus {
+      outline: 0;
+      box-shadow: none;
+      border-bottom-color: #fff;
+      color: #fff;
+    }
+
+    img {
+      padding-left: 15px;
+      display: block;
+      flex-shrink: 0;
+    }
+  }
+
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1060;
+    min-width: 115px;
+    max-height: min(40vh, 260px);
+    margin: 4px 0 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    -webkit-overflow-scrolling: touch;
+
+    &.show {
+      display: block;
+    }
+
+    li {
+      margin: 0;
+      padding: 0;
+
+      .news-events-dropdown__item {
+        display: block;
+        width: 100%;
+        padding: 10px 20px;
+        margin: 0;
+        border: none;
+        background: none;
+        color: $black;
+        font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif;
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+        box-sizing: border-box;
+        line-height: 1.42857143;
+
+        &:hover,
+        &:focus {
+          text-decoration: none;
+          color: #fff !important;
+          background-color: #ea611a;
+          outline: 0;
+        }
+      }
+    }
+  }
 }
 
 .news-events-page .news-events-filters__select {
@@ -3022,15 +3361,36 @@ img.doneLoading {
   background: transparent;
   border: none;
   color: #fff;
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
   font-size: 22px;
+  font-weight: 400;
+  line-height: 1.42857143;
   padding: 0;
-  vertical-align: baseline;
+  vertical-align: middle;
+  vertical-align: -webkit-baseline-middle;
 }
 
 .news-events-page .btn-go button:focus {
   outline: 0;
 }
 
+/* Match legacy `<button class="btn">Go</button>` without Bootstrap chrome */
+.news-events-page .btn-go button.btn {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  color: #fff !important;
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif !important;
+  padding: 0;
+  vertical-align: baseline;
+
+  &:hover,
+  &:focus-visible {
+    color: #fff !important;
+    background-color: transparent !important;
+  }
+}
 .news-events-page .movie-news-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3191,11 +3551,17 @@ img.doneLoading {
     width: 100%;
   }
 
+  .news-events-detail .news-search .mt15.mobile-text-center {
+    justify-content: center;
+    align-items: baseline;
+    width: 100%;
+  }
+
   .news-events-detail .mt15.mobile-text-center {
     text-align: center;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
     gap: 10px;
     margin-top: 10px;
@@ -3213,7 +3579,7 @@ img.doneLoading {
     text-align: center;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
     gap: 10px;
     margin-bottom: 14px;
@@ -3238,6 +3604,12 @@ img.doneLoading {
     background-position: right 4px center;
   }
 
+  /* Legacy `_mobile.scss` does not shrink Month/Year — keep `main.scss` 20px toggles */
+  .news-events-page .news-search .custom-dropdown .dropdown-toggle,
+  .news-events-detail .news-search .custom-dropdown .dropdown-toggle {
+    font-size: 20px;
+  }
+
   .news-events-page .news-title h4 {
     font-size: 20px;
     line-height: 1.1;
@@ -3254,7 +3626,7 @@ img.doneLoading {
     text-align: center;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
     gap: 10px;
     margin-bottom: 16px;
@@ -3275,7 +3647,7 @@ img.doneLoading {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
     margin-bottom: 16px;
   }
@@ -3293,27 +3665,28 @@ img.doneLoading {
   .news-events-page .mobile-text-center,
   .news-events-detail .mt15.mobile-text-center {
     justify-content: center;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
     margin-bottom: 18px;
   }
 }
 
 
-/* Legacy `.search-date` — dark orange field (not underline-only). */
+/* Legacy `.search-date` — dark orange field; match `/news-events` sizing (full-width band below sun). */
 .news-events-detail .search-movie .search-date {
-  background: #da4f09;
-  border: 1px solid #da4f09;
+  background: #da4f0a;
+  border: 1px solid #da4f0a;
   width: 100%;
   height: 45px;
   padding: 0 12px 0 45px;
   color: $white;
   font-size: 16px;
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
   -webkit-appearance: textfield;
-  box-sizing: content-box;
+  box-sizing: border-box;
 }
 
-/* Prevent overflow from legacy content-box search sizing. */
+/* Prevent overflow from legacy `.search-date` sizing. */
 .news-events-detail .search-movie,
 .news-events-detail .search-movie .search-date {
   width: 100%;
@@ -3383,16 +3756,19 @@ img.doneLoading {
   background-color: $white;
 }
 
-/* Legacy `.btn-go` */
+/* Legacy `.btn-go` — Karla / 22px / baseline alignment (`main.scss` + Bootstrap body) */
 .news-events-detail .btn-go button {
   background: transparent;
   border: none;
   color: $white;
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
   font-size: 22px;
+  font-weight: 400;
+  line-height: 1.42857143;
   padding: 0;
-  vertical-align: baseline;
+  vertical-align: middle;
+  vertical-align: -webkit-baseline-middle;
   cursor: pointer;
-  font-family: inherit;
 }
 
 .news-events-detail .btn-go button:hover {
@@ -3404,6 +3780,28 @@ img.doneLoading {
   color: $white;
   outline: 0;
   box-shadow: none;
+}
+
+/* Match listing: `<button class="btn">Go</button>` without Bootstrap chrome */
+.news-events-detail .btn-go button.btn {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none !important;
+  color: #fff !important;
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif !important;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  padding: 0;
+  vertical-align: middle;
+  vertical-align: -webkit-baseline-middle;
+
+  &:hover,
+  &:focus-visible {
+    color: #fff !important;
+    background-color: transparent !important;
+  }
 }
 
 /* News detail typography — larger parity with live Dharma site (hero titles read ~32–40px). */
@@ -4583,10 +4981,25 @@ img.doneLoading {
       margin: 0;
     }
   }
+  .awards-name {
+    font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
+  }
   .awards-name ul li {
     font-size: 16px;
     line-height: 200%;
     list-style: none;
+    font-weight: 400;
+    text-transform: none;
+    span {
+      font-weight: inherit;
+      text-transform: inherit;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .movie-award .awards-name ul li {
+    font-size: 14px;
   }
 }
 
@@ -4730,6 +5143,13 @@ img.doneLoading {
   .dharma-top-bg {
     background-attachment: scroll;
     background-position: center top;
+    /*
+     * Under fixed navbar: net content inset was only 100px while header + scallop are ~118px+,
+     * so hero titles (Videos, etc.) sat under/overlapped the bar. Bump the band + safe-area.
+     */
+    padding-top: calc(
+      var(--dh-header-offset) + env(safe-area-inset-top, 0px) + clamp(132px, 28vw, 152px)
+    );
   }
 }
 
@@ -4839,21 +5259,6 @@ img.doneLoading {
 .videos-page-legacy .videos-hero-player {
   margin-bottom: 0;
   overflow: visible;
-  /*
-   * Prev/next: match legacy FlexSlider *visual* weight (thin grey chevrons), not full 70×70 asset bounds.
-   * `left.png` / `right.png` are drawn smaller here; padding keeps a comfortable tap target.
-   */
-  --hero-nav-icon: 44px;
-  --hero-nav-gap: 16px;
-  --hero-nav-pad: 14px;
-}
-
-@media (max-width: 575px) {
-  .videos-page-legacy .videos-hero-player {
-    --hero-nav-icon: 40px;
-    --hero-nav-gap: 10px;
-    --hero-nav-pad: 12px;
-  }
 }
 
 /* Same horizontal band as `.search-movie.search-movie-mar` (do not set max-width: none here). */
@@ -4868,7 +5273,7 @@ img.doneLoading {
   position: relative;
   width: 100%;
   overflow: visible;
-  /* Slide is full width of band (same as search). Arrows sit outside the image via absolute + translate. */
+  /* Slide is full width of band (same as search). Arrows sit outside like legacy FlexSlider (-76/-73). */
 }
 
 /* Hero swiper + slide link: no orange frame (search-style border must not bleed here) */
@@ -4909,7 +5314,7 @@ img.doneLoading {
    * Declare 16:9 on the frame so Lighthouse / browser can pre-allocate the
    * exact height before the hero thumbnail loads → no CLS from hero slides.
    */
-  aspect-ratio: 16 / 9;
+  // aspect-ratio: 16 / 9;
   height: auto;
   min-height: 0;
   line-height: 0;
@@ -4967,59 +5372,65 @@ img.doneLoading {
 }
 
 /*
- * Hero nav — full-width slide (search ke barabar). Arrows FlexSlider jaisa image ke bahar.
+ * Hero prev/next — parity with legacy:
+ * `.slider-nav .flex-direction-nav a.flex-prev:before` / `flex-next:before` (+ `.tv-all-slider` inherits via `@extend`),
+ * same 70×70 `left.png` / `right.png`, `no-repeat center` (FlexSlider markup → our `<button>` + background).
  */
 .videos-page-legacy .videos-hero-outside-arrow {
   position: absolute;
-  top: 40%;
+  top: 50%;
   z-index: 6;
   box-sizing: border-box;
-  width: calc(var(--hero-nav-icon) + 2 * var(--hero-nav-pad));
-  height: calc(var(--hero-nav-icon) + 2 * var(--hero-nav-pad));
-  min-width: 44px;
-  min-height: 44px;
+  width: 70px;
+  height: 70px;
   margin: 0;
-  padding: var(--hero-nav-pad);
+  padding: 0;
   border: none;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: var(--hero-nav-icon) var(--hero-nav-icon);
   cursor: pointer;
   opacity: 1;
+  transform: translateY(-50%);
 }
+
+.videos-page-legacy .videos-hero-outside-arrow--prev {
+  left: -76px;
+  right: auto;
+  background: url("/frontend/img/left.png") no-repeat center;
+  background-size: 25px 50px;
+}
+
+.videos-page-legacy .videos-hero-outside-arrow--next {
+  right: -73px;
+  left: auto;
+  background: url("/frontend/img/right.png") no-repeat center;
+  background-size: 25px 50px;
+}
+
 .videos-page-legacy .videos-hero-outside-arrow:hover {
   opacity: 1;
 }
+
 .videos-page-legacy .videos-hero-outside-arrow:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.9);
   outline-offset: 2px;
 }
 
-.videos-page-legacy .videos-hero-outside-arrow--prev {
-  left: 0;
-  transform: translate(calc(-100% - var(--hero-nav-gap)), -50%);
-  background-image: url("/frontend/img/left.png");
-}
-.videos-page-legacy .videos-hero-outside-arrow--next {
-  right: 0;
-  left: auto;
-  transform: translate(calc(100% + var(--hero-nav-gap)), -50%);
-  background-image: url("/frontend/img/right.png");
-}
-
-@media (max-width: 991px) {
+@media (max-width: 1200px) {
   .videos-page-legacy .videos-hero-outside-arrow--prev {
-    left: var(--hero-nav-gap);
-    transform: translateY(-50%);
+    left: -30px;
   }
   .videos-page-legacy .videos-hero-outside-arrow--next {
-    right: var(--hero-nav-gap);
-    transform: translateY(-50%);
+    right: -30px;
   }
 }
 
 @media (max-width: 767px) {
+  .videos-page-legacy .videos-hero-outside-arrow--prev {
+    left: 0;
+  }
+  .videos-page-legacy .videos-hero-outside-arrow--next {
+    right: 0;
+  }
+
   .videos-page-legacy .videos-hero-player.no-ar .videos-hero-outside-arrow {
     display: none;
   }
@@ -5185,6 +5596,16 @@ img.doneLoading {
   line-height: 1.08;
 }
 
+.videos-page-legacy .dh-video-popup-trigger {
+  cursor: pointer;
+  color: inherit;
+  &:focus-visible {
+    outline: 2px solid rgba($brand-primary, 0.95);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+}
+
 .videos-page-legacy .videos-movie-section__title h1.line45,
 .videos-page-legacy .title h1.line45 {
   line-height: 1.08;
@@ -5273,26 +5694,62 @@ img.doneLoading {
   }
 }
 
-.videos-tv-swiper-nav .swiper-button-prev,
-.videos-tv-swiper-nav .swiper-button-next {
+/* Dharma TV rows: same asset pattern as `.slider-nav` / `.tv-all-slider` `a.flex-prev:before` (70×70 left/right) + `.tv-ain-tp` vertical (70%). */
+.videos-page-legacy .videos-tv-swiper-nav {
+  overflow: visible;
+  --swiper-navigation-size: 70px;
+  --swiper-navigation-top-offset: 70%;
+}
+
+.videos-page-legacy .videos-tv-swiper-nav .swiper.videos-tv-swiper {
+  overflow: visible;
+}
+
+/* Don’t vertically stretch slides to the tallest row — avoids empty band + stray clipping. */
+.videos-page-legacy .videos-tv-swiper .swiper-wrapper {
+  align-items: flex-start;
+}
+
+.videos-page-legacy .videos-tv-swiper .swiper-slide {
+  height: auto;
+}
+
+.videos-page-legacy .videos-tv-swiper-nav .swiper-button-prev,
+.videos-page-legacy .videos-tv-swiper-nav .swiper-button-next {
   width: 70px;
-  height: 60px;
+  height: 70px;
   color: transparent;
   &::after {
     display: none;
   }
 }
 
-.videos-tv-swiper-nav .swiper-button-prev {
-  left: 4px;
-  background: url("/frontend/img/Grey-Left-Arrow.png") no-repeat center;
-  background-size: contain;
+.videos-page-legacy .videos-tv-swiper-nav .swiper-button-prev {
+  left: -76px;
+  background: url("/frontend/img/left.png") no-repeat center;
+  background-size: 70px 70px;
 }
 
-.videos-tv-swiper-nav .swiper-button-next {
-  right: 4px;
-  background: url("/frontend/img/Grey-Right-Arrow.png") no-repeat center;
-  background-size: contain;
+.videos-page-legacy .videos-tv-swiper-nav .swiper-button-next {
+  right: -73px;
+  background: url("/frontend/img/right.png") no-repeat center;
+  background-size: 70px 70px;
+}
+
+@media (max-width: 1200px) {
+  .videos-page-legacy .videos-tv-swiper-nav .swiper-button-prev {
+    left: -30px;
+  }
+  .videos-page-legacy .videos-tv-swiper-nav .swiper-button-next {
+    right: -30px;
+  }
+}
+
+@media (max-width: 767px) {
+  .videos-page-legacy .videos-tv-swiper-nav .swiper-button-prev,
+  .videos-page-legacy .videos-tv-swiper-nav .swiper-button-next {
+    display: none;
+  }
 }
 
 /* Movie with no videos — visible but clearly non-interactive */
@@ -5432,11 +5889,36 @@ img.doneLoading {
   overflow-x: hidden;
 }
 
+/* Hero slider wrap: full-width swiper, arrows float over the image at left/right edges */
+.dh-hero-slider-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.dh-hero-slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  &.dh-hero-slider-arrow--prev { left: 12px; }
+  &.dh-hero-slider-arrow--next { right: 12px; }
+}
+
+@media (max-width: 575px) {
+  .dh-hero-slider-arrow {
+    &.dh-hero-slider-arrow--prev { left: 6px; }
+    &.dh-hero-slider-arrow--next { right: 6px; }
+  }
+  .movies-upcoming-arrow.dh-hero-slider-arrow {
+    width: 36px;
+    height: 36px;
+    .movies-upcoming-arrow-icon { font-size: 13px; }
+  }
+}
+
 .dharma-home-hero-swiper {
   width: 100%;
-  /* Reference layout: round orange nav + white chevrons */
-  --swiper-navigation-size: 22px;
-  --swiper-theme-color: #fff;
+  overflow: hidden;
 
   .swiper-slide {
     line-height: 0;
@@ -5452,35 +5934,7 @@ img.doneLoading {
     vertical-align: top;
   }
 
-  .swiper-button-next,
-  .swiper-button-prev {
-    width: 52px;
-    height: 52px;
-    margin-top: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    background: $brand-primary;
-    border-radius: 50%;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
-    opacity: 1 !important;
-    &::after {
-      font-size: var(--swiper-navigation-size);
-      font-weight: 700;
-    }
-    &:hover {
-      background: $dark-primary;
-      opacity: 1 !important;
-    }
-  }
-
-  .swiper-button-prev {
-    left: clamp(12px, 3.5vw, 36px);
-  }
-
-  .swiper-button-next {
-    right: clamp(12px, 3.5vw, 36px);
-  }
+  /* No built-in Swiper navigation — arrows are custom buttons outside the swiper */
 
   .swiper-pagination {
     bottom: 60px !important;
@@ -5498,30 +5952,9 @@ img.doneLoading {
   }
 }
 
-@media (max-width: 767px) {
-  .dharma-home-hero-swiper {
-    .swiper-button-next,
-    .swiper-button-prev {
-      width: 44px;
-      height: 44px;
-      --swiper-navigation-size: 18px;
-      left: clamp(8px, 2vw, 20px);
-      right: clamp(8px, 2vw, 20px);
-    }
-
-    .swiper-button-prev {
-      right: auto;
-    }
-
-    .swiper-button-next {
-      left: auto;
-    }
-  }
-}
-
-/* Tabs under hero — split pill: active = orange gradient + white, inactive = charcoal + orange text */
+/* Tabs under hero — matching legacy: bottom: -20px, 25px font, 9px 70px padding */
 .dharma-home .home-slider .movie-tab.second {
-  bottom: 10px;
+  bottom: -20px;
 }
 
 .dharma-home .home-hero .movie-tab .up-tab {
@@ -5531,12 +5964,11 @@ img.doneLoading {
   gap: 0;
   margin: 0;
   padding: 0;
-  border-radius: 999px;
+  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
 }
 
-/* Remove legacy tight overlap between the two segments */
 .dharma-home .home-hero .movie-tab .up-tab li.mr2 {
   margin-right: 0 !important;
 }
@@ -5553,34 +5985,47 @@ img.doneLoading {
   cursor: pointer;
 }
 
-.dharma-home .home-hero .movie-tab .up-tab li button h1 {
+/* Desktop (md+): 25 px font, 9 px × 70 px padding — exact legacy match */
+.dharma-home .home-hero .movie-tab .up-tab li button span.h1 {
+  display: block;
   margin: 0;
-  font-size: clamp(0.8rem, 1.75vw, 1.15rem);
-  padding: 0.55rem clamp(1.35rem, 6vw, 4.25rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  line-height: 1.2;
+  font-size: clamp(1rem, 1.95vw, 1.5625rem); /* 25 px at ≥1280 px */
+  padding: 0.5625rem clamp(2rem, 5.5vw, 4.375rem); /* 9 px × 70 px at ≥1280 px */
   font-family: "Hammersmith One", Georgia, "Times New Roman", serif;
-  border-radius: 0;
-  background: #1a1a1a;
-  color: $brand-primary !important;
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  font-weight: 400;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: #000;
+  color: $brand-primary;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.dharma-home .home-hero .movie-tab .up-tab li:first-child button h1 {
-  border-radius: 999px 0 0 999px;
+/* Mobile (< md): smaller pill */
+.dharma-home .home-hero .movie-tab .up-tab li button span.h6 {
+  display: block;
+  margin: 0;
+  font-size: clamp(0.75rem, 3.5vw, 1rem);
+  padding: 0.45rem clamp(1.2rem, 6vw, 2.5rem);
+  font-family: "Hammersmith One", Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  line-height: 1.2;
+  text-transform: uppercase;
+  background: #000;
+  color: $brand-primary;
 }
 
-.dharma-home .home-hero .movie-tab .up-tab li:last-child button h1 {
-  border-radius: 0 999px 999px 0;
+.dharma-home .home-hero .movie-tab .up-tab li:first-child button span {
+  border-radius: 8px 0 0 8px;
 }
 
-.dharma-home .home-hero .movie-tab .up-tab li.active-tab button h1 {
-  background: linear-gradient(165deg, #ff9a56 0%, $brand-primary 42%, $dark-primary 100%);
-  color: $white !important;
+.dharma-home .home-hero .movie-tab .up-tab li:last-child button span {
+  border-radius: 0 8px 8px 0;
+}
+
+.dharma-home .home-hero .movie-tab .up-tab li.active-tab button span {
+  background: url("/frontend/img/bg-grediant.jpg") no-repeat center / 100% 100%;
+  color: #fff;
 }
 
 /* Non–home pages: keep existing Hammersmith + gradient image treatment */
@@ -5600,13 +6045,38 @@ img.doneLoading {
 }
 
 .dharma-home-tv {
-  margin-top: calc(-1 * var(--dh-header-offset));
-  padding-top: calc(var(--dh-header-offset) + 48px);
-  padding-bottom: 72px;
+  padding-top: 100px;
+  /* No padding-bottom — subscribe card is the last child and controls its own spacing */
+  padding-bottom: 0;
+}
+
+@media (max-width: 991px) {
+  .dharma-home-tv {
+    padding-top: 70px;
+  }
+}
+
+@media (max-width: 575px) {
+  .dharma-home-tv {
+    padding-top: 50px;
+  }
+}
+
+/* Matches legacy .text-shadow — dark vignette on featured video */
+.text-shadow {
+  box-shadow: -30px -30px 70px -20px #000;
+  position: relative;
+  top: 2px;
+  z-index: 1;
+}
+
+/* Matches legacy .f90 */
+.f90 {
+  font-size: 90px;
 }
 
 .home-videos-title {
-  font-size: clamp(2.25rem, 7vw, 4.75rem);
+  font-size: clamp(2.25rem, 7vw, 5.625rem); /* max 90px — matches legacy f90 */
   line-height: 0.95;
 }
 
@@ -5630,22 +6100,150 @@ img.doneLoading {
   z-index: 2;
 }
 
+/* Subscribe card — exact legacy values: margin: -45px 80px 0; padding: 0 50px
+   (card is now inside dark section so we use positive top margin for spacing) */
 .dharma-home-subscribe.subscribe {
   background: #fff;
-  margin: -44px clamp(10px, 4vw, 72px) 0;
-  padding: 0 clamp(14px, 3vw, 48px);
+  margin: 50px 80px 0;     /* legacy side: 80px; top: spacing from strip */
+  padding: 0 50px;          /* exact legacy padding */
+  position: relative;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 991px) {
   .dharma-home-subscribe.subscribe {
-    margin: -32px 10px 0;
+    margin: 40px 30px 0;
+    padding: 0 24px;
   }
 }
 
+@media (max-width: 575px) {
+  .dharma-home-subscribe.subscribe {
+    margin: 32px 10px 0;
+    padding: 0 14px;
+    text-align: center;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Subscribe success modal — matches legacy subscribe.html popup       */
+/* ------------------------------------------------------------------ */
+.dh-subscribe-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.dh-subscribe-modal {
+  position: relative;
+  background: #fff;
+  border: 2px solid $brand-primary;
+  border-radius: 20px;
+  padding: 35px 25px;
+  max-width: 540px;
+  width: 100%;
+  text-align: center;
+
+  .h3-main h3 {
+    font-size: 20px;
+    line-height: 1.4;
+  }
+
+  /* "CONTINUE TO SITE" — reuse dh-view-all-btn but centered */
+  .dh-view-all-btn {
+    max-width: 200px;
+    padding: 10px 20px 8px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Close button — orange circle top-right, matches legacy .closure */
+.dh-subscribe-modal .closure {
+  position: absolute;
+  background-color: $brand-primary;
+  top: -5px;
+  right: -5px;
+  height: 23px;
+  width: 23px;
+  text-align: center;
+  border-radius: 50%;
+  color: #fff;
+  line-height: 23px;
+  cursor: pointer;
+  z-index: 99;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+
+  &:hover {
+    background-color: darken($brand-primary, 10%);
+  }
+}
+
+@media (max-width: 575px) {
+  .dh-subscribe-modal {
+    padding: 28px 16px;
+
+    .h3-main h3 {
+      font-size: 16px;
+    }
+  }
+}
+
+/* Subscribe image — matches legacy .up-img exactly */
+.dharma-home-subscribe .up-img {
+  margin-top: -25px;        /* image rises above white card into dark section */
+  vertical-align: top;
+  width: 135px;             /* exact legacy width */
+  margin-bottom: -1px;
+  line-height: 0;
+}
+
+/* h3 text — matches legacy .sub-text h3 */
+.dharma-home-subscribe .sub-text h3 {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+/* Input — matches legacy .sub-input input */
+.dharma-home-subscribe .sub-input input,
 .home-subscribe-form .form-control {
   background: #f1f1f1;
   border-color: #f1f1f1;
   height: 50px;
+  border-radius: 0;
+}
+
+/* GO button — matches legacy .go-btn button: 30px font, transparent bg */
+.dharma-home-subscribe .go-btn button {
+  font-size: 30px;
+  border: none;
+  background: transparent;
+  color: $brand-primary;
+  line-height: 50px;  /* vertically center text to match input height */
+  padding: 0 12px;
+
+  &:hover,
+  &:focus {
+    border: none;
+    outline: 0;
+    background: transparent;
+    color: $brand-primary;
+  }
+}
+
+@media (max-width: 575px) {
+  .dharma-home-subscribe .up-img {
+    width: 100px;
+  }
+  .dharma-home-subscribe .sub-text h3 {
+    font-size: 15px;
+  }
 }
 
 .dhrarma-world .container.dh-absulate.middle {
@@ -5657,6 +6255,7 @@ img.doneLoading {
   width: 100%;
   max-width: 1140px;
   pointer-events: none;
+  z-index: 2;
 
   a,
   button,
@@ -5669,47 +6268,400 @@ img.doneLoading {
 .dhrarma-world .top-right,
 .dhrarma-world .bottom-left {
   pointer-events: none;
-  z-index: 0;
+  line-height: 0;
+}
+
+/* Desktop Dharma World — legacy `home.html`: full-bleed `news-bg.jpg`, corner ornaments, BS3 offsets */
+.home-dharma-world-desktop .dhrarma-world {
+  overflow: hidden;
+  background: #0c0c0c;
+}
+
+.home-dharma-world-hero {
+  display: block;
+  width: 100%;
+  line-height: 0;
+}
+
+/* `dharma-img.png` — file 529×171; display cap above intrinsic for a larger wordmark (legacy img grew with column). */
+.home-dharma-world-logo {
+  width: auto;
+  max-width: min(630px, 100%);
+  height: auto;
+}
+
+.dhrarma-world .dharma-world-text .text-center {
+  display: block;
+  width: 100%;
+}
+
+.home-dharma-world-corner {
+  z-index: 1;
+}
+
+.home-dharma-world-corner--tr {
+  top: 0;
+  right: 0;
+  left: auto;
+}
+
+.home-dharma-world-corner--bl {
+  bottom: 0;
+  left: 0;
+  right: auto;
+}
+
+/* Corner ornaments — same pixel size as dharmanoderun (`img` without `img-responsive`; files: top-right 280×400, bottom-left 303×459). ≤1200px: `_mobile.scss` zoom 0.9 on these imgs. */
+.home-dharma-world-corner-img {
+  display: block;
+  object-fit: contain;
+}
+
+.home-dharma-world-corner--tr .home-dharma-world-corner-img {
+  width: 280px;
+  height: 400px;
+}
+
+.home-dharma-world-corner--bl .home-dharma-world-corner-img {
+  width: 303px;
+  height: 459px;
+}
+
+@media (max-width: 1199.98px) {
+  /* Legacy `_mobile.scss`: `zoom: 0.9` on these imgs → intrinsic × 0.9 */
+  .home-dharma-world-corner--tr .home-dharma-world-corner-img {
+    width: 252px;
+    height: 360px;
+  }
+
+  .home-dharma-world-corner--bl .home-dharma-world-corner-img {
+    width: 273px;
+    height: 413px;
+  }
+}
+
+.home-dharma-world-copy-row {
+  margin-top: 0.35rem;
+}
+
+@media (min-width: 992px) {
+  .home-dharma-world-copy-row {
+    margin-top: 0.85rem;
+  }
+}
+
+/* ENTER — legacy `main.scss` `.btn-view-enter` (= `.btn-view-more` + `$brand-primary` `.btn-1` fill +
+   `.btn` white label). SVG `<rect>` stroke is `$brand-primary` like VIEW ALL so the dashed chase reads
+   on hover when the fill goes transparent. */
+.btn-view-enter .home-dharma-world-enter {
+  box-sizing: border-box;
+  display: inline-block;
+  vertical-align: middle;
+  position: relative;
+  width: 100%;
+  max-width: 160px;
+  padding: 10px 0 8px;
+  margin: 0 auto;
+  line-height: 1.42857143;
+  background: $brand-primary !important;
+  border: none;
+  border-radius: 0;
+  color: $white !important;
+  font-size: 16px;
+  font-weight: 400;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  cursor: pointer;
+
+  svg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 40px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .home-dharma-world-enter-label {
+    position: relative;
+    z-index: 1;
+  }
+
+  rect {
+    fill: none;
+    stroke: $brand-primary;
+    stroke-width: 2;
+    stroke-dasharray: 422, 0;
+    transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  &:hover {
+    background: transparent !important;
+    color: $white !important;
+    font-weight: 900;
+    letter-spacing: 1px;
+
+    rect {
+      stroke-width: 5;
+      stroke-dasharray: 15, 310;
+      stroke-dashoffset: 55;
+      transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+  }
+}
+
+/* `_mobile.scss` @media (max-width: 1200px)` — ENTER / VIEW strips scale slightly on smaller viewports */
+@media (max-width: 1200px) {
+  .btn-view-enter {
+    transform: scale(0.8);
+    transform-origin: center center;
+  }
+}
+
+/* Homepage mobile — legacy `home.html` xs: `.dhrarma-world` + `.bg-inner` + `inner-bg.jpg` */
+.dh-home-dharma-world-xs .bg-inner {
+  background: url("/frontend/img/inner-bg.jpg") no-repeat center;
+  background-size: cover;
+  position: relative;
+  padding: clamp(48px, 12vw, 80px) 0;
+}
+
+/* Video strip — grey arrows matching legacy .min-tp-nm Grey-Arrow PNG style */
+.dharma-home .dharma-home-video-strip {
+  padding: 0 50px; /* side room for the arrows */
+}
+
+@media (max-width: 575px) {
+  .dharma-home .dharma-home-video-strip {
+    padding: 0; /* no room needed — navigation hidden on mobile */
+  }
+  .dharma-home .dharma-home-video-strip .swiper-button-next,
+  .dharma-home .dharma-home-video-strip .swiper-button-prev {
+    display: none;
+  }
 }
 
 .dharma-home .dharma-home-video-strip .swiper-button-next,
 .dharma-home .dharma-home-video-strip .swiper-button-prev {
-  color: $brand-primary;
+  color: #aaa;
+  --swiper-navigation-size: 28px;
 }
 
-/* DharmaNode `frontend/sass/main.scss` — news sun band (home) */
+/* Generic .img-animate — zoom on hover, used by video strip & other sections */
+.img-animate {
+  overflow: hidden;
+
+  img {
+    transition: transform 300ms ease;
+  }
+
+  &:hover img {
+    transform: scale(1.1);
+  }
+}
+
+/* video-names strip label */
+.video-names {
+  padding: 0 10px;
+  height: 40px;
+  overflow: hidden;
+}
+
+/* News band — tightened top spacing vs legacy 215px; subscribe already sits below video */
 .bg-sun.home-news-sun {
   background: $brand-primary;
-  margin-top: -48px;
-  padding: 120px 0 48px;
+  margin-top: -56px;
+  /* Symmetric horizontal inset so when the strip scrolls, orange shows on the trailing edge (legacy was left-heavy only). */
+  padding: clamp(28px, 5vw, 64px) clamp(24px, 8vw, 120px) clamp(50px, 5vw, 70px) clamp(40px, 10vw, 215px);
   position: relative;
   z-index: 0;
 }
 
 @media (max-width: 767px) {
   .bg-sun.home-news-sun {
-    margin-top: -32px;
-    padding: 80px 0 36px;
+    margin-top: -28px;
+    /* Match desktop intent: visible orange gutter L/R while swiping (was 16px — too easy to feel flush). */
+    padding: 36px clamp(20px, 5vw, 32px) 44px clamp(20px, 5vw, 32px);
   }
 }
 
+/* NEWS band heading — dharmanoderun home: `.f90` + `.font-hammersmith` + `.line45`;
+   mobile: `.f-50-main` (50px) in `_mobile.scss` */
 .home-news-title {
-  font-size: clamp(2.25rem, 6vw, 4rem);
-  line-height: 1;
+  font-family: var(--font-hammersmith), "Hammersmith One", Georgia, serif;
+  font-size: 90px;
+  font-weight: 400;
+  line-height: 45%;
+  letter-spacing: 0;
+  display: block;
+  margin: 35px 0 30px 0;
 }
 
-.home-news-swiper .swiper-button-next,
-.home-news-swiper .swiper-button-prev {
-  color: #fff;
-  opacity: 0.9;
+@media (max-width: 767px) {
+  .home-news-title {
+    font-size: 50px;
+    margin: 12px 0 20px 0;
+  }
 }
 
-/* Homepage `next/image`: aspect frames + hero nav polish (Core Web Vitals / PSI) */
-.dh-hero-slide-frame {
-  aspect-ratio: 16 / 9;
+/* Reset legacy .mt30 on the news slider — title already supplies bottom margin */
+.bg-sun.home-news-sun .news-slider.mt30 {
+  margin-top: 0;
+}
+
+/* News image card — matches legacy 300×224px */
+.dh-home-news-thumb {
+  aspect-ratio: 300 / 224;
   width: 100%;
-  max-height: min(85vh, 900px);
+  background: #333;
+  display: block;
+}
+
+/* h40 — title container, matches legacy */
+.h40 {
+  height: 40px;
+  overflow: hidden;
+}
+
+/* Card title + date — dharmanoderun: `h4` uses Bootstrap/Karla (no `.font-hammersmith`);
+   Bootstrap 3 h4 ≈ 18px / line-height 1.1 / font-weight 500; date `.f12` + `.color-black` */
+.bg-sun.home-news-sun .home-news-swiper .video-name h4 {
+  font-family:
+    var(--font-karla),
+    "Karla",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.bg-sun.home-news-sun .home-news-swiper .video-date {
+  font-family: var(--font-karla), "Karla", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.bg-sun.home-news-sun .home-news-swiper .video-date .color-black.f12 {
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* video-desc — white bottom border separator, matches legacy */
+.home-news-swiper .video-desc {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #fff;
+}
+
+/* News slider — 300px wide slides + 60px gap at desktop (matches legacy item-width=300 item-margin=60) */
+@media (min-width: 1200px) {
+  .home-news-swiper .swiper-slide {
+    width: 300px;
+  }
+}
+
+/* Clip slides to the band — `overflow: visible` let transforms draw past section padding (flush to viewport). Arrows are siblings, not inside .swiper. */
+.home-news-swiper {
+  padding-bottom: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  box-sizing: border-box;
+}
+
+.bg-sun.home-news-sun .news-slider {
+  overflow-x: clip;
+  padding-bottom: 56px; /* room for arrows — tightened as arrows sit higher */
+  position: relative;
+}
+
+@media (max-width: 575px) {
+  .bg-sun.home-news-sun .news-slider {
+    padding-bottom: 44px;
+  }
+}
+
+/* News slider — legacy flexslider: `frontend/img/news-left.png` / `news-right.png` (40×47) */
+.bg-sun.home-news-sun .movies-upcoming-arrow.home-news-slider-arrow {
+  position: absolute;
+  z-index: 5;
+  bottom: -40px;
+  left: auto;
+  top: auto;
+  flex: none;
+  align-self: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 47px;
+  padding: 0;
+  background: transparent !important;
+  border: none;
+  box-shadow: none;
+
+  &:hover .home-news-slider-arrow-img {
+    opacity: 0.88;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+}
+
+.bg-sun.home-news-sun .home-news-slider-arrow-img {
+  display: block;
+  width: 40px;
+  height: 47px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.bg-sun.home-news-sun .home-news-slider-arrow--next {
+  right: 0 !important;
+}
+
+.bg-sun.home-news-sun .home-news-slider-arrow--prev {
+  right: 56px !important;
+}
+
+@media (max-width: 575px) {
+  .bg-sun.home-news-sun .movies-upcoming-arrow.home-news-slider-arrow {
+    bottom: -34px !important;
+  }
+
+  .bg-sun.home-news-sun .home-news-slider-arrow--prev {
+    right: 48px !important;
+  }
+}
+
+/* Homepage hero slide frame — switches from landscape (desktop) to portrait (mobile). */
+.dh-hero-slide-frame {
+  /* Match legacy dharmanoderun: CMS images are 1600×713 — use their exact ratio */
+  aspect-ratio: 1600 / 713;
+  width: 100%;
+  overflow: hidden;
   background: #0a0a0a;
+  line-height: 0;
+}
+
+/* Mobile portrait image: 705×1087 */
+@media (max-width: 575.98px) {
+  .dh-hero-slide-frame {
+    aspect-ratio: 705 / 1087;
+    max-height: none;
+  }
+}
+
+.dh-hero-slide-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .dh-movie-thumb-frame {
@@ -5720,16 +6672,12 @@ img.doneLoading {
 .dh-home-feature-thumb {
   position: relative;
   display: block;
-  aspect-ratio: 16 / 9;
+  /* Matches legacy DharmaHome image spec: 1518×753px */
+  aspect-ratio: 1518 / 753;
   background: #111;
 }
 
-@media (max-width: 767.98px) {
-  .dharma-home-hero-swiper .swiper-button-next,
-  .dharma-home-hero-swiper .swiper-button-prev {
-    display: none !important;
-  }
-}
+/* Legacy home slider shows arrow nav on all screen sizes */
 
 .dh-home-strip-thumb {
   position: relative;
@@ -5795,7 +6743,8 @@ img.doneLoading {
 
 /* Hero: background-image so it always fills the container (never collapses on mobile) */
 .social-page-hero {
-  background: url("/frontend/img/dharma-world-bg.jpg") no-repeat center center;
+  /* Slightly left-of-center framing — matches perceptual focal point vs plain `center` on wide crops */
+  background: url("/frontend/img/dharma-world-bg.jpg") no-repeat 48% center;
   background-size: cover;
   min-height: calc(var(--dh-header-offset, 116px) + 360px);
   display: flex;
@@ -6049,6 +6998,13 @@ img.doneLoading {
   border-bottom: 1px solid #ddd;
   border-radius: 0;
   padding-left: 0;
+}
+
+.fan-corner-modal-inner .fan-form-error {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c62828;
 }
 
 @media (max-width: 767.98px) {

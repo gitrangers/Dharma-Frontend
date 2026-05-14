@@ -248,13 +248,13 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
                     <div className="btn-view-more mt15 mb20 text-center">
                       <button
                         type="button"
-                        className="btn-1 font-hammersmith btn color-primary display-inline"
+                        className="btn-1 dh-view-all-btn font-hammersmith display-inline"
                         onClick={() => setViewAll(true)}
                       >
-                        <svg aria-hidden="true" focusable="false">
+                        <svg aria-hidden="true" focusable="false" style={{ pointerEvents: "none" }}>
                           <rect x="0" y="0" fill="none" width="100%" height="100%" />
                         </svg>
-                        VIEW ALL
+                        <span className="dh-view-all-label">VIEW ALL</span>
                       </button>
                     </div>
                   </div>

@@ -1,11 +1,15 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { VideosSearchBar } from "@/components/videos/VideosSearchBar";
 import { resolveUploadUrl } from "@/lib/media";
-import { youtubeThumbnailUrl, youtubeWatchUrl } from "@/lib/youtube";
+import {
+  youtubeEmbedUrl,
+  youtubeThumbnailUrl,
+  youtubeVideoId,
+  youtubeWatchUrl,
+} from "@/lib/youtube";
 
 function shorten(s, max) {
   const t = s.trim();
@@ -21,20 +25,19 @@ function rowMatchesFilter(row, q) {
     .includes(n);
 }
 
-function VideoTileSmall({ item }) {
-  const watch = youtubeWatchUrl(item.url);
+function VideoTileSmall({ item, onOpen }) {
   const thumb =
     resolveUploadUrl(item.thumbnail) || youtubeThumbnailUrl(item.url) || "";
   const title = shorten(String(item.title ?? ""), 60);
 
   return (
-    <div className="col-md-4 col-sm-4 col-6 padding0">
+    <div className="col-md-4 col-sm-4 col-6">
       <div className="tv-box">
-        <a
-          href={watch || "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="d-block text-decoration-none"
+        <button
+          type="button"
+          className="dh-video-popup-trigger d-block w-100 text-start text-decoration-none border-0 bg-transparent p-0"
+          aria-label={`Play — ${title}`}
+          onClick={() => onOpen(item)}
         >
           <div className="img-animated">
             <div className="img-inside-box em-box hover-sec">
@@ -47,7 +50,7 @@ function VideoTileSmall({ item }) {
           <div className="video-names mt10">
             <span className="color-white text-cap m-font12">{title}</span>
           </div>
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -62,6 +65,8 @@ export function VideosTvInsideView({
   initialSearch = "",
 }) {
   const [search, setSearch] = useState(initialSearch);
+  const [popupItem, setPopupItem] = useState(null);
+
   const visible = useMemo(
     () =>
       [...videos]
@@ -69,6 +74,39 @@ export function VideosTvInsideView({
         .filter((r) => rowMatchesFilter(r, search)),
     [videos, search]
   );
+
+  function openClip(item) {
+    const embedSrc = youtubeEmbedUrl(item.url);
+    if (embedSrc) {
+      setPopupItem(item);
+      return;
+    }
+    const watch =
+      youtubeWatchUrl(item.url) || String(item.url ?? "").trim();
+    if (/^https?:\/\//i.test(watch)) {
+      window.open(watch, "_blank", "noopener,noreferrer");
+    }
+  }
+
+  function closePopup() {
+    setPopupItem(null);
+  }
+
+  useEffect(() => {
+    if (!popupItem) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => {
+      if (e.key === "Escape") closePopup();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [popupItem]);
+
+  const embedSrc = popupItem ? youtubeEmbedUrl(popupItem.url) : "";
 
   return (
     <section className="dharma-top-bg videos-page-legacy videos-tv-inside">
@@ -107,8 +145,14 @@ export function VideosTvInsideView({
                 {visible.length === 0 ?
                   <p className="color-white">No clips match this filter.</p>
                 : (
-                  <div className="row">
-                    {visible.map((item, idx) => <VideoTileSmall key={idx} item={item} />)}
+                  <div className="row g-2">
+                    {visible.map((item, idx) => (
+                      <VideoTileSmall
+                        key={`${youtubeVideoId(item.url)}-${idx}`}
+                        item={item}
+                        onOpen={openClip}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
@@ -161,6 +205,29 @@ export function VideosTvInsideView({
           </p> */}
         </div>
       </div>
+
+      {embedSrc ?
+        <div
+          className="dh-modal-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Video player"
+          onClick={closePopup}
+        >
+          <div className="dh-modal-frame" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="dh-modal-close" onClick={closePopup} aria-label="Close video">
+              ×
+            </button>
+            <iframe
+              key={youtubeVideoId(popupItem?.url)}
+              title={String(popupItem?.title ?? popupItem?.name ?? "Video")}
+              src={embedSrc}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      : null}
     </section>
   );
 }
