@@ -25,24 +25,21 @@ function slideHrefForHero(s) {
  * Hero slide — uses a native <picture> element so the browser only downloads
  * the image that matches the current viewport:
  *   • ≤575 px  → mobileImage (portrait  705 × 1087)
- *   • > 575 px → image       (landscape 1600 × 713)
- * Linking priority: internal movie page > external URL > no link.
+ *   • >575 px → image       (landscape 1600 × 713)
+ * Slides are not linked (marketing hero only); arrows + autopilot still advance the carousel.
  */
 function HeroSlideContent({ s, slideIndex }) {
-  const slug = s.movieSlug ? String(s.movieSlug).trim() : "";
-  const external = slideHrefForHero(s);
-
   const desktopSrc = s.image || "";
   const mobileSrc = s.mobileImage || desktopSrc;
 
-  const heroInner = (
+  return (
     <div className="dh-hero-slide-frame">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <picture>
-        {mobileSrc && mobileSrc !== desktopSrc ? (
+        {mobileSrc && mobileSrc !== desktopSrc ?
           <source media="(max-width: 575px)" srcSet={mobileSrc} />
-        ) : null}
-        {desktopSrc ? (
+        : null}
+        {desktopSrc ?
           <img
             src={desktopSrc}
             alt={slideIndex === 0 ? "Dharma Productions" : ""}
@@ -53,26 +50,10 @@ function HeroSlideContent({ s, slideIndex }) {
             fetchPriority={slideIndex === 0 ? "high" : "auto"}
             decoding={slideIndex === 0 ? "sync" : "async"}
           />
-        ) : null}
+        : null}
       </picture>
     </div>
   );
-
-  if (slug) {
-    return (
-      <Link href={`/movie/${encodeURIComponent(slug)}`} className="d-block text-decoration-none">
-        {heroInner}
-      </Link>
-    );
-  }
-  if (external) {
-    return (
-      <a href={external} target="_blank" rel="noopener noreferrer" className="d-block text-decoration-none">
-        {heroInner}
-      </a>
-    );
-  }
-  return heroInner;
 }
 
 function formatRelease(d) {
@@ -240,7 +221,7 @@ export function HomePageContent({
               slidesPerView={1}
               loop={slides.length > 1}
               autoplay={{ delay: 4500, disableOnInteraction: false }}
-              pagination={{ clickable: true }}
+              pagination={{ clickable: false }}
               onSwiper={(swiper) => { heroSwiperRef.current = swiper; }}
               className="dharma-home-hero-swiper"
             >

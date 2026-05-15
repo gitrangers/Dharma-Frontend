@@ -116,7 +116,7 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
             <div className="row">
               <div className="text-center">
                 <div className="head-title movies-hero-head">
-                  <h1 className="movies-hero-title-accent text-up font-hammersmith movies-head-xl mb-0">Movies</h1>
+                  <h1 className="movies-hero-title-accent text-up font-hammersmith movies-head-xl mb-3">Movies</h1>
                 </div>
                 {searchPick ?
                   <div className="search-rslt mt-3">
@@ -215,7 +215,7 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
                 </div>
               </div>
 
-              <div className="mobile-row hidden-xs d-none d-md-block">
+              <div className="mobile-row hidden-xs d-none d-md-block movies-past-grid-row">
                 {layout.pastChunks.map((videos, vi) => (
                   <div key={`pch-${vi}`} className="row-flex text-center flex-wrap justify-content-center">
                     {videos.map((item) => (
@@ -227,17 +227,16 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
                 ))}
               </div>
 
-              <div className="d-md-none">
+              <div className="d-md-none movies-past-mob-rail">
                 {layout.pastChunks.map((videos, vi) => (
-                  <div
-                    key={`mob-${vi}`}
-                    className="d-flex flex-row flex-nowrap gap-2 overflow-x-auto pb-3 mb-3"
-                  >
-                    {videos.map((item) => (
-                      <div key={`m-${movieSlug(item)}`} className="flex-shrink-0" style={{ width: 207 }}>
-                        <PastReleaseCard item={item} mobile />
-                      </div>
-                    ))}
+                  <div key={`mob-${vi}`} className="mob-slider movies-past-mob-slider">
+                    <div className="movies-past-mob-strip">
+                      {videos.map((item) => (
+                        <div key={`m-${movieSlug(item)}`} className="movies-past-mob-slide">
+                          <PastReleaseCard item={item} mobile />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -263,7 +262,7 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
 
               {viewAll ?
                 <>
-                  <div className="mobile-row hidden-xs d-none d-md-block">
+                  <div className="mobile-row hidden-xs d-none d-md-block movies-past-grid-row">
                     {layout.pastMoreChunks.map((videos, vi) => (
                       <div key={`pm-${vi}`} className="row-flex text-center flex-wrap justify-content-center">
                         {videos.map((item) => (
@@ -274,17 +273,16 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
                       </div>
                     ))}
                   </div>
-                  <div className="d-md-none">
+                  <div className="d-md-none movies-past-mob-rail">
                     {layout.pastMoreChunks.map((videos, vi) => (
-                      <div
-                        key={`pmm-${vi}`}
-                        className="d-flex flex-row flex-nowrap gap-2 overflow-x-auto pb-3 mb-3"
-                      >
-                        {videos.map((item) => (
-                          <div key={`pmm-${movieSlug(item)}`} className="flex-shrink-0" style={{ width: 207 }}>
-                            <PastReleaseCard item={item} mobile />
-                          </div>
-                        ))}
+                      <div key={`pmm-${vi}`} className="mob-slider movies-past-mob-slider">
+                        <div className="movies-past-mob-strip">
+                          {videos.map((item) => (
+                            <div key={`pmm-${movieSlug(item)}`} className="movies-past-mob-slide">
+                              <PastReleaseCard item={item} mobile />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>

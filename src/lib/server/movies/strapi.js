@@ -497,6 +497,16 @@ export async function fetchStrapiDharmaTvsFlattenedRows() {
       const movieOrder =
         typeof movie.order === "number" ? movie.order : Number(movie.order) || 0;
       const vidOrder = entry.order == null ? 0 : Number(entry.order) || 0;
+      const releaseDate =
+        movie.releaseDate != null && String(movie.releaseDate).trim() ?
+          String(movie.releaseDate).trim()
+        : "";
+      const movieMonth =
+        typeof movie.month === "number" ? movie.month : Number(movie.month) || 0;
+      const upcomingOrd =
+        typeof movie.upcomingOrder === "number" ? movie.upcomingOrder : (
+          Number(movie.upcomingOrder) || 0
+        );
 
       /** @type {Record<string, unknown>} */
       const row = {
@@ -509,6 +519,9 @@ export async function fetchStrapiDharmaTvsFlattenedRows() {
             typeof movie.documentId === "string" && movie.documentId ?
               movie.documentId
             : String(movie.id ?? ""),
+          ...(releaseDate ? { releaseDate } : {}),
+          ...(movieMonth ? { month: movieMonth } : {}),
+          ...(upcomingOrd ? { upcomingOrder: upcomingOrd } : {}),
         },
         url: yt,
         title:
@@ -1018,7 +1031,21 @@ export async function fetchStrapiDharmaTvFlattenedRows() {
       /** @type {Record<string, unknown>} */
       const row = {
         movieKey,
-        movie: { name, year, urlName: movieKey },
+        movie: {
+          name,
+          year,
+          urlName: movieKey,
+          ...(mappedMovie.releaseDate != null &&
+          String(mappedMovie.releaseDate).trim() ?
+            { releaseDate: String(mappedMovie.releaseDate).trim() }
+          : {}),
+          ...(Number(mappedMovie.month) ?
+            { month: Number(mappedMovie.month) }
+          : {}),
+          ...(Number(mappedMovie.upcomingOrder) ?
+            { upcomingOrder: Number(mappedMovie.upcomingOrder) }
+          : {}),
+        },
         url: yt,
         title:
           typeof v.name === "string" && v.name.trim() ? v.name.trim() : yt,

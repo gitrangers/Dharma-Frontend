@@ -91,44 +91,46 @@ export default function OverviewPage() {
                             Indian Commercial Cinema.
                           </p>
                         </div>
-                        <p className="mt20">
-                          Karan Johar made his directorial debut at age 25 with a
-                          path-breaking love story &apos;Kuch Kuch Hota
-                          Hai&apos;. The film remains a landmark in Indian
-                          Cinema for the appreciation it received, both critically
-                          and commercially, in India as well as the world.
-                          Following this, over the last 15 years, he has directed
-                          and written critically and commercially acclaimed
-                          blockbusters like Kabhi Khushi Kabhie Gham, Kabhi Alvida
-                          Naa Kehna and My Name Is Khan.
-                        </p>
-                        <p>
-                          The multi-faceted Karan wears many caps with ease.
-                          Besides being an acclaimed director and one of the most
-                          influential men in the industry today, Karan is also a
-                          television personality, a talk show host, a costume
-                          designer and the latest feather in his cap is that of
-                          being an actor. His talk show Koffee With Karan has the
-                          distinction of being the most watched English talk show
-                          on Indian television.
-                        </p>
-                        <p>
-                          In addition to personal success and accomplishment, Karan
-                          Johar has also been a mentor to many successful
-                          directors in India. Directors have flourished under his
-                          guidance and support as a producer, releasing both
-                          commercial blockbusters like Agneepath, Dostana and Yeh
-                          Jawaani Hai Deewani, as well as critical indie successes
-                          like Wake Up Sid and Ek Main Aur Ekk Tu.
-                        </p>
-                        <p>
-                          The name Karan Johar is synonymous with prestige,
-                          elegance, versatility and success. He is amongst a
-                          prolific group of Indian film makers who have brought
-                          about a fresh and modern outlook to Indian commercial
-                          cinema and has contributed greatly to the transformation
-                          of Hindi cinema from his very first film.
-                        </p>
+                        <div className="overview-page__karan-below-mn-org pt20">
+                          <p>
+                            Karan Johar made his directorial debut at age 25 with a
+                            path-breaking love story &apos;Kuch Kuch Hota
+                            Hai&apos;. The film remains a landmark in Indian
+                            Cinema for the appreciation it received, both critically
+                            and commercially, in India as well as the world.
+                            Following this, over the last 15 years, he has directed
+                            and written critically and commercially acclaimed
+                            blockbusters like Kabhi Khushi Kabhie Gham, Kabhi Alvida
+                            Naa Kehna and My Name Is Khan.
+                          </p>
+                          <p>
+                            The multi-faceted Karan wears many caps with ease.
+                            Besides being an acclaimed director and one of the most
+                            influential men in the industry today, Karan is also a
+                            television personality, a talk show host, a costume
+                            designer and the latest feather in his cap is that of
+                            being an actor. His talk show Koffee With Karan has the
+                            distinction of being the most watched English talk show
+                            on Indian television.
+                          </p>
+                          <p>
+                            In addition to personal success and accomplishment, Karan
+                            Johar has also been a mentor to many successful
+                            directors in India. Directors have flourished under his
+                            guidance and support as a producer, releasing both
+                            commercial blockbusters like Agneepath, Dostana and Yeh
+                            Jawaani Hai Deewani, as well as critical indie successes
+                            like Wake Up Sid and Ek Main Aur Ekk Tu.
+                          </p>
+                          <p>
+                            The name Karan Johar is synonymous with prestige,
+                            elegance, versatility and success. He is amongst a
+                            prolific group of Indian film makers who have brought
+                            about a fresh and modern outlook to Indian commercial
+                            cinema and has contributed greatly to the transformation
+                            of Hindi cinema from his very first film.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -86,3 +86,62 @@ export function resolveMovieTitleFromTvRow(row, lookups) {
 
   return fromSlug || fromMongo || movieName || key.replace(/-/g, " ") || "Other";
 }
+
+/**
+ * Parse release timeline from Tv row `movie` (Strapi dates, numeric year/month, or upcomingOrder).
+ * @param {Record<string, unknown>} movie
+ */
+function parseMovieReleaseSort(movie) {
+  const m = movie && typeof movie === "object" ? movie : {};
+  const y = Number(m.year) || 0;
+  const month = Number(m.month) || 0;
+  const uo = Number(m.upcomingOrder) || 0;
+
+  const rd = m.releaseDate;
+  if (rd != null && String(rd).trim()) {
+    const t = new Date(String(rd)).getTime();
+    if (!Number.isNaN(t)) {
+      return { releaseMs: t, year: y || new Date(t).getFullYear(), upcomingOrder: uo };
+    }
+  }
+
+  if (y > 0) {
+    const mi = month >= 1 && month <= 12 ? month - 1 : 0;
+    return {
+      releaseMs: new Date(y, mi, 1).getTime(),
+      year: y,
+      upcomingOrder: uo,
+    };
+  }
+
+  return { releaseMs: 0, year: 0, upcomingOrder: uo };
+}
+
+/**
+ * Sort key for one `/videos` movie block (uses first clip row — rows in a block share `movie`).
+ * @param {Record<string, unknown>} row
+ */
+export function videosMovieGroupSortKey(row) {
+  if (!row || typeof row !== "object") {
+    return { releaseMs: 0, upcomingOrder: 0, movieOrder: 0, year: 0 };
+  }
+  const r = row;
+  const m = r.movie && typeof r.movie === "object" ? r.movie : {};
+  const parsed = parseMovieReleaseSort(m);
+  return {
+    releaseMs: parsed.releaseMs,
+    upcomingOrder: parsed.upcomingOrder,
+    movieOrder:
+      typeof r.movieOrder === "number" ? r.movieOrder : Number(r.movieOrder) || 0,
+    year: parsed.year || Number(m.year) || 0,
+  };
+}
+
+/** Newer releases first; undated titles follow CMS movie / row order (desc). */
+export function compareVideosMovieGroupKeys(a, b) {
+  if (a.releaseMs !== b.releaseMs) return b.releaseMs - a.releaseMs;
+  if (a.upcomingOrder !== b.upcomingOrder) return b.upcomingOrder - a.upcomingOrder;
+  if (a.movieOrder !== b.movieOrder) return b.movieOrder - a.movieOrder;
+  if (a.year !== b.year) return b.year - a.year;
+  return 0;
+}

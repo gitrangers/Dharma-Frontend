@@ -53,12 +53,24 @@ export function SiteHeader() {
     router.push(t ? `/movies?q=${encodeURIComponent(t)}` : "/movies");
   }
 
-  function renderHeaderIconList(extraClass = "", { includeSearch = true } = {}) {
+  /** @param {{ includeSearch?: boolean; onSocialLinkClick?: () => void }} [opts] */
+  function renderHeaderIconList(extraClass = "", opts = {}) {
+    const includeSearch = opts.includeSearch !== false;
+    const { onSocialLinkClick } = opts;
     return (
       <ul className={`dh-header-social-ul padding0 margin0 mb-0 ${extraClass}`.trim()}>
         {headerIconLinks.map((s) => (
           <li key={s.href}>
-            <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}>
+            <a
+              href={s.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={s.label}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onSocialLinkClick) onSocialLinkClick();
+              }}
+            >
               <i className={s.icon} />
             </a>
           </li>
@@ -200,19 +212,29 @@ export function SiteHeader() {
                   {links.map((item) =>
                     item.subnav?.length ?
                       <li key={item.href} className="nav-item dh-relative">
-                        <button
-                          type="button"
-                          className="nav-link text-up color-white font-hammersmith dh-header-nav-link dh-relative dh-mob-has-sub-btn w-100 border-0 bg-transparent"
-                          aria-expanded={openMobSubKey === item.href}
-                          aria-controls={`mob-sub-${item.href.replace(/\W/g, "")}`}
-                          onClick={() => setOpenMobSubKey((k) => (k === item.href ? null : item.href))}
-                        >
-                          {item.name}
-                          &nbsp;
-                          <span>
+                        <div className="d-flex align-items-stretch w-100 dh-mob-nav-split">
+                          <Link
+                            className="nav-link text-up color-white font-hammersmith dh-header-nav-link dh-relative flex-grow-1 text-center"
+                            href={item.href}
+                            onClick={() => setMenuOpen(false)}
+                          >
+                            {item.name}
+                          </Link>
+                          <button
+                            type="button"
+                            className="nav-link text-up color-white font-hammersmith dh-header-nav-link dh-mob-sub-toggle-btn border-0 bg-transparent flex-shrink-0"
+                            aria-expanded={openMobSubKey === item.href}
+                            aria-controls={`mob-sub-${item.href.replace(/\W/g, "")}`}
+                            aria-label={`${item.name} submenu`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setOpenMobSubKey((k) => (k === item.href ? null : item.href));
+                            }}
+                          >
                             <i className="fa-solid fa-angle-down" aria-hidden />
-                          </span>
-                        </button>
+                          </button>
+                        </div>
                         {openMobSubKey === item.href ?
                           <ul className="list-none mob-mn padding0" id={`mob-sub-${item.href.replace(/\W/g, "")}`}>
                             {item.subnav.map((sub) => (
@@ -249,20 +271,15 @@ export function SiteHeader() {
                       2.0
                     </a>
                   </li>
-                  <li className="nav-item dh-header-mob-soc-li">
-                    <div className="head-social dh-list float-end mt15">
-                      <ul className="padding0 main-m-marg dh-header-social-ul margin0 mb-0">
-                        {headerIconLinks.map((s) => (
-                          <li key={s.href}>
-                            <a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}>
-                              <i className={s.icon} />
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </li>
                 </ul>
+                <div className="dh-header-mob-external-social w-100">
+                  <div className="head-social dh-list w-100 d-flex justify-content-end mt15 pb-1 pe-2">
+                    {renderHeaderIconList("", {
+                      includeSearch: false,
+                      onSocialLinkClick: () => setMenuOpen(false),
+                    })}
+                  </div>
+                </div>
               </div>
             : null}
           </div>
