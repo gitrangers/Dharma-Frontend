@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { Autoplay, Navigation } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { VideosSearchBar } from "@/components/videos/VideosSearchBar";
 import { resolveMovieUrlSlug } from "@/lib/movieModel";
@@ -15,11 +15,13 @@ import {
   youtubeVideoId,
   youtubeWatchUrl,
 } from "@/lib/youtube";
-import { resolveMovieTitleFromTvRow } from "@/lib/videosTitles";
+import {
+  compareVideosMovieGroupKeys,
+  resolveMovieTitleFromTvRow,
+  videosMovieGroupSortKey,
+} from "@/lib/videosTitles";
 
 import "swiper/css";
-import "swiper/css/navigation";
-
 /** Main /videos listing: newest-first by `order`, only preview this many clips per movie in the row swiper. */
 const SLIDER_PREVIEW_PER_MOVIE = 4;
 
@@ -47,8 +49,14 @@ function sortRowsForSearch(rows) {
   );
 }
 
-/** Stable buckets by Tv `movieKey`; headings prefer Movie/catalog names over embedded typos. */
-function groupByMovieKey(rows, movieTitleLookups) {
+/**
+ * Buckets by Tv `movieKey`. Headings use catalog movie name via lookups when available.
+ * Default list order is newest theatrical date first (fallback: CMS upcoming / movie order).
+ * When searching, preserves bucket order derived from alphabetical row sort upstream.
+ */
+function groupByMovieKey(rows, movieTitleLookups, opts = null) {
+  const sortByRelease = !(opts && opts.sortByRelease === false);
+
   const order = [];
   const map = new Map();
 
@@ -69,15 +77,33 @@ function groupByMovieKey(rows, movieTitleLookups) {
     g.items.sort((a, b) => (Number(b.order) || 0) - (Number(a.order) || 0));
   }
 
-  return order.map((movieKey) => {
+  const groups = order.map((movieKey) => {
     const g = map.get(movieKey);
     const sorted = g.items;
     const totalForMovie = sorted.length;
     const items = sorted.slice(0, SLIDER_PREVIEW_PER_MOVIE);
-    const first = items[0];
+    const first = sorted[0];
+    const sortKey = videosMovieGroupSortKey(first);
     const movie = resolveMovieTitleFromTvRow(first, movieTitleLookups ?? null);
-    return { movie, movieKey: g.movieKey, items, totalForMovie };
+    return { movie, movieKey: g.movieKey, items, totalForMovie, sortKey };
   });
+
+  if (sortByRelease) {
+    groups.sort((a, b) => {
+      const cmp = compareVideosMovieGroupKeys(a.sortKey, b.sortKey);
+      if (cmp !== 0) return cmp;
+      return String(a.movie).localeCompare(String(b.movie), undefined, {
+        sensitivity: "base",
+      });
+    });
+  }
+
+  return groups.map(({ movie, movieKey, items, totalForMovie }) => ({
+    movie,
+    movieKey,
+    items,
+    totalForMovie,
+  }));
 }
 
 /**
@@ -154,8 +180,7 @@ function VideoRowSwiper({ items, onOpen }) {
   return (
     <div className="videos-tv-swiper-nav" ref={wrapRef}>
       <Swiper
-        modules={[Navigation, ...(inView ? [Autoplay] : [])]}
-        navigation
+        modules={[...(inView ? [Autoplay] : [])]}
         loop={items.length > 3}
         {...(inView ? {
           autoplay: {
@@ -164,12 +189,12 @@ function VideoRowSwiper({ items, onOpen }) {
             pauseOnMouseEnter: true,
           },
         } : {})}
-        slidesPerView={1.15}
+        slidesPerView="auto"
         spaceBetween={12}
         breakpoints={{
-          576: { slidesPerView: 2, spaceBetween: 14 },
-          768: { slidesPerView: 3, spaceBetween: 16 },
-          992: { slidesPerView: 4, spaceBetween: 14 },
+          576: { spaceBetween: 14 },
+          768: { spaceBetween: 16 },
+          992: { spaceBetween: 14 },
         }}
         className="videos-tv-swiper"
       >
@@ -265,7 +290,7 @@ function VideosViewAllGraphic({ movieKey }) {
 }
 
 function MovieVideoBlock({ movie, movieKey, items, totalForMovie, onOpenVideo }) {
-  const showSlider = totalForMovie > 3;
+  const showSlider = totalForMovie > 2;
 
   return (
     <div className="upcoming-movie videos-movie-section search-movie-mar mx-auto w-100 pb-short">
@@ -412,8 +437,11 @@ export function VideosPageView({ slider, videos, movieTitleLookups = null, initi
   }, [videos, search]);
 
   const grouped = useMemo(
-    () => groupByMovieKey(filtered, movieTitleLookups),
-    [filtered, movieTitleLookups]
+    () =>
+      groupByMovieKey(filtered, movieTitleLookups, {
+        sortByRelease: !search.trim(),
+      }),
+    [filtered, movieTitleLookups, search]
   );
   const noMovieFound = search.trim().length > 0 && grouped.length === 0;
 

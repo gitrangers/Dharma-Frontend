@@ -563,24 +563,37 @@ body {
     border-style: solid;
     border-width: 1px 0 0;
     margin-top: 10px;
-    padding: 0 10px 10px;
+    padding: 0 14px 14px;
     box-shadow: inset 0 0 0 rgba(255, 255, 255, 0.1);
+  }
+
+  .dh-header-mob-drawer .navbar-nav.custom-menu:not(.dh-header-social-ul) {
+    display: flex;
+    flex-direction: column;
+    row-gap: 8px;
   }
 
   .dh-header-mob-drawer .custom-menu li a.dh-header-nav-link,
   .dh-header-mob-drawer .custom-menu li a.dh-mob-submenu-link,
-  .dh-header-mob-drawer .custom-menu li button.dh-header-nav-link.dh-mob-has-sub-btn {
-    padding: 5px !important;
+  .dh-header-mob-drawer .custom-menu li button.dh-mob-sub-toggle-btn {
+    padding: 12px 16px !important;
     font-size: 14px !important;
   }
 
-  .dh-header-mob-drawer .dh-mob-has-sub-btn {
+  .dh-header-mob-drawer .dh-mob-nav-split {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    margin-bottom: 2px;
+  }
+
+  .dh-header-mob-drawer .dh-mob-sub-toggle-btn {
     color: $white !important;
     cursor: pointer;
     line-height: inherit;
+    min-width: 48px;
+    max-width: 56px;
   }
 
-  .dh-header-mob-drawer .dh-mob-has-sub-btn:focus-visible {
+  .dh-header-mob-drawer .dh-mob-sub-toggle-btn:focus-visible {
     outline: 2px solid rgba(255, 255, 255, 0.65);
     outline-offset: 2px;
   }
@@ -588,22 +601,48 @@ body {
   .dh-header-mob-drawer .mob-mn li a {
     text-transform: uppercase;
     font-weight: 600;
+    padding-left: 22px !important;
+    padding-right: 16px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
   }
 
   .dh-header-mob-drawer .min-f-tp a.dh-mob-submenu-link {
     font-size: 12px !important;
     font-weight: 600 !important;
+    padding: 8px 16px !important;
   }
 
-  /* Clear floated social strip at bottom of collapsible (`menu.html` .pull-right) */
+  /*
+   * Legacy floated `.pull-right` social strip needed a ::after clearfix.
+   * In the Next drawer we use centered flex icons — the pseudo flex-item from
+   * `display:table` clearfix sat after the icons and intercepted taps/clicks on phones.
+   */
   .dh-header-mob-drawer .nav.navbar-nav::after {
-    content: "";
-    display: table;
-    clear: both;
+    content: none;
+    display: none;
+    clear: none;
   }
 
-  .dh-header-mob-drawer .dh-header-mob-soc-li {
-    clear: both;
+  /*
+   * Icons sit outside `.navbar-nav` so taps reliably open external URLs
+   * (Bootstrap nav quirks + submenu rows no longer overlap this strip).
+   */
+  .dh-header-mob-drawer .dh-header-mob-external-social {
+    position: relative;
+    z-index: 14;
+    clear: none;
+    margin-top: 6px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+  }
+
+  .dh-header-mob-drawer .dh-header-mob-external-social .head-social.dh-list ul.dh-header-social-ul li a {
+    position: relative;
+    z-index: 15;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    pointer-events: auto !important;
   }
 
   .dh-header-mob-drawer .head-social.float-end ul.dh-header-social-ul {
@@ -893,10 +932,6 @@ body {
     text-align: center;
     margin-left: auto;
     margin-right: auto;
-  }
-
-  .footer-social ul li {
-    padding: 0 1px;
   }
 
   .footer-social.dh-list.mobile-center ul {
@@ -1408,11 +1443,18 @@ img.doneLoading {
   padding: 7px 30px 5px;
 }
 
-/* Movies — `.dharma-movies-bg` targets: desktop 1440×700 / 1440×900 / 1536×864; iPad Air ~820×1180;
- * tablets ~765×1071; phones ~412×915. Vertical tail on wrapper only; hero still owns fixed-header clearance + art. */
+/* Movies — `movie-up.jpg` ≥992px; ≤992px mirrors `frontend/sass/_mobile.scss`: `mobile-movies.jpg` + padded band.
+ * Hero + Upcoming share one plate; column flex avoids margin seams. */
 .dharma-movies-bg {
   position: relative;
+  display: flex;
+  flex-direction: column;
   background-color: #ececec;
+  background-image: url("/frontend/img/movie-up.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center top;
+  background-clip: padding-box;
   padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
 
@@ -1423,90 +1465,104 @@ img.doneLoading {
   }
 }
 
-/* Tablets / small laptops (≤992px). Small top gutter so hero cover isn’t lost under fixed nav + curve. */
+/* ≤992 (`frontend/sass/_mobile.scss`): `mobile-movies.jpg` + padded band (`≤767` tightens bottom). */
 @media (max-width: 991.98px) {
   .dharma-movies-bg {
-    padding-top: clamp(50px, 2.6vw, 20px);
-    padding-bottom: clamp(20px, 3.2vw, 36px);
+    background-image: url("/frontend/img/mobile-movies.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center top;
+    padding-top: 120px;
+    padding-bottom: 100px;
+    padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+    background-clip: padding-box;
+  }
+
+  .dharma-movies-bg .movies-hero-search-wrap {
+    margin-bottom: clamp(1.45rem, 5.75vw, 2.375rem);
   }
 }
 
-/* iPad portrait / compact tablet width band. */
-@media (max-width: 820px) {
-  .dharma-movies-bg {
-    padding-top: clamp(12px, 2.8vw, 22px);
-    padding-bottom: clamp(14px, 3vw, 28px);
-  }
-}
-
-/* Large phones (~412×915-class). */
+/* Narrow phones — clip only (`padding-*` unchanged here so legacy bands above apply). */
 @media (max-width: 480px) {
   .dharma-movies-bg {
-    padding-top: clamp(50px, 3.2vw, 24px);
-    padding-bottom: clamp(8px, 2.5vh, 16px);
     overflow-x: clip;
   }
 }
 
-/* Hero: studio (`movie-up.jpg`). Top padding clears fixed header so art sits under the nav curve.
- * No z-index here — a positive z-index was stacking the whole hero above the “Upcoming” swiper
- * below (search + slider looked like the slider was hidden / covered on some viewports). */
+/* Upcoming stripe: spacing only — same `.dharma-movies-bg` image continues underneath. */
+.dharma-movies-bg > section.dharma-top-pad.slider-nav {
+  position: relative;
+  flex-shrink: 0;
+  background: transparent;
+}
+
+/* Hero: content over shared wrapper plate (no second `movie-up.jpg` paint). */
 .movies-page-hero {
   position: relative;
-  background-color: transparent;
-  background-image: url("/frontend/img/movie-up.jpg");
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center top;
-  padding: calc(var(--dh-header-offset) + 120px) 0 clamp(1rem, 3vw, 1.75rem);
+  flex-shrink: 0;
+  background: transparent;
+  padding: calc(var(--dh-header-offset) + 84px) 0 clamp(1rem, 3vw, 1.75rem);
 }
 
 @media (max-width: 991.98px) {
   .movies-page-hero {
-    padding-top: calc(var(--dh-header-offset) + 80px);
-  }
-}
-
-@media (max-width: 575px) {
-  .movies-page-hero {
-    padding-top: calc(var(--dh-header-offset) + 56px);
-  }
-}
-
-/* Phones/tablets — hero-sized `cover`: three lights + room read like desktop hero, not one ceiling sliver. */
-@media (max-width: 991.98px) {
-  .movies-page-hero {
-    background-size: cover;
-    background-position: center center;
+    padding-top: calc(var(--dh-header-offset) + 48px);
     min-height: clamp(300px, 52vh, 520px);
   }
 }
 
 @media (max-width: 575px) {
   .movies-page-hero {
-    background-position: center center;
+    padding-top: calc(var(--dh-header-offset) + 28px);
     min-height: clamp(260px, 44vh, 440px);
   }
 }
 
-/* Movies mobile parity with DharmaNodeRun (header + hero + first slider). */
-@media (max-width: 767.98px) {
+/* Movies narrow portrait: gutters + Upcoming rhythm (wrapper art is `mobile-movies.jpg` when `≤991.98px`). */
+@media (max-width: 820.98px) {
+  /* Upcoming band — less air between search field and “Upcoming Releases”. */
+  .dharma-movies-bg .movies-page-hero {
+    padding-bottom: clamp(0.35rem, 2vw, 0.75rem);
+  }
+
+  .dharma-movies-bg .movies-hero-head {
+    margin-bottom: clamp(0.45rem, 1.75vw, 0.85rem);
+  }
+
+  .dharma-movies-bg section.dharma-top-pad.slider-nav {
+    padding-top: 10px;
+  }
+
+  .dharma-movies-bg .upcoming-movie.movies-upcoming-stack {
+    margin-top: 0 !important;
+  }
+
   .dharma-movies-bg .container {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+
+  .dharma-movies-bg2 .orange-bg > .container,
+  .dharma-movies-bg3 .orange-bg > .container {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
 
   .dharma-movies-bg .movies-page-hero .head-title {
-    margin-bottom: 12px;
+    margin-top: 0;
+    margin-bottom: clamp(0.5rem, 2.25vw, 0.875rem);
   }
 
+  /* Handset locks to `60px` in ≤767 rule — here scales gracefully on 768–820 portrait. */
   .dharma-movies-bg .movies-head-xl {
-    font-size: clamp(4rem, 21vw, 5.6rem);
+    font-size: clamp(52px, 8vw, 60px);
     line-height: 0.95;
   }
 
   .dharma-movies-bg .search-movie.search-movie-mar {
     max-width: 100%;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
   }
@@ -1515,17 +1571,373 @@ img.doneLoading {
     gap: 0;
   }
 
+  .dharma-movies-bg .movies-upcoming-card-column {
+    max-width: 100%;
+  }
+
+  .dharma-movies-bg .ml15,
+  .dharma-movies-bg2 .ml15,
+  .dharma-movies-bg3 .ml15 {
+    margin-left: 8px;
+  }
+
+  .dharma-movies-bg3 .mob-slider.movies-past-mob-slider {
+    scroll-padding-inline: max(16px, env(safe-area-inset-left, 0px))
+      max(16px, env(safe-area-inset-right, 0px));
+  }
+}
+
+/* Movies — ≥768 only: slim side gutters / wide column (past “78vw”; handsets `≤767` unchanged). */
+@media (min-width: 768px) {
+  .dharma-movies-bg .container {
+    padding-left: max(6px, env(safe-area-inset-left, 0px));
+    padding-right: max(6px, env(safe-area-inset-right, 0px));
+  }
+
+  .dharma-movies-bg2 .orange-bg > .container,
+  .dharma-movies-bg3 .orange-bg > .container {
+    max-width: min(1120px, 98vw);
+    padding-left: max(6px, env(safe-area-inset-left, 0px));
+    padding-right: max(6px, env(safe-area-inset-right, 0px));
+  }
+
+  .dharma-movies-bg .search-movie.search-movie-mar {
+    max-width: min(1120px, 98vw);
+  }
+
+  .dharma-movies-bg .movies-upcoming-card-column {
+    max-width: min(1120px, 98vw);
+  }
+}
+
+/*
+ * Movies — iPad-class tablets (≥768 × ≤991.98): same `mobile-movies.jpg` band as phones, scaled for
+ * Air / Pro 11 portrait & split-view. Does NOT apply at `≤767.98px` — handset rules unchanged.
+ */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .dharma-movies-bg {
+    padding-top: clamp(52px, 7.75vw, 82px);
+    padding-bottom: clamp(52px, 9vh, 88px);
+  }
+
+  .dharma-movies-bg .movies-page-hero {
+    padding-top: calc(var(--dh-header-offset) + clamp(12px, 2vw, 26px));
+    padding-bottom: clamp(0.25rem, 1vw, 0.5rem);
+    min-height: clamp(195px, 26vh, 380px);
+  }
+
+  .dharma-movies-bg .movies-head-xl {
+    font-size: clamp(58px, 7.75vw, 88px);
+    line-height: 0.96;
+  }
+
+  .dharma-movies-bg .movies-hero-search-wrap {
+    margin-bottom: clamp(0.25rem, 1vw, 0.55rem);
+  }
+
+  .dharma-movies-bg section.dharma-top-pad.slider-nav {
+    padding-top: clamp(4px, 0.85vw, 10px);
+  }
+
+  /* Wider-than-820 iPad widths still had Bootstrap `.mt-4` on `.upcoming-movie` — gap under search */
+  .dharma-movies-bg .upcoming-movie.movies-upcoming-stack {
+    margin-top: 0 !important;
+  }
+
+  .dharma-movies-bg .movies-upcoming-swiper-inner .swiper-pagination {
+    margin-top: 12px;
+  }
+
+  .dharma-movies-bg2 {
+    padding: clamp(64px, 9vw, 96px) 0 clamp(40px, 6vh, 56px);
+  }
+
+  .dharma-movies-bg3 {
+    padding: clamp(32px, 5vw, 44px) 0 clamp(48px, 7vh, 64px);
+  }
+}
+
+/*
+ * Landscape “phone runway” (large iPhones etc. ~667–932 wide, shallow ≤475px tall):
+ * trims hero/search band that `52vh`/desktop padding would exaggerate sideways.
+ */
+@media (orientation: landscape) and (max-height: 475px) and (min-width: 667px) and (max-width: 932px) {
+  .dharma-movies-bg {
+    padding-top: clamp(40px, 6.5vw, 64px);
+    padding-bottom: clamp(14px, 3.5vh, 32px);
+  }
+
+  .dharma-movies-bg .movies-page-hero {
+    min-height: clamp(112px, 24vh, 210px);
+    padding-top: calc(var(--dh-header-offset) + 6px);
+    padding-bottom: 0.2rem;
+  }
+
+  .dharma-movies-bg .movies-head-xl {
+    font-size: clamp(34px, min(7vw, 7.5vh), 50px);
+    line-height: 0.91;
+    letter-spacing: 0.02em;
+  }
+
+  .dharma-movies-bg .movies-hero-search-wrap {
+    margin-bottom: clamp(0.35rem, 1.85vw, 0.85rem);
+  }
+
+  .dharma-movies-bg section.dharma-top-pad.slider-nav {
+    padding-top: 6px;
+  }
+
+  /* `min(1120px, 98vw)` under `≥768` still applies; keep section bands from feeling “stuck” top */
+  .dharma-movies-bg2 {
+    padding: clamp(28px, 5vw, 52px) 0 clamp(22px, 4vh, 40px);
+  }
+
+  .dharma-movies-bg3 {
+    padding: clamp(18px, 3.5vw, 32px) 0 clamp(26px, 5vh, 44px);
+  }
+}
+
+/* Handsets (`_mobile.scss` xs): same mobile plate, smaller bottom pad + hide carousel arrows */
+@media (max-width: 767.98px) {
+  .dharma-movies-bg {
+    padding-bottom: 14px;
+  }
+
+  /* Tighter gap under Upcoming carousel before Recent Releases (.dharma-movies-bg2) */
+  .dharma-movies-bg section.dharma-top-pad.slider-nav {
+    padding-bottom: 0;
+  }
+
+  .dharma-movies-bg .movies-upcoming-swiper-inner {
+    padding-bottom: 4px;
+  }
+
+  .dharma-movies-bg .movies-upcoming-swiper-inner .swiper-pagination {
+    margin-top: 8px;
+  }
+
   .dharma-movies-bg .movies-upcoming-arrow,
   .dharma-movies-bg .movies-upcoming-arrow--placeholder {
     display: none !important;
   }
 
+  .dharma-movies-bg .movies-head-xl {
+    font-size: 60px;
+  }
+}
+
+/*
+ * Narrow portrait tablets (e.g. OnePlus Pad / Tab ~765×1071): width `< md` so Bootstrap &
+ * handset rules treated it as a phone. Tall min-height excludes typical phones (~900+).
+ */
+@media (min-width: 720px) and (max-width: 767.98px) and (min-height: 900px) {
+  /* Past Releases: desktop grid + 5-up (hide horizontal strip) */
+  .dharma-movies-bg3 .movies-past-grid-row.mobile-row.hidden-xs.d-none.d-md-block {
+    display: block !important;
+  }
+
+  .dharma-movies-bg3 .movies-past-mob-rail.d-md-none {
+    display: none !important;
+  }
+
+  .dharma-movies-bg3 .mobile-row.movies-past-grid-row .col-flex {
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
+
+  .dharma-movies-bg .container {
+    padding-left: max(6px, env(safe-area-inset-left, 0px));
+    padding-right: max(6px, env(safe-area-inset-right, 0px));
+  }
+
+  .dharma-movies-bg2 .orange-bg > .container,
+  .dharma-movies-bg3 .orange-bg > .container {
+    max-width: min(1120px, 98vw);
+    padding-left: max(6px, env(safe-area-inset-left, 0px));
+    padding-right: max(6px, env(safe-area-inset-right, 0px));
+  }
+
+  .dharma-movies-bg .search-movie.search-movie-mar {
+    max-width: min(1120px, 98vw);
+  }
+
   .dharma-movies-bg .movies-upcoming-card-column {
-    max-width: 100%;
+    max-width: min(1120px, 98vw);
+  }
+
+  .dharma-movies-bg {
+    padding-top: clamp(48px, 7vw, 76px);
+    padding-bottom: clamp(44px, 8vh, 72px);
+  }
+
+  .dharma-movies-bg .movies-page-hero {
+    padding-top: calc(var(--dh-header-offset) + clamp(10px, 1.85vw, 22px));
+    padding-bottom: clamp(0.25rem, 1vw, 0.55rem);
+    min-height: clamp(190px, 25vh, 360px);
+  }
+
+  .dharma-movies-bg .movies-head-xl {
+    font-size: clamp(52px, 7.35vw, 74px);
+    line-height: 0.95;
+  }
+
+  .dharma-movies-bg .movies-hero-search-wrap {
+    margin-bottom: clamp(0.25rem, 1vw, 0.55rem);
+  }
+
+  .dharma-movies-bg section.dharma-top-pad.slider-nav {
+    padding-top: clamp(4px, 0.9vw, 12px);
+  }
+
+  .dharma-movies-bg .upcoming-movie.movies-upcoming-stack {
+    margin-top: 0 !important;
+  }
+
+  .dharma-movies-bg .movies-upcoming-swiper-inner .swiper-pagination {
+    margin-top: 11px;
+  }
+
+  .dharma-movies-bg2 {
+    padding: clamp(52px, 8vw, 82px) 0 clamp(36px, 5.5vh, 52px);
+  }
+
+  .dharma-movies-bg3 {
+    padding: clamp(28px, 4.5vw, 40px) 0 clamp(44px, 6.5vh, 56px);
+  }
+
+  /* Show Upcoming chevrons; placeholders keep spacer width (`visibility:hidden` base) */
+  .dharma-movies-bg .movies-upcoming-arrow {
+    display: flex !important;
+  }
+
+  .dharma-movies-bg .movies-upcoming-arrow--placeholder {
+    display: inline-flex !important;
+  }
+
+  /* Undo handset `overflow-x: clip` widening if any — swiper arrows need room */
+  .movies-upcoming-outer {
+    overflow: visible !important;
+  }
+}
+
+/* Tall narrow portrait (iPhones incl. Pro Max ~430×932, 11–16-class + tall Android ~412×736+): focal + tighter hero */
+@media (max-width: 432px) and (min-height: 800px) {
+  .dharma-movies-bg {
+    background-position: center clamp(64px, 12vw, 100px);
+    /* Pull plate up vs global `padding-top: 120px` at `≤991` — stacks with hero `header-offset` */
+    padding-top: 90px;
+  }
+
+  /* Less hero band vs ≤575 `min-height` / padding — headline + search ride higher with less vertical dead air */
+  .dharma-movies-bg .movies-page-hero {
+    padding-top: max(0px, calc(var(--dh-header-offset) - 6px));
+    padding-bottom: 0;
+    min-height: clamp(135px, 20vh, 220px);
+  }
+
+  .dharma-movies-bg .movies-head-xl {
+    line-height: 0.84;
+  }
+}
+
+/* Portrait large iPhones (incl. 14 Pro Max ~430-wide) — safe-area gutters + home-indicator vs fixed `14px` */
+@media (max-width: 432px) {
+  .dharma-movies-bg .container,
+  .dharma-movies-bg2 .orange-bg > .container,
+  .dharma-movies-bg3 .orange-bg > .container {
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+  }
+
+  .dharma-movies-bg {
+    padding-bottom: max(14px, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Sub-vi max width for dynamic toolbar / Zoomed Display still using `.search-movie-mar` cap */
+  .dharma-movies-bg .search-movie.search-movie-mar {
+    max-width: min(1120px, 94vw);
+  }
+}
+
+/* iPhone 14 / 15 Pro Max class (~412–432 wide × ≥900 tall portrait): scales “Movies” vs fixed `60px` at `≤767` */
+@media (orientation: portrait) and (min-width: 412px) and (max-width: 432px) and (min-height: 900px) {
+  .dharma-movies-bg .movies-head-xl {
+    font-size: clamp(54px, 12.85vw, 62px);
+    line-height: 0.932;
+    letter-spacing: 0.028em;
+  }
+
+  .dharma-movies-bg .movies-page-hero .head-title {
+    margin-bottom: clamp(0.42rem, 2vw, 0.76rem);
+  }
+}
+
+/*
+ * Ultra-narrow Android / Zoomed UI (~≤360, e.g. Galaxy S8+ logical width) + tiny iPhone SE (320).
+ * Tighter inset than `≤432` block; stacks after Pro Max rules.
+ */
+@media (max-width: 360px) {
+  .dharma-movies-bg .container,
+  .dharma-movies-bg2 .orange-bg > .container,
+  .dharma-movies-bg3 .orange-bg > .container {
+    padding-left: max(8px, env(safe-area-inset-left, 0px));
+    padding-right: max(8px, env(safe-area-inset-right, 0px));
+  }
+
+  .dharma-movies-bg .movies-head-xl {
+    font-size: clamp(30px, 9.4vw, 44px);
+    line-height: 0.91;
+    letter-spacing: 0.018em;
+  }
+
+  .dharma-movies-bg .f55,
+  .dharma-movies-bg2 .f55,
+  .dharma-movies-bg3 .f55 {
+    font-size: clamp(20px, 6.35vw, 27px);
+  }
+
+  .dharma-movies-bg .search-movie.search-movie-mar {
+    max-width: min(1120px, 98vw);
+  }
+}
+
+/*
+ * Short portrait canvases (iPhone SE 667px tall, Galaxy S8+ ~740, budget 16:9 phones):
+ * avoid tall `52vh` hero eating the fold; trim top plate vs global `120px` at `≤991`.
+ */
+@media (max-width: 420px) and (max-height: 760px) and (orientation: portrait) {
+  .dharma-movies-bg {
+    padding-top: clamp(52px, 13.5vw, 84px);
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .dharma-movies-bg .movies-page-hero {
+    min-height: clamp(152px, 34vh, 268px);
+    padding-top: calc(var(--dh-header-offset) + 12px);
+    padding-bottom: 0.28rem;
+  }
+
+  .dharma-movies-bg .movies-head-xl {
+    font-size: clamp(38px, 10.5vw, 54px);
+    line-height: 0.925;
+  }
+
+  .dharma-movies-bg .movies-hero-search-wrap {
+    margin-bottom: clamp(0.52rem, 3.35vw, 1.05rem);
+  }
+}
+
+@media (max-width: 400px) {
+  .dharma-movies-bg .movies-search-field .movies-search-input,
+  .dharma-movies-bg .movies-hero-search-wrap .movies-search-input {
+    min-height: 46px;
+    height: auto;
+    box-sizing: border-box;
   }
 }
 
 .movies-hero-head {
+  margin-top: 0;
   margin-bottom: clamp(1rem, 3vw, 1.75rem);
 }
 
@@ -1546,12 +1958,74 @@ img.doneLoading {
   padding: 40px 0 60px;
 }
 
-/* Tablets/phones: middle bands — width-scaled (no side gaps). */
+/*
+ * Past Releases — `< md`: parity with Angular `movies.html` `.mob-slider` flex-slider
+ * (`item-width="207"`, `item-margin="20"`). Legacy hides arrows via `.mob-slider .flex-direction-nav`.
+ * Smooth horizontal swipe: containment + inertia (`-webkit-overflow-scrolling`), snap finish.
+ */
+.dharma-movies-bg3 .mob-slider.movies-past-mob-slider {
+  overflow-x: auto;
+  overflow-y: visible;
+  margin-bottom: 1.35rem;
+  /* iOS momentum + scroll chaining kept on the strip (fewer glitches vs page scroll). */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: max(8px, env(safe-area-inset-left, 0px))
+    max(8px, env(safe-area-inset-right, 0px));
+  scrollbar-width: none;
+}
+
+.dharma-movies-bg3 .mob-slider.movies-past-mob-slider:focus-visible {
+  outline: 2px solid rgba($brand-primary, 0.65);
+  outline-offset: 2px;
+}
+
+.dharma-movies-bg3 .mob-slider.movies-past-mob-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.dharma-movies-bg3 .mob-slider .flex-direction-nav {
+  display: none !important;
+}
+
+.dharma-movies-bg3 .movies-past-mob-strip {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-start;
+  gap: 20px;
+  width: max-content;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.dharma-movies-bg3 .movies-past-mob-slide {
+  flex: 0 0 207px;
+  width: 207px;
+  max-width: 207px;
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dharma-movies-bg3 .mob-slider.movies-past-mob-slider {
+    scroll-snap-type: x proximity;
+  }
+}
+
+/* Tablets/phones — use `cover` like desktop (`100% auto` pinned width only: tall sections left
+ * most of `movie-middle.jpg` / `movie-bottom.jpg` effectively “outside” the painted band). */
 @media (max-width: 991.98px) {
   .dharma-movies-bg2,
   .dharma-movies-bg3 {
-    background-size: 100% auto;
-    background-position: center top;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
   }
 }
 
@@ -1584,6 +2058,8 @@ img.doneLoading {
   .video-name {
     font-size: 18px;
     margin-left: 5px;
+    /* Legacy `main.scss`: titles read as links (`#f37021`); wins over `a.text-reset` on whole-card Next `<Link>`. */
+    color: $brand-primary !important;
   }
 
   .flex-control-nav.flex-control-paging {
@@ -1602,6 +2078,21 @@ img.doneLoading {
   }
 }
 
+/* iPhone SE / Galaxy S8+ class width — proportional “Movies” + section rails (covers 375 & 389-wide SE) */
+@media (max-width: 389px) {
+  .dharma-movies-bg .movies-head-xl {
+    font-size: clamp(37px, 10.65vw, 52px);
+    line-height: 0.93;
+    letter-spacing: 0.02em;
+  }
+
+  .dharma-movies-bg .f55,
+  .dharma-movies-bg2 .f55,
+  .dharma-movies-bg3 .f55 {
+    font-size: clamp(25px, 7.45vw, 33px);
+  }
+}
+
 /* Recent + Past sections must share the same content band as the Upcoming card
    column, otherwise their `.container` is wider than the Swiper above and the
    whole block looks shifted right. Mirrors `.movies-upcoming-card-column`. */
@@ -1613,7 +2104,7 @@ img.doneLoading {
 @media (max-width: 575px) {
   .dharma-movies-bg2 .orange-bg > .container,
   .dharma-movies-bg3 .orange-bg > .container {
-    max-width: min(1120px, 88vw);
+    max-width: 100%;
   }
 }
 
@@ -1712,13 +2203,23 @@ img.doneLoading {
 }
 
 .movies-search-input-icon {
+  /*
+   * Avoid `translateY(-50%)`: subpixel layering often makes tiny PNGs look soft/blurry
+   * on retina mobile; inset + margin:auto centers crisply without a transform.
+   */
   position: absolute;
   left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 0;
+  bottom: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: auto;
+  margin-bottom: auto;
   z-index: 2;
   pointer-events: none;
-  opacity: 0.62;
+  display: block;
+  object-fit: contain;
+  // opacity: 0.62;
 }
 
 .movies-search-input {
@@ -1868,6 +2369,14 @@ img.doneLoading {
   }
 }
 
+/* Movies — Past Releases: iPad Air / Pro 11 portrait (`≤991` would be 3-up); keep 5 posters per row */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .dharma-movies-bg3 .mobile-row .col-flex {
+    flex: 0 0 20%;
+    max-width: 20%;
+  }
+}
+
 @media (max-width: 575px) {
   .mobile-row .col-flex {
     flex: 0 0 50%;
@@ -2007,15 +2516,19 @@ img.doneLoading {
     font-size: 14px;
   }
   .movies-upcoming-card-column {
-    max-width: min(1120px, 88vw);
+    max-width: min(1120px, 82vw);
+  }
+
+  .dharma-movies-bg .movies-upcoming-card-column {
+    max-width: min(1120px, 82vw);
   }
 }
 
 .movies-upcoming-frame {
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  background: #fff;
-  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
 }
 
 /* `next/image` fill + responsive breakpoints (movies / PSI) */
@@ -2027,7 +2540,7 @@ img.doneLoading {
   img {
     object-fit: contain;
     object-position: top center;
-    background-color: #fff;
+    background-color: transparent;
   }
 }
 
@@ -2095,9 +2608,8 @@ img.doneLoading {
   vertical-align: top;
   object-fit: contain;
   object-position: top center;
-  background-color: #fff;
+  background-color: transparent;
 }
-
 /* "VIEW ALL" button — port of frontend/sass/main.scss `.btn-view-more` / `.btn-1`.
    An SVG `<rect>` draws the 2px orange outline; on hover the rect's
    stroke-dasharray is animated for the chase effect. */
@@ -5569,11 +6081,13 @@ img.doneLoading {
   background-color: #0a0a0a;
 }
 
-.videos-page-legacy .em-box img {
+.videos-page-legacy .em-box img,
+.videos-page-legacy .em-box img.img-responsive {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
+  max-width: none;
   object-fit: cover;
   display: block;
 }
@@ -5615,6 +6129,12 @@ img.doneLoading {
    VIEW ALL: single focusable SVG (rect outline + label), `.btn-view-more`-style chase on hover */
 .videos-page-legacy .videos-movie-section {
   width: 100%;
+}
+
+.videos-page-legacy .videos-movie-section .upcoming-slider {
+  padding-left: clamp(12px, 3.2vw, 24px);
+  padding-right: clamp(12px, 3.2vw, 24px);
+  box-sizing: border-box;
 }
 
 /* `.line45` is `line-height: 45%` (legacy typo — ~20px for 45px type). Glyph overflow overlaps
@@ -5787,15 +6307,16 @@ img.doneLoading {
   }
 }
 
-/* Dharma TV rows: same asset pattern as `.slider-nav` / `.tv-all-slider` `a.flex-prev:before` (70×70 left/right) + `.tv-ain-tp` vertical (70%). */
+/* Dharma TV rows (arrows removed): clip horizontal scroll to the track so side padding
+   stays visible while swiping — `overflow: visible` let slides draw into the gutters. */
 .videos-page-legacy .videos-tv-swiper-nav {
-  overflow: visible;
   --swiper-navigation-size: 70px;
   --swiper-navigation-top-offset: 70%;
 }
 
 .videos-page-legacy .videos-tv-swiper-nav .swiper.videos-tv-swiper {
-  overflow: visible;
+  overflow: hidden;
+  width: 100%;
 }
 
 /* Don’t vertically stretch slides to the tallest row — avoids empty band + stray clipping. */
@@ -5803,8 +6324,30 @@ img.doneLoading {
   align-items: flex-start;
 }
 
+/*
+ * Equal card width per slide (`slidesPerView: auto`) — fractional `slidesPerView` caused
+ * visibly different thumbnail sizes slide-to-slide and between movie rows.
+ */
 .videos-page-legacy .videos-tv-swiper .swiper-slide {
   height: auto;
+  width: 300px;
+  box-sizing: border-box;
+}
+
+.videos-page-legacy .videos-tv-swiper .swiper-slide .video-box {
+  width: 100%;
+}
+
+@media (max-width: 575.98px) {
+  .videos-page-legacy .videos-tv-swiper .swiper-slide {
+    width: 272px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .videos-page-legacy .videos-tv-swiper .swiper-slide {
+    width: 286px;
+  }
 }
 
 .videos-page-legacy .videos-tv-swiper-nav .swiper-button-prev,
