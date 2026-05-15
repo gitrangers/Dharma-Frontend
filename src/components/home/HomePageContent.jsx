@@ -89,7 +89,7 @@ function ViewAllMoviesLink() {
 
 function ViewAllVideosLink() {
   return (
-    <div className="btn-view-more mt15 text-center">
+    <div className="btn-view-more dharma-home-strip-view-all text-center">
       <Link href="/videos" className="btn-1 dh-view-all-btn font-hammersmith mx-auto">
         <svg aria-hidden="true" focusable="false" style={{ pointerEvents: "none" }}>
           <rect x="0" y="0" fill="none" width="100%" height="100%" />
