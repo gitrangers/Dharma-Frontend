@@ -374,18 +374,38 @@ export function HomePageContent({
               <div className="col-12 col-lg-10">
                 {strip.length > 0 ?
                   <div className="video-slider slider-nav mt30 min-tp-nm">
-                    <Swiper
-                      modules={[Navigation]}
-                      slidesPerView={1.2}
-                      spaceBetween={12}
-                      navigation
-                      breakpoints={{
-                        576: { slidesPerView: 2, spaceBetween: 14 },
-                        768: { slidesPerView: 3, spaceBetween: 16 },
-                        1200: { slidesPerView: 4, spaceBetween: 16 },
-                      }}
-                      className="dharma-home-video-strip"
-                    >
+                    <div className="dharma-home-video-strip-wrap dh-relative">
+                      <button
+                        type="button"
+                        id="dharma-home-video-nav-prev"
+                        className="dharma-home-video-nav-btn dharma-home-video-nav-btn--prev"
+                        aria-label="Previous videos"
+                      >
+                        <i className="fa-solid fa-chevron-left dharma-home-video-nav-icon" aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        id="dharma-home-video-nav-next"
+                        className="dharma-home-video-nav-btn dharma-home-video-nav-btn--next"
+                        aria-label="Next videos"
+                      >
+                        <i className="fa-solid fa-chevron-right dharma-home-video-nav-icon" aria-hidden />
+                      </button>
+                      <Swiper
+                        modules={[Navigation]}
+                        slidesPerView={1.2}
+                        spaceBetween={12}
+                        navigation={{
+                          prevEl: "#dharma-home-video-nav-prev",
+                          nextEl: "#dharma-home-video-nav-next",
+                        }}
+                        breakpoints={{
+                          576: { slidesPerView: 2, spaceBetween: 14 },
+                          768: { slidesPerView: 3, spaceBetween: 16 },
+                          1200: { slidesPerView: 4, spaceBetween: 16 },
+                        }}
+                        className="dharma-home-video-strip"
+                      >
                       {strip.map((row, ri) => {
                         const rawUrl = String(row.url || "").trim();
                         const watch = /^https?:\/\//i.test(rawUrl) ? rawUrl : youtubeWatchUrl(rawUrl) || "";
@@ -421,7 +441,8 @@ export function HomePageContent({
                           </SwiperSlide>
                         );
                       })}
-                    </Swiper>
+                      </Swiper>
+                    </div>
                     <ViewAllVideosLink />
                   </div>
                 : null}

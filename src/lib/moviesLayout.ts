@@ -19,7 +19,8 @@ export type MovieRecord = {
   mainCast?: string;
 };
 
-function chunk<T>(arr: T[], size: number): T[][] {
+/** Row groups for sliders / legacy chunking (Past mobile rail still uses 5-up strips). */
+export function chunkBy<T>(arr: T[], size: number): T[][] {
   if (!arr.length) return [];
   const out: T[][] = [];
   for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
@@ -40,23 +41,8 @@ export function layoutRecent(recentRaw: MovieRecord[]): MovieRecord[][][] {
   const recent = [...recentRaw].sort(
     (a, b) => (b.upcomingOrder ?? 0) - (a.upcomingOrder ?? 0)
   );
-  const outer = chunk(recent, 4);
-  return outer.map((group) => chunk(group, 4));
-}
-
-export function layoutPast(pastRaw: MovieRecord[]): {
-  pastChunks: MovieRecord[][];
-  pastMoreChunks: MovieRecord[][];
-} {
-  const past = [...pastRaw].sort(
-    (a, b) => (b.upcomingOrder ?? 0) - (a.upcomingOrder ?? 0)
-  );
-  const first10 = past.slice(0, 10);
-  const rest = past.slice(10);
-  return {
-    pastChunks: chunk(first10, 5),
-    pastMoreChunks: chunk(rest, 5),
-  };
+  const outer = chunkBy(recent, 4);
+  return outer.map((group) => chunkBy(group, 4));
 }
 
 export function buildMovieList(details: MovieRecord[]) {
@@ -66,11 +52,14 @@ export function buildMovieList(details: MovieRecord[]) {
   );
   const recentRaw = g["Recent"] ?? [];
   const pastRaw = g["Past"] ?? [];
+  const pastSorted = [...pastRaw].sort(
+    (a, b) => (b.upcomingOrder ?? 0) - (a.upcomingOrder ?? 0)
+  );
 
   return {
     upcoming,
     recentSlides: layoutRecent(recentRaw),
-    ...layoutPast(pastRaw),
+    pastSorted,
   };
 }
 

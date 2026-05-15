@@ -3,12 +3,28 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 
 import { MovieSearchCombobox } from "@/components/movies/MovieSearchCombobox";
 import { UpcomingReleasesSlider } from "@/components/movies/UpcomingReleasesSlider";
 import { resolveUploadUrl } from "@/lib/media";
-import { buildMovieList, movieSlug } from "@/lib/moviesLayout";
+import { buildMovieList, chunkBy, movieSlug } from "@/lib/moviesLayout";
+
+/** Same width band as four-up Past grid in `_dharma.scss` (`768px`–`1366.98px`). */
+const PAST_GRID_FOUR_UP_MQ = "(min-width: 768px) and (max-width: 1366.98px)";
+
+function usePastReleasesInitialDisplayCount() {
+  /** SSR + first paint: 10 matches server; `useLayoutEffect` corrects to 8 on iPad/tablet before paint. */
+  const [count, setCount] = useState(10);
+  useLayoutEffect(() => {
+    const mq = window.matchMedia(PAST_GRID_FOUR_UP_MQ);
+    const sync = () => setCount(mq.matches ? 8 : 10);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return count;
+}
 
 function RecentReleaseCard({ data }) {
   const src = resolveUploadUrl(data.mediumImage) || "/frontend/img/logo.png";
@@ -101,6 +117,17 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
   }, [initialSearchQuery]);
 
   const layout = useMemo(() => buildMovieList(initialDetails), [initialDetails]);
+  const pastInitialCount = usePastReleasesInitialDisplayCount();
+  const pastDisplayed = useMemo(
+    () => (layout.pastSorted ?? []).slice(0, pastInitialCount),
+    [layout.pastSorted, pastInitialCount]
+  );
+  const pastRest = useMemo(
+    () => (layout.pastSorted ?? []).slice(pastInitialCount),
+    [layout.pastSorted, pastInitialCount]
+  );
+  const pastChunks = useMemo(() => chunkBy(pastDisplayed, 5), [pastDisplayed]);
+  const pastMoreChunks = useMemo(() => chunkBy(pastRest, 5), [pastRest]);
 
   const goMovie = (m) => {
     const slug = movieSlug(m);
@@ -201,7 +228,7 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
         </section>
       : null}
 
-      {layout.pastChunks.length > 0 || layout.pastMoreChunks.length > 0 ?
+      {(layout.pastSorted ?? []).length > 0 ?
         <section className="dharma-movies-bg3">
           <div className="orange-bg recent-movie pb-5">
             <div className="container">
@@ -216,19 +243,22 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
               </div>
 
               <div className="mobile-row hidden-xs d-none d-md-block movies-past-grid-row">
-                {layout.pastChunks.map((videos, vi) => (
-                  <div key={`pch-${vi}`} className="row-flex text-center flex-wrap justify-content-center">
-                    {videos.map((item) => (
-                      <div key={movieSlug(item)} className="col-flex px-1 mb-3">
+                <div className="row-flex text-center flex-wrap justify-content-center">
+                  {pastChunks.flatMap((videos, ci) =>
+                    videos.map((item, ri) => (
+                      <div
+                        key={`pch-${ci}-${movieSlug(item) ?? "past"}-${String(item._id ?? item.year ?? ri)}`}
+                        className="col-flex px-1 mb-3"
+                      >
                         <PastReleaseCard item={item} />
                       </div>
-                    ))}
-                  </div>
-                ))}
+                    ))
+                  )}
+                </div>
               </div>
 
               <div className="d-md-none movies-past-mob-rail">
-                {layout.pastChunks.map((videos, vi) => (
+                {pastChunks.map((videos, vi) => (
                   <div key={`mob-${vi}`} className="mob-slider movies-past-mob-slider">
                     <div className="movies-past-mob-strip">
                       {videos.map((item) => (
@@ -241,7 +271,7 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
                 ))}
               </div>
 
-              {!viewAll && layout.pastMoreChunks.some((c) => c.length > 0) ?
+              {!viewAll && pastRest.length > 0 ?
                 <div className="text-center">
                   <div className="dh-relative">
                     <div className="btn-view-more mt15 mb20 text-center">
@@ -263,18 +293,21 @@ export function MoviesPageView({ initialDetails, searchNames, initialSearchQuery
               {viewAll ?
                 <>
                   <div className="mobile-row hidden-xs d-none d-md-block movies-past-grid-row">
-                    {layout.pastMoreChunks.map((videos, vi) => (
-                      <div key={`pm-${vi}`} className="row-flex text-center flex-wrap justify-content-center">
-                        {videos.map((item) => (
-                          <div key={`pm-${movieSlug(item)}`} className="col-flex px-1 mb-3">
+                    <div className="row-flex text-center flex-wrap justify-content-center">
+                      {pastMoreChunks.flatMap((videos, ci) =>
+                        videos.map((item, ri) => (
+                          <div
+                            key={`pm-${ci}-${movieSlug(item) ?? "past"}-${String(item._id ?? item.year ?? ri)}`}
+                            className="col-flex px-1 mb-3"
+                          >
                             <PastReleaseCard item={item} />
                           </div>
-                        ))}
-                      </div>
-                    ))}
+                        ))
+                      )}
+                    </div>
                   </div>
                   <div className="d-md-none movies-past-mob-rail">
-                    {layout.pastMoreChunks.map((videos, vi) => (
+                    {pastMoreChunks.map((videos, vi) => (
                       <div key={`pmm-${vi}`} className="mob-slider movies-past-mob-slider">
                         <div className="movies-past-mob-strip">
                           {videos.map((item) => (

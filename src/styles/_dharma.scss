@@ -12,7 +12,7 @@ $grey: #6f6f6e;
   --dh-header-offset: 116px;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 1399.98px) {
   :root {
     --dh-header-offset: 118px;
   }
@@ -167,8 +167,8 @@ body {
   }
 }
 
-/* Phones only: full-bleed bar + ribbon (tablets/iPad use inset bar like legacy desktop) */
-@media (max-width: 767.98px) {
+/* Phones + tablets + sub-`xxl` viewports: full-bleed bar + ribbon (collapsed navbar until `xxl` — `navbar-expand-xxl` in SiteHeader.jsx). */
+@media (max-width: 1399.98px) {
   .head-bg {
     margin: 0;
     padding: 14px 0 10px;
@@ -188,6 +188,13 @@ body {
     background-size: 100% auto;
     background-position: center 56%;
     background-repeat: no-repeat;
+  }
+}
+
+/* Tablet / iPad / sub-`xxl` (768–1399): tuck ribbon tighter — parity with legacy feel */
+@media (min-width: 768px) and (max-width: 1399.98px) {
+  .home .dh-header-shell > .head-curve {
+    margin: -19px 0 0;
   }
 }
 
@@ -402,7 +409,7 @@ body {
   display: block;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .dh-header-nav-dd .dh-header-dropdown {
     position: absolute;
     top: 100%;
@@ -412,7 +419,7 @@ body {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 1399.98px) {
   .head-social ul li {
     padding: 0;
   }
@@ -479,7 +486,7 @@ body {
   height: auto;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 1399.98px) {
   .home .site-header-search.search-movie.my-search {
     right: 72px;
     width: 32%;
@@ -487,7 +494,7 @@ body {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 1399.98px) {
   .home .site-header-search.search-movie.my-search {
     position: relative;
     width: 100% !important;
@@ -501,8 +508,8 @@ body {
   }
 }
 
-/* Compact header: phones only (navbar-expand-md) */
-@media (max-width: 767.98px) {
+/* Compact header below `xxl` — same shell as phones (matches `navbar-expand-xxl` in `SiteHeader.jsx`). */
+@media (max-width: 1399.98px) {
   .home .dh-header-main-row.row {
     min-height: 0;
   }
@@ -727,7 +734,7 @@ body {
   white-space: nowrap;
 }
 
-@media (max-width: 1199px) and (min-width: 992px) {
+@media (max-width: 1399.98px) and (min-width: 992px) {
   .dh-header-inner .custom-menu.dh-header-nav-list li a {
     padding: 5px 8px !important;
     font-size: 11px !important;
@@ -751,15 +758,15 @@ body {
   gap: 0;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .dh-header-nav-list.navbar-nav {
     flex-wrap: nowrap !important;
     justify-content: center;
   }
 }
 
-/* Mid widths: tighter copy so seven items + 2.0 stay one row (iPad portrait / small laptop) */
-@media (min-width: 768px) and (max-width: 991px) {
+/* Narrow canvas where desktop nav can show: tighter copy (navbar expanded from `xxl` up). */
+@media (min-width: 992px) and (max-width: 1399.98px) {
   .dh-header-inner .custom-menu.dh-header-nav-list li a {
     padding: 5px 5px !important;
     font-size: 10px !important;
@@ -1167,9 +1174,46 @@ img.doneLoading {
    * Same `.descp` as `.contact-page .contact-info` — homepage cannot wrap the whole strip in
    * `.contact-page` (would apply `.contact-page .contact-info img { opacity: 0 }` to Next `<Image>`s).
    */
+  .contact-info .contact-info__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    margin: 0 auto 6px;
+    max-width: 100%;
+  }
+
+  .contact-info .contact-info__icon.info-icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    margin-right: 5px;
+    width: auto;
+    height: auto;
+    line-height: 0;
+  }
+
+  .contact-info .contact-info__title {
+    font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: 0;
+    hyphens: manual;
+    text-wrap: balance;
+    text-align: center;
+    color: $brand-primary;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
   .contact-info .descp {
     margin-top: 10px;
     clear: both;
+    text-align: center;
 
     p {
       font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
@@ -1234,7 +1278,7 @@ img.doneLoading {
       letter-spacing: 0;
       hyphens: manual;
       text-wrap: balance;
-      text-align: left;
+      text-align: center;
       min-width: 0;
       margin: 0;
       padding: 0;
@@ -1244,6 +1288,7 @@ img.doneLoading {
     .descp {
       margin-top: 10px;
       clear: both;
+      text-align: center;
 
       p {
         font-family: var(--font-karla), "Karla", "Helvetica Neue", "AMRTYPEN", Helvetica, Arial, sans-serif;
@@ -1385,7 +1430,25 @@ img.doneLoading {
     font-size: 14px;
   }
 
-  .contact-page .contact-info .contact-info__title {
+  /* Dept tiles — icon above heading + body copy on narrow viewports */
+  .contact-page .contact-info .contact-info__head,
+  .home-contact .contact-info .contact-info__head {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    margin-bottom: 10px;
+  }
+
+  .contact-page .contact-info .contact-info__icon.info-icon,
+  .home-contact .contact-info .contact-info__icon.info-icon {
+    margin-right: 0;
+    align-items: center;
+  }
+
+  .contact-page .contact-info .contact-info__title,
+  .home-contact .contact-info .contact-info__title {
     font-size: 22px;
   }
 }
@@ -1444,8 +1507,7 @@ img.doneLoading {
   padding: 7px 30px 5px;
 }
 
-/* Movies — `movie-up.jpg` ≥992px; ≤992px mirrors `frontend/sass/_mobile.scss`: `mobile-movies.jpg` + padded band.
- * Hero + Upcoming share one plate; column flex avoids margin seams. */
+/* Movies — `movie-up.jpg` ≥1400px; ≤991.98px + large touch tablets (below) mirror mobile plate. */
 .dharma-movies-bg {
   position: relative;
   display: flex;
@@ -1612,19 +1674,19 @@ img.doneLoading {
 }
 
 /*
- * Movies — iPad-class tablets (≥768 × ≤991.98): same `mobile-movies.jpg` band as phones, scaled for
- * Air / Pro 11 portrait & split-view. Does NOT apply at `≤767.98px` — handset rules unchanged.
+ * Movies — iPad-class tablets (≥768 × ≤991.98): keep `mobile-movies.jpg` sizing identical to phones
+ * (see `@media max-width 991.98px`); only typography / hero / section rhythm differ here.
  */
 @media (min-width: 768px) and (max-width: 991.98px) {
   .dharma-movies-bg {
-    padding-top: clamp(52px, 7.75vw, 82px);
-    padding-bottom: clamp(52px, 9vh, 88px);
+    background-position: 55% clamp(42px, 10vw, 82px);
   }
 
   .dharma-movies-bg .movies-page-hero {
     padding-top: calc(var(--dh-header-offset) + clamp(12px, 2vw, 26px));
-    padding-bottom: clamp(0.25rem, 1vw, 0.5rem);
-    min-height: clamp(195px, 26vh, 380px);
+    padding-bottom: 0;
+    /* Same band idea as ≤991 — avoid locking 800px min-height (pushed Upcoming far down). */
+    min-height: clamp(220px, 32vh, 400px);
   }
 
   .dharma-movies-bg .movies-head-xl {
@@ -1633,11 +1695,12 @@ img.doneLoading {
   }
 
   .dharma-movies-bg .movies-hero-search-wrap {
-    margin-bottom: clamp(0.25rem, 1vw, 0.55rem);
+    margin-bottom: 0;
   }
 
   .dharma-movies-bg section.dharma-top-pad.slider-nav {
-    padding-top: clamp(4px, 0.85vw, 10px);
+    padding-top: 0;
+    margin-top: clamp(-14px, -1.5vw, -6px);
   }
 
   /* Wider-than-820 iPad widths still had Bootstrap `.mt-4` on `.upcoming-movie` — gap under search */
@@ -1655,6 +1718,66 @@ img.doneLoading {
 
   .dharma-movies-bg3 {
     padding: clamp(32px, 5vw, 44px) 0 clamp(48px, 7vh, 64px);
+  }
+}
+
+/*
+ * iPad Pro class & other large touch tablets (992–1366): same `mobile-movies.jpg` plate + hero
+ * rhythm as iPad Air — mouse laptops in this width keep `movie-up.jpg` (no `(hover: none)` match).
+ */
+@media (min-width: 992px) and (max-width: 1366.98px) {
+  @media (hover: none) and (pointer: coarse) {
+    .dharma-movies-bg {
+      background-image: url("/frontend/img/mobile-movies.jpg");
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: 55% clamp(42px, 10vw, 82px);
+      padding-top: 120px;
+      padding-bottom: 100px;
+      padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+      background-clip: padding-box;
+    }
+
+    .dharma-movies-bg .movies-hero-search-wrap {
+      margin-bottom: 0;
+    }
+
+    .movies-page-hero {
+      padding-top: calc(var(--dh-header-offset) + 48px);
+      min-height: clamp(300px, 52vh, 520px);
+    }
+
+    .dharma-movies-bg .movies-page-hero {
+      padding-top: calc(var(--dh-header-offset) + clamp(12px, 2vw, 26px));
+      padding-bottom: 0;
+      min-height: clamp(220px, 32vh, 400px);
+    }
+
+    .dharma-movies-bg .movies-head-xl {
+      font-size: clamp(58px, 7.75vw, 88px);
+      line-height: 0.96;
+    }
+
+    .dharma-movies-bg section.dharma-top-pad.slider-nav {
+      padding-top: 0;
+      margin-top: clamp(-14px, -1.5vw, -6px);
+    }
+
+    .dharma-movies-bg .upcoming-movie.movies-upcoming-stack {
+      margin-top: 0 !important;
+    }
+
+    .dharma-movies-bg .movies-upcoming-swiper-inner .swiper-pagination {
+      margin-top: 12px;
+    }
+
+    .dharma-movies-bg2 {
+      padding: clamp(64px, 9vw, 96px) 0 clamp(40px, 6vh, 56px);
+    }
+
+    .dharma-movies-bg3 {
+      padding: clamp(32px, 5vw, 44px) 0 clamp(48px, 7vh, 64px);
+    }
   }
 }
 
@@ -1732,7 +1855,7 @@ img.doneLoading {
  * handset rules treated it as a phone. Tall min-height excludes typical phones (~900+).
  */
 @media (min-width: 720px) and (max-width: 767.98px) and (min-height: 900px) {
-  /* Past Releases: desktop grid + 5-up (hide horizontal strip) */
+  /* Past Releases: desktop grid + four-up on this band (hide horizontal strip) */
   .dharma-movies-bg3 .movies-past-grid-row.mobile-row.hidden-xs.d-none.d-md-block {
     display: block !important;
   }
@@ -1742,8 +1865,8 @@ img.doneLoading {
   }
 
   .dharma-movies-bg3 .mobile-row.movies-past-grid-row .col-flex {
-    flex: 0 0 20%;
-    max-width: 20%;
+    flex: 0 0 25%;
+    max-width: 25%;
   }
 
   .dharma-movies-bg .container {
@@ -2109,6 +2232,12 @@ img.doneLoading {
   }
 }
 
+/* A little air under “Recent Releases” / “Past Releases” (head `<h1>` uses `.mb0`). */
+.dharma-movies-bg2 .recent-movie .title,
+.dharma-movies-bg3 .upcoming-movie .title {
+  margin-bottom: clamp(12px, 2.4vw, 28px);
+}
+
 /* Legacy .f120 ~120px on large screens */
 .movies-head-xl {
   font-size: clamp(3rem, 12vw, 7.5rem);
@@ -2370,11 +2499,20 @@ img.doneLoading {
   }
 }
 
-/* Movies — Past Releases: iPad Air / Pro 11 portrait (`≤991` would be 3-up); keep 5 posters per row */
+/* Home — Upcoming / Released: four posters per row on iPad Air class widths (Bootstrap md–lg tablet).
+ * Mirrors `.dharma-movies-bg3` past grid density; avoids 3-up from generic `max-width: 991px` alone. */
 @media (min-width: 768px) and (max-width: 991.98px) {
+  .dharma-home .mobile-row .col-flex {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+}
+
+/* Movies — Past Releases on iPad / compact canvases (768–1366): four posters per row (`20%` = five-up is default above 1366). */
+@media (min-width: 768px) and (max-width: 1366.98px) {
   .dharma-movies-bg3 .mobile-row .col-flex {
-    flex: 0 0 20%;
-    max-width: 20%;
+    flex: 0 0 25%;
+    max-width: 25%;
   }
 }
 
@@ -2627,7 +2765,8 @@ img.doneLoading {
 }
 
 .btn-view-more {
-  overflow: auto; /* clearfix — contains floated buttons where used */
+  display: flow-root; /* contain floats without clipping SVG stroke (was `overflow: auto`) */
+  overflow: visible;
 }
 
 /* VIEW ALL — same as frontend/sass/main.scss `.btn-view-more` + `.btn-1` + `.btn`
@@ -2635,6 +2774,7 @@ img.doneLoading {
 .dh-view-all-btn {
   display: block;
   position: relative;
+  overflow: visible; /* `stroke` on `<rect>` sits half outside path; don’t clip any edge */
   background: transparent; /* `.btn-1` */
   border: none;
   border-radius: 0;
@@ -2663,18 +2803,20 @@ img.doneLoading {
 
   svg {
     position: absolute;
-    left: 0;
-    top: 0;
+    inset: 0;
     width: 100%;
-    height: 40px;
+    height: 100%; /* match padded box — fixed 40px clipped the bottom stroke on one side */
     overflow: visible;
     pointer-events: none; /* CSS fallback — inline style on element is the hard guard */
+    box-sizing: border-box;
   }
 
   rect {
     fill: none;
     stroke: $brand-primary;
     stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+    shape-rendering: geometricPrecision;
     stroke-dasharray: 422, 0;
     transition: all 1.35s cubic-bezier(0.19, 1, 0.22, 1);
   }
@@ -4759,9 +4901,6 @@ img.doneLoading {
   .movie-inner-bg {
     margin-top: 0;
   }
-  .bg-synopsis {
-    background: none !important;
-  }
   .m-title {
     h1 {
       font-size: 24px;
@@ -4939,13 +5078,20 @@ img.doneLoading {
   }
 }
 
-/* Horizontal tab scroller on small screens (replaces Angular flex-slider). */
+/* Horizontal tab scroller on small screens (replaces Angular flex-slider). Scrollbar hidden — drag / trackpad / touch still scrolls. */
 .movie-inside-tabs-mob {
   flex-wrap: nowrap !important;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
 
   .movie-inside-tab-btn {
     flex: 0 0 auto;
@@ -4957,9 +5103,103 @@ img.doneLoading {
   }
 }
 
+/* Movie detail — tablets / iPad: Synopsis·Cast·Gallery·Awards row scrolls sideways like `.movie-inside-tabs-mob` on phones */
+@media (min-width: 768px) and (max-width: 1366.98px) {
+  .movie-tabs .all-tabs .btn-group,
+  .all-tabs .btn-group {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    max-width: 100%;
+    overscroll-behavior-x: contain;
+
+    &::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+  }
+
+  .movie-tabs .all-tabs .btn-group .movie-inside-tab-btn,
+  .movie-tabs .all-tabs .btn-group > .btn,
+  .all-tabs .btn-group .movie-inside-tab-btn,
+  .all-tabs .btn-group > .btn {
+    flex: 0 0 auto !important;
+    min-width: 120px;
+    white-space: nowrap;
+  }
+
+  .movie-tabs .all-tabs .btn-group .movie-inside-tab-btn:first-child,
+  .movie-tabs .all-tabs .btn-group > .btn:first-child,
+  .all-tabs .btn-group .movie-inside-tab-btn:first-child,
+  .all-tabs .btn-group > .btn:first-child {
+    padding-left: 24px !important;
+  }
+}
+
 .vs-dis {
   .flex-control-nav {
     display: none;
+  }
+}
+
+/* Synopsis deco (`cutImage2` inline): tablets — smaller plate + bottom band so image stays under copy */
+@media (max-width: 1366.98px) {
+  .movie-inside-date.bg-synopsis.mob-bg,
+  .movie-inside-date.bg-synopsis {
+    background-repeat: no-repeat !important;
+    background-position: right bottom !important;
+    background-attachment: scroll !important;
+    background-origin: padding-box !important;
+    background-size: min(88vw, 500px) auto !important;
+    padding-bottom: clamp(64px, 18vw, 160px) !important;
+    overflow-x: clip;
+    isolation: isolate;
+  }
+
+  .movie-inside-date.bg-synopsis > .row,
+  .movie-inside-date.bg-synopsis .synopsis-pane,
+  .movie-inside-date.bg-synopsis .scroll-over,
+  .movie-inside-date.bg-synopsis .data-content {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Phones: deco draws upward from bottom — need extra vertical band + smaller bitmap so paragraphs don’t sit on art */
+@media (max-width: 767.98px) {
+  .movie-inside-date.bg-synopsis.mob-bg,
+  .movie-inside-date.bg-synopsis {
+    background-size: min(80vw, 310px) auto !important;
+    /* Nudge deco slightly above bottom edge so it sits a bit higher vs copy */
+    background-position: right max(0px, env(safe-area-inset-right, 0px))
+      bottom clamp(20px, 4.5vmin, 40px) !important;
+    padding-bottom: clamp(172px, 50vmin, 295px) !important;
+  }
+
+  .movie-inside-date.bg-synopsis .synopsis-pane,
+  .movie-inside-date.bg-synopsis .scroll-over,
+  .movie-inside-date.bg-synopsis .data-content,
+  .movie-inside-date.bg-synopsis .col-md-8 {
+    background-color: rgba(255, 255, 255, 0.97);
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-top: 10px;
+    padding-bottom: 12px;
+    border-radius: 4px;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .movie-inside-date.bg-synopsis.mob-bg,
+  .movie-inside-date.bg-synopsis {
+    background-size: min(74vw, 270px) auto !important;
+    background-position: right max(0px, env(safe-area-inset-right, 0px))
+      bottom clamp(24px, 5vmin, 44px) !important;
+    padding-bottom: clamp(192px, 54vmin, 315px) !important;
   }
 }
 
@@ -6529,6 +6769,21 @@ img.doneLoading {
   overflow-x: hidden;
 }
 
+/* Home hero carousel — iPad / tablet: sit slider slightly lower under fixed header */
+@media (min-width: 768px) and (max-width: 991.98px) {
+  .dharma-home .home-hero {
+    padding-top: calc(var(--dh-header-offset) + clamp(22px, 3.2vw, 44px));
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1366.98px) {
+  @media (hover: none) and (pointer: coarse) {
+    .dharma-home .home-hero {
+      padding-top: calc(var(--dh-header-offset) + clamp(22px, 3.2vw, 44px));
+    }
+  }
+}
+
 /* Hero slider wrap: full-width swiper, arrows float over the image at left/right edges */
 .dh-hero-slider-wrap {
   position: relative;
@@ -7078,25 +7333,79 @@ img.doneLoading {
   padding: clamp(48px, 12vw, 80px) 0;
 }
 
-/* Video strip — grey arrows matching legacy .min-tp-nm Grey-Arrow PNG style */
+/* Home video strip — custom prev/next outside thumbnails (wired via Swiper `navigation.prevEl/nextEl`) */
+.dharma-home .video-slider.slider-nav.min-tp-nm {
+  overflow: visible;
+}
+
+.dharma-home .dharma-home-tv .col-lg-10 {
+  overflow: visible;
+}
+
+.dharma-home .dharma-home-video-strip-wrap {
+  position: relative;
+  overflow: visible;
+}
+
 .dharma-home .dharma-home-video-strip {
-  padding: 0 50px; /* side room for the arrows */
+  padding: 0;
+}
+
+.dharma-home .dharma-home-video-nav-btn {
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  transform: translateY(-50%);
+  width: clamp(36px, 5vw, 44px);
+  height: clamp(36px, 5vw, 44px);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(18, 18, 18, 0.55);
+  color: rgba(230, 230, 230, 0.92);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: rgba(42, 42, 42, 0.78);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 2px;
+  }
+}
+
+.dharma-home .dharma-home-video-nav-btn--prev {
+  left: clamp(-48px, -4.25vw, -28px);
+}
+
+.dharma-home .dharma-home-video-nav-btn--next {
+  right: clamp(-48px, -4.25vw, -28px);
+}
+
+.dharma-home .dharma-home-video-nav-icon {
+  font-size: clamp(13px, 2vw, 16px);
+  line-height: 1;
 }
 
 @media (max-width: 575px) {
-  .dharma-home .dharma-home-video-strip {
-    padding: 0; /* no room needed — navigation hidden on mobile */
-  }
-  .dharma-home .dharma-home-video-strip .swiper-button-next,
-  .dharma-home .dharma-home-video-strip .swiper-button-prev {
-    display: none;
+  .dharma-home .dharma-home-video-nav-btn {
+    display: none !important;
   }
 }
 
-.dharma-home .dharma-home-video-strip .swiper-button-next,
-.dharma-home .dharma-home-video-strip .swiper-button-prev {
-  color: #aaa;
-  --swiper-navigation-size: 28px;
+/* Hide any Swiper-injected nav nodes if module adds defaults */
+.dharma-home .dharma-home-video-strip .swiper-button-next:not(.dharma-home-video-nav-btn),
+.dharma-home .dharma-home-video-strip .swiper-button-prev:not(.dharma-home-video-nav-btn) {
+  display: none !important;
 }
 
 /* Generic .img-animate — zoom on hover, used by video strip & other sections */
