@@ -1508,6 +1508,7 @@ img.doneLoading {
 }
 
 /* Movies — `movie-up.jpg` ≥1400px; ≤991.98px + large touch tablets (below) mirror mobile plate. */
+/* Movies — Desktop */
 .dharma-movies-bg {
   position: relative;
   display: flex;
@@ -1518,40 +1519,74 @@ img.doneLoading {
   background-size: cover;
   background-position: center top;
   background-clip: padding-box;
-  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+  padding-inline: env(safe-area-inset-left, 0px)
+    env(safe-area-inset-right, 0px);
 }
 
-/* Short desktop canvases (~1440×700) — shallow bottom band without fighting hero min-heights */
+/* Short desktop canvases */
 @media (min-width: 992px) and (max-height: 760px) {
   .dharma-movies-bg {
     padding-bottom: clamp(12px, 2vh, 28px);
   }
 }
 
-/* ≤992 (`frontend/sass/_mobile.scss`): `mobile-movies.jpg` + padded band (`≤767` tightens bottom). */
+/* All mobiles + tablets */
 @media (max-width: 991.98px) {
   .dharma-movies-bg {
+
     background-image: url("/frontend/img/mobile-movies.jpg");
     background-repeat: no-repeat;
+
+    /* MAIN FIX */
     background-size: cover;
+
     background-position: center top;
-    padding-top: 120px;
-    padding-bottom: 100px;
-    padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+
+    /* Reduce excessive height */
+    padding-top: clamp(55px, 10vw, 90px);
+
+    padding-bottom: clamp(8px, 3vw, 24px);
+
+    padding-inline:
+      env(safe-area-inset-left, 0px)
+      env(safe-area-inset-right, 0px);
+
     background-clip: padding-box;
+
+    overflow-x: hidden;
+    overflow-y: hidden;
   }
 
   .dharma-movies-bg .movies-hero-search-wrap {
-    margin-bottom: clamp(1.45rem, 5.75vw, 2.375rem);
+    margin-bottom: clamp(0.8rem, 3vw, 1.6rem);
   }
 }
 
-/* Narrow phones — clip only (`padding-*` unchanged here so legacy bands above apply). */
+/* Extra small phones — keep padding-only here; background tuning for odd heights lives in later queries */
 @media (max-width: 480px) {
   .dharma-movies-bg {
-    overflow-x: clip;
+    padding-top: clamp(80px, 12vw, 100px);
+    padding-bottom: clamp(18px, 5vw, 40px);
   }
 }
+
+/* 393×738 / 390×740 */
+@media (orientation: portrait)
+  and (min-width: 390px)
+  and (max-width: 420px)
+  and (min-height: 700px)
+  and (max-height: 760px) {
+
+  .dharma-movies-bg {
+
+    background-position: center 60px !important;
+
+    padding-top: 50px !important;
+    padding-bottom: 8px !important;
+  }
+}
+
+
 
 /* Upcoming stripe: spacing only — same `.dharma-movies-bg` image continues underneath. */
 .dharma-movies-bg > section.dharma-top-pad.slider-nav {
@@ -1980,6 +2015,23 @@ img.doneLoading {
   /* Sub-vi max width for dynamic toolbar / Zoomed Display still using `.search-movie-mar` cap */
   .dharma-movies-bg .search-movie.search-movie-mar {
     max-width: min(1120px, 94vw);
+  }
+}
+
+/*
+ * Mid-height narrow portrait (e.g. 393×793): height under 800px so it misses `min-height: 800px` tweaks;
+ * `100% auto` + `center top` was cropping badly vs iPad / taller phones. Use `cover` + vh-based anchor.
+ */
+@media (orientation: portrait) and (max-width: 420px) and (min-height: 720px) and (max-height: 799.98px) {
+  .dharma-movies-bg {
+    background-image: url("/frontend/img/mobile-movies.jpg");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center calc(16% + 3.5dvh);
+    background-color: #ececec;
+    padding-top: clamp(56px, 9dvh, 82px);
+    padding-bottom: clamp(18px, 4.5dvh, 36px);
+    overflow-x: clip;
   }
 }
 
