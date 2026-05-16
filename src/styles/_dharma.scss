@@ -1563,10 +1563,17 @@ img.doneLoading {
 }
 
 /* Extra small phones — keep padding-only here; background tuning for odd heights lives in later queries */
-@media (max-width: 480px) {
+/* Redmi Note 10S / short heights */
+@media (orientation: portrait)
+  and (max-width: 420px)
+  and (max-height: 760px) {
+
   .dharma-movies-bg {
-    padding-top: clamp(80px, 12vw, 100px);
-    padding-bottom: clamp(18px, 5vw, 40px);
+
+    background-position: center 60px !important;
+
+    padding-top: 42px !important;
+    padding-bottom: 6px !important;
   }
 }
 
