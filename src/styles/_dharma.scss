@@ -1531,34 +1531,44 @@ img.doneLoading {
 }
 
 /* All mobiles + tablets */
+/* Mobile + Tablet */
 @media (max-width: 991.98px) {
+
   .dharma-movies-bg {
 
     background-image: url("/frontend/img/mobile-movies.jpg");
     background-repeat: no-repeat;
 
-    /* MAIN FIX */
+    /* KEEP */
     background-size: cover;
 
-    background-position: center top;
+    /* MAIN FIX */
+    background-position: center 20px;
 
-    /* Reduce excessive height */
-    padding-top: clamp(55px, 10vw, 90px);
+    background-color: #ececec;
 
-    padding-bottom: clamp(8px, 3vw, 24px);
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+    /* REDUCE EMPTY SPACE */
+    padding-top: 40px;
+
+    padding-bottom: 12px;
 
     padding-inline:
       env(safe-area-inset-left, 0px)
       env(safe-area-inset-right, 0px);
 
     background-clip: padding-box;
+  }
 
-    overflow-x: hidden;
-    overflow-y: hidden;
+  .movies-page-hero {
+    padding-top: 10px;
+    padding-bottom: 4px;
   }
 
   .dharma-movies-bg .movies-hero-search-wrap {
-    margin-bottom: clamp(0.8rem, 3vw, 1.6rem);
+    margin-bottom: 0.7rem;
   }
 }
 
@@ -1569,6 +1579,8 @@ img.doneLoading {
     padding-bottom: clamp(18px, 5vw, 40px);
   }
 }
+
+
 
 /* 393×738 / 390×740 */
 @media (orientation: portrait)
@@ -1586,7 +1598,36 @@ img.doneLoading {
   }
 }
 
+/* Redmi Note 10S */
+@media (orientation: portrait)
+  and (min-width: 390px)
+  and (max-width: 420px) {
 
+  .dharma-movies-bg {
+
+    background-image: url("/frontend/img/mobile-movies.jpg");
+    background-repeat: no-repeat;
+
+    /* BEST FOR REDMI NOTE 10S */
+    background-size: cover;
+
+    /* Proper focal position */
+    background-position: center 55px;
+
+    background-color: #ececec;
+
+    /* Reduce section height */
+    padding-top: 52px !important;
+    padding-bottom: 10px !important;
+
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  .dharma-movies-bg .movies-hero-search-wrap {
+    margin-bottom: 0.8rem;
+  }
+}
 
 /* Upcoming stripe: spacing only — same `.dharma-movies-bg` image continues underneath. */
 .dharma-movies-bg > section.dharma-top-pad.slider-nav {
