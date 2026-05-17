@@ -10,8 +10,8 @@ import { UpcomingReleasesSlider } from "@/components/movies/UpcomingReleasesSlid
 import { resolveUploadUrl } from "@/lib/media";
 import { buildMovieList, chunkBy, movieSlug } from "@/lib/moviesLayout";
 
-/** Same width band as four-up Past grid in `_dharma.scss` (`768px`–`1366.98px`). */
-const PAST_GRID_FOUR_UP_MQ = "(min-width: 768px) and (max-width: 1366.98px)";
+/** Same width band as four-up Past grid in `_dharma.scss` (`768px`–`1366px`). */
+const PAST_GRID_FOUR_UP_MQ = "(min-width: 768px) and (max-width: 1366px)";
 
 function usePastReleasesInitialDisplayCount() {
   /** SSR + first paint: 10 matches server; `useLayoutEffect` corrects to 8 on iPad/tablet before paint. */

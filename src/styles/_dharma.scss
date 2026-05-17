@@ -12,9 +12,10 @@ $grey: #6f6f6e;
   --dh-header-offset: 116px;
 }
 
-@media (max-width: 1399.98px) {
+@media (max-width: 1399px) {
   :root {
-    --dh-header-offset: 118px;
+    /* Fluid stack height: trims blank band under fixed header on phones/tablets (was a flat 118px). */
+    --dh-header-offset: clamp(108px, 26vmin, 122px);
   }
 }
 
@@ -168,7 +169,7 @@ body {
 }
 
 /* Phones + tablets + sub-`xxl` viewports: full-bleed bar + ribbon (collapsed navbar until `xxl` — `navbar-expand-xxl` in SiteHeader.jsx). */
-@media (max-width: 1399.98px) {
+@media (max-width: 1399px) {
   .head-bg {
     margin: 0;
     padding: 14px 0 10px;
@@ -176,8 +177,8 @@ body {
     max-width: 100%;
   }
 
-  /* Keep asset aspect so the scallop overlaps the hero like legacy (concave bite). */
-  .home .dh-header-shell > .head-curve {
+  /* Full-bleed ribbon; asset keeps scallop overlapping hero (was `.home`-only → side gaps on other routes). */
+  .dh-header-shell > .head-curve {
     margin: -6px 0 0;
     width: 100%;
     max-width: 100%;
@@ -192,8 +193,8 @@ body {
 }
 
 /* Tablet / iPad / sub-`xxl` (768–1399): tuck ribbon tighter — parity with legacy feel */
-@media (min-width: 768px) and (max-width: 1399.98px) {
-  .home .dh-header-shell > .head-curve {
+@media (min-width: 768px) and (max-width: 1399px) {
+  .dh-header-shell > .head-curve {
     margin: -19px 0 0;
   }
 }
@@ -419,7 +420,7 @@ body {
   }
 }
 
-@media (max-width: 1399.98px) {
+@media (max-width: 1399px) {
   .head-social ul li {
     padding: 0;
   }
@@ -486,7 +487,7 @@ body {
   height: auto;
 }
 
-@media (max-width: 1399.98px) {
+@media (max-width: 1399px) {
   .home .site-header-search.search-movie.my-search {
     right: 72px;
     width: 32%;
@@ -494,7 +495,7 @@ body {
   }
 }
 
-@media (max-width: 1399.98px) {
+@media (max-width: 1399px) {
   .home .site-header-search.search-movie.my-search {
     position: relative;
     width: 100% !important;
@@ -509,7 +510,7 @@ body {
 }
 
 /* Compact header below `xxl` — same shell as phones (matches `navbar-expand-xxl` in `SiteHeader.jsx`). */
-@media (max-width: 1399.98px) {
+@media (max-width: 1399px) {
   .home .dh-header-main-row.row {
     min-height: 0;
   }
@@ -666,7 +667,7 @@ body {
 
 /* Narrow phones — ribbon + mark */
 @media (max-width: 480px) {
-  .home .dh-header-shell > .head-curve {
+  .dh-header-shell > .head-curve {
     margin: -21px 0 0;
     background-position: center 62%;
     min-height: clamp(30px, 10.5vw, 40px);
@@ -734,7 +735,7 @@ body {
   white-space: nowrap;
 }
 
-@media (max-width: 1399.98px) and (min-width: 992px) {
+@media (max-width: 1399px) and (min-width: 992px) {
   .dh-header-inner .custom-menu.dh-header-nav-list li a {
     padding: 5px 8px !important;
     font-size: 11px !important;
@@ -766,7 +767,7 @@ body {
 }
 
 /* Narrow canvas where desktop nav can show: tighter copy (navbar expanded from `xxl` up). */
-@media (min-width: 992px) and (max-width: 1399.98px) {
+@media (min-width: 992px) and (max-width: 1399px) {
   .dh-header-inner .custom-menu.dh-header-nav-list li a {
     padding: 5px 5px !important;
     font-size: 10px !important;
@@ -934,7 +935,7 @@ body {
   overflow: visible;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .footer .mobile-center {
     float: none !important;
     text-align: center;
@@ -1420,7 +1421,7 @@ img.doneLoading {
   color: $white;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .contact-page .min-add.add-show {
     bottom: 16px;
   }
@@ -1507,7 +1508,7 @@ img.doneLoading {
   padding: 7px 30px 5px;
 }
 
-/* Movies — `movie-up.jpg` ≥1400px; ≤991.98px + large touch tablets (below) mirror mobile plate. */
+/* Movies — `movie-up.jpg` ≥1400px; ≤991px + large touch tablets (below) mirror mobile plate. */
 /* Movies — Desktop */
 .dharma-movies-bg {
   position: relative;
@@ -1530,29 +1531,18 @@ img.doneLoading {
   }
 }
 
-/* All mobiles + tablets */
-@media (max-width: 991.98px) {
+/* All mobiles + tablets — shared hero plate */
+@media (max-width: 991px) {
   .dharma-movies-bg {
-
     background-image: url("/frontend/img/mobile-movies.jpg");
     background-repeat: no-repeat;
-
-    /* MAIN FIX */
     background-size: cover;
-
     background-position: center top;
-
-    /* Reduce excessive height */
     padding-top: clamp(55px, 10vw, 90px);
-
     padding-bottom: clamp(8px, 3vw, 24px);
-
-    padding-inline:
-      env(safe-area-inset-left, 0px)
+    padding-inline: env(safe-area-inset-left, 0px)
       env(safe-area-inset-right, 0px);
-
     background-clip: padding-box;
-
     overflow-x: hidden;
     overflow-y: hidden;
   }
@@ -1560,65 +1550,52 @@ img.doneLoading {
   .dharma-movies-bg .movies-hero-search-wrap {
     margin-bottom: clamp(0.8rem, 3vw, 1.6rem);
   }
+
+  .movies-page-hero {
+    padding-top: calc(var(--dh-header-offset) + 48px);
+    min-height: clamp(300px, 52vh, 520px);
+  }
+
+  .dharma-movies-bg2,
+  .dharma-movies-bg3 {
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
 }
 
-/* Extra small phones — keep padding-only here; background tuning for odd heights lives in later queries */
-/* Redmi Note 10S / short heights */
-@media (orientation: portrait)
-  and (max-width: 420px)
-  and (max-height: 760px) {
-
+/* Extra small phones — short portrait; background tuning stacks on base ≤991 */
+@media (orientation: portrait) and (max-width: 420px) and (max-height: 760px) {
   .dharma-movies-bg {
-
     background-position: center 60px !important;
-
     padding-top: 42px !important;
     padding-bottom: 6px !important;
   }
 }
 
-
-
-/* 393×738 / 390×740 */
-@media (orientation: portrait)
-  and (min-width: 390px)
-  and (max-width: 420px)
-  and (min-height: 700px)
-  and (max-height: 760px) {
-
+/* Narrow portrait ~390–420px (e.g. Redmi class) — overrides base focal + padding */
+@media (orientation: portrait) and (min-width: 390px) and (max-width: 420px) {
   .dharma-movies-bg {
+    background-position: center 55px;
+    padding-top: 52px !important;
+    padding-bottom: 10px !important;
+  }
 
-    background-position: center 60px !important;
-
-    padding-top: 50px !important;
-    padding-bottom: 8px !important;
+  .dharma-movies-bg .movies-hero-search-wrap {
+    margin-bottom: 0.8rem;
   }
 }
 
-/* Redmi Note 10S */
+/* Tall narrow phones ~430–480 × ~950–1050 logical */
 @media (orientation: portrait)
-  and (min-width: 390px)
-  and (max-width: 420px) {
-
+  and (min-width: 430px)
+  and (max-width: 480px)
+  and (min-height: 950px)
+  and (max-height: 1050px) {
   .dharma-movies-bg {
-
-    background-image: url("/frontend/img/mobile-movies.jpg");
-    background-repeat: no-repeat;
-
-    /* BEST FOR REDMI NOTE 10S */
-    background-size: cover;
-
-    /* Proper focal position */
     background-position: center 55px;
-
-    background-color: #ececec;
-
-    /* Reduce section height */
-    padding-top: 52px !important;
-    padding-bottom: 10px !important;
-
-    overflow-x: hidden;
-    overflow-y: hidden;
+    padding-top: 58px !important;
+    padding-bottom: 5px !important;
   }
 
   .dharma-movies-bg .movies-hero-search-wrap {
@@ -1641,13 +1618,6 @@ img.doneLoading {
   padding: calc(var(--dh-header-offset) + 84px) 0 clamp(1rem, 3vw, 1.75rem);
 }
 
-@media (max-width: 991.98px) {
-  .movies-page-hero {
-    padding-top: calc(var(--dh-header-offset) + 48px);
-    min-height: clamp(300px, 52vh, 520px);
-  }
-}
-
 @media (max-width: 575px) {
   .movies-page-hero {
     padding-top: calc(var(--dh-header-offset) + 28px);
@@ -1655,8 +1625,8 @@ img.doneLoading {
   }
 }
 
-/* Movies narrow portrait: gutters + Upcoming rhythm (wrapper art is `mobile-movies.jpg` when `≤991.98px`). */
-@media (max-width: 820.98px) {
+/* Movies narrow portrait: gutters + Upcoming rhythm (wrapper art is `mobile-movies.jpg` when `≤991px`). */
+@media (max-width: 820px) {
   /* Upcoming band — less air between search field and “Upcoming Releases”. */
   .dharma-movies-bg .movies-page-hero {
     padding-bottom: clamp(0.35rem, 2vw, 0.75rem);
@@ -1747,10 +1717,10 @@ img.doneLoading {
 }
 
 /*
- * Movies — iPad-class tablets (≥768 × ≤991.98): keep `mobile-movies.jpg` sizing identical to phones
- * (see `@media max-width 991.98px`); only typography / hero / section rhythm differ here.
+ * Movies — iPad-class tablets (≥768 × ≤991): keep `mobile-movies.jpg` sizing identical to phones
+ * (see `@media max-width 991px`); only typography / hero / section rhythm differ here.
  */
-@media (min-width: 768px) and (max-width: 991.98px) {
+@media (min-width: 768px) and (max-width: 991px) {
   .dharma-movies-bg {
     background-position: 55% clamp(42px, 10vw, 82px);
   }
@@ -1798,7 +1768,7 @@ img.doneLoading {
  * iPad Pro class & other large touch tablets (992–1366): same `mobile-movies.jpg` plate + hero
  * rhythm as iPad Air — mouse laptops in this width keep `movie-up.jpg` (no `(hover: none)` match).
  */
-@media (min-width: 992px) and (max-width: 1366.98px) {
+@media (min-width: 992px) and (max-width: 1366px) {
   @media (hover: none) and (pointer: coarse) {
     .dharma-movies-bg {
       background-image: url("/frontend/img/mobile-movies.jpg");
@@ -1813,11 +1783,6 @@ img.doneLoading {
 
     .dharma-movies-bg .movies-hero-search-wrap {
       margin-bottom: 0;
-    }
-
-    .movies-page-hero {
-      padding-top: calc(var(--dh-header-offset) + 48px);
-      min-height: clamp(300px, 52vh, 520px);
     }
 
     .dharma-movies-bg .movies-page-hero {
@@ -1895,7 +1860,7 @@ img.doneLoading {
 }
 
 /* Handsets (`_mobile.scss` xs): same mobile plate, smaller bottom pad + hide carousel arrows */
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .dharma-movies-bg {
     padding-bottom: 14px;
   }
@@ -1927,7 +1892,7 @@ img.doneLoading {
  * Narrow portrait tablets (e.g. OnePlus Pad / Tab ~765×1071): width `< md` so Bootstrap &
  * handset rules treated it as a phone. Tall min-height excludes typical phones (~900+).
  */
-@media (min-width: 720px) and (max-width: 767.98px) and (min-height: 900px) {
+@media (min-width: 720px) and (max-width: 767px) and (min-height: 900px) {
   /* Past Releases: desktop grid + four-up on this band (hide horizontal strip) */
   .dharma-movies-bg3 .movies-past-grid-row.mobile-row.hidden-xs.d-none.d-md-block {
     display: block !important;
@@ -1963,6 +1928,8 @@ img.doneLoading {
   }
 
   .dharma-movies-bg {
+    /* ~765×1071 — subtle downward focal vs global `center top` */
+    background-position: center clamp(42px, 7vh, 120px);
     padding-top: clamp(48px, 7vw, 76px);
     padding-bottom: clamp(44px, 8vh, 72px);
   }
@@ -2057,16 +2024,11 @@ img.doneLoading {
 }
 
 /*
- * Mid-height narrow portrait (e.g. 393×793): height under 800px so it misses `min-height: 800px` tweaks;
- * `100% auto` + `center top` was cropping badly vs iPad / taller phones. Use `cover` + vh-based anchor.
+ * Mid-height narrow portrait (e.g. ~393×793): focal + vertical padding only (inherits mobile plate ≤991).
  */
-@media (orientation: portrait) and (max-width: 420px) and (min-height: 720px) and (max-height: 799.98px) {
+@media (orientation: portrait) and (max-width: 420px) and (min-height: 720px) and (max-height: 799px) {
   .dharma-movies-bg {
-    background-image: url("/frontend/img/mobile-movies.jpg");
-    background-repeat: no-repeat;
-    background-size: cover;
     background-position: center calc(16% + 3.5dvh);
-    background-color: #ececec;
     padding-top: clamp(56px, 9dvh, 82px);
     padding-bottom: clamp(18px, 4.5dvh, 36px);
     overflow-x: clip;
@@ -2096,12 +2058,6 @@ img.doneLoading {
   .dharma-movies-bg3 .orange-bg > .container {
     padding-left: max(8px, env(safe-area-inset-left, 0px));
     padding-right: max(8px, env(safe-area-inset-right, 0px));
-  }
-
-  .dharma-movies-bg .movies-head-xl {
-    font-size: clamp(30px, 9.4vw, 44px);
-    line-height: 0.91;
-    letter-spacing: 0.018em;
   }
 
   .dharma-movies-bg .f55,
@@ -2229,17 +2185,6 @@ img.doneLoading {
 @media (prefers-reduced-motion: reduce) {
   .dharma-movies-bg3 .mob-slider.movies-past-mob-slider {
     scroll-snap-type: x proximity;
-  }
-}
-
-/* Tablets/phones — use `cover` like desktop (`100% auto` pinned width only: tall sections left
- * most of `movie-middle.jpg` / `movie-bottom.jpg` effectively “outside” the painted band). */
-@media (max-width: 991.98px) {
-  .dharma-movies-bg2,
-  .dharma-movies-bg3 {
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
   }
 }
 
@@ -2591,7 +2536,7 @@ img.doneLoading {
 
 /* Home — Upcoming / Released: four posters per row on iPad Air class widths (Bootstrap md–lg tablet).
  * Mirrors `.dharma-movies-bg3` past grid density; avoids 3-up from generic `max-width: 991px` alone. */
-@media (min-width: 768px) and (max-width: 991.98px) {
+@media (min-width: 768px) and (max-width: 991px) {
   .dharma-home .mobile-row .col-flex {
     flex: 0 0 25%;
     max-width: 25%;
@@ -2599,7 +2544,7 @@ img.doneLoading {
 }
 
 /* Movies — Past Releases on iPad / compact canvases (768–1366): four posters per row (`20%` = five-up is default above 1366). */
-@media (min-width: 768px) and (max-width: 1366.98px) {
+@media (min-width: 768px) and (max-width: 1366px) {
   .dharma-movies-bg3 .mobile-row .col-flex {
     flex: 0 0 25%;
     max-width: 25%;
@@ -2843,7 +2788,7 @@ img.doneLoading {
    An SVG `<rect>` draws the 2px orange outline; on hover the rect's
    stroke-dasharray is animated for the chase effect. */
 /* On viewports ≤ xs max (767px), centred — matches legacy `_mobile.scss` + `$screen-xs-max` */
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .btn-view-more .mobile-center,
   .btn-view-all .mobile-center,
   .btn-view-enter .mobile-center {
@@ -3008,10 +2953,10 @@ img.doneLoading {
 
 /* Bootstrap 3 `.container` widths (legacy max 1170px, not BS5 1320px). */
 .overview-page__container {
-  @media (min-width: 768px) and (max-width: 991.98px) {
+  @media (min-width: 768px) and (max-width: 991px) {
     max-width: 750px;
   }
-  @media (min-width: 992px) and (max-width: 1199.98px) {
+  @media (min-width: 992px) and (max-width: 1199px) {
     max-width: 970px;
   }
   @media (min-width: 1200px) {
@@ -3117,7 +3062,7 @@ img.doneLoading {
   }
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 991px) {
   .overview-page .overview-taglines h1 {
     font-size: 30px;
   }
@@ -3243,7 +3188,7 @@ img.doneLoading {
 }
 
 /* Legacy extra-tight laptops — complements block above without double-clamping Disclaimer */
-@media (min-width: 1024px) and (max-width: 1199.98px) and (max-height: 780px) {
+@media (min-width: 1024px) and (max-width: 1199px) and (max-height: 780px) {
   .privacy-page .privacy-page__banner.banner.dh-relative,
   .disclaimer-page .disclaimer-page__banner.banner.dh-relative {
     max-height: min(
@@ -3256,11 +3201,11 @@ img.doneLoading {
 
 /* BS3-aligned content band widths (reuse overview container caps). */
 .privacy-page .privacy-page__container {
-  @media (min-width: 768px) and (max-width: 991.98px) {
+  @media (min-width: 768px) and (max-width: 991px) {
     max-width: 750px;
   }
 
-  @media (min-width: 992px) and (max-width: 1199.98px) {
+  @media (min-width: 992px) and (max-width: 1199px) {
     max-width: 970px;
   }
 
@@ -3270,11 +3215,11 @@ img.doneLoading {
 }
 
 .disclaimer-page .disclaimer-page__container {
-  @media (min-width: 768px) and (max-width: 991.98px) {
+  @media (min-width: 768px) and (max-width: 991px) {
     max-width: 750px;
   }
 
-  @media (min-width: 992px) and (max-width: 1199.98px) {
+  @media (min-width: 992px) and (max-width: 1199px) {
     max-width: 970px;
   }
 
@@ -3294,7 +3239,7 @@ img.doneLoading {
   box-sizing: border-box;
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .privacy-page .privacy-page__container {
     padding-left: max(14px, env(safe-area-inset-left));
     padding-right: max(14px, env(safe-area-inset-right));
@@ -3314,7 +3259,7 @@ img.doneLoading {
   }
 }
 
-@media (min-width: 576px) and (max-width: 991.98px) {
+@media (min-width: 576px) and (max-width: 991px) {
   .privacy-page .privacy-page__container {
     padding-left: max(18px, env(safe-area-inset-left));
     padding-right: max(18px, env(safe-area-inset-right));
@@ -3383,21 +3328,21 @@ img.doneLoading {
 }
 
 /* 600–899px — tablet portrait / small tablet (765, 820-ish alongside Bootstrap md) */
-@media (min-width: 600px) and (max-width: 899.98px) {
+@media (min-width: 600px) and (max-width: 899px) {
   .privacy-page .banner-title .f120,
   .disclaimer-page .banner-title .f120 {
     font-size: clamp(4.125rem, 7.5vw + 1.75rem, 5.875rem);
   }
 }
 
-@media (min-width: 900px) and (max-width: 1199.98px) {
+@media (min-width: 900px) and (max-width: 1199px) {
   .privacy-page .banner-title .f120,
   .disclaimer-page .banner-title .f120 {
     font-size: clamp(5.25rem, 5.5vw + 2.75rem, 6.875rem);
   }
 }
 
-@media (min-width: 1200px) and (max-width: 1439.98px) {
+@media (min-width: 1200px) and (max-width: 1439px) {
   .privacy-page .banner-title .f120,
   .disclaimer-page .banner-title .f120 {
     font-size: clamp(5.875rem, 4vw + 3.75rem, 7.375rem);
@@ -3443,7 +3388,7 @@ img.doneLoading {
   margin-bottom: 0;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   /*
    * Navbar / orange curve overlaps top of hero on phones & small tabs (~412→~820 wide).
    * Bias headline slightly downward for **both** Privacy + Disclaimer vs pure 50%/50%.
@@ -3594,7 +3539,7 @@ img.doneLoading {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .news-events-detail .news-search {
     padding-top: 25px;
   }
@@ -3609,7 +3554,7 @@ img.doneLoading {
 }
 
 /* iPad Mini/Air portrait-landscape: avoid cramped 4/8 split header. */
-@media (min-width: 768px) and (max-width: 1023.98px) {
+@media (min-width: 768px) and (max-width: 1023px) {
   .news-events-detail__hero-row > .col-md-4,
   .news-events-detail__hero-row > .col-sm-4,
   .news-events-detail__hero-row > .col-md-8,
@@ -4248,7 +4193,7 @@ img.doneLoading {
   min-width: 96px;
 }
 
-@media (max-width: 991.98px) {
+@media (max-width: 991px) {
   .news-events-page .news-search {
     padding-top: 80px;
   }
@@ -4263,7 +4208,7 @@ img.doneLoading {
   }
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .news-events-detail .dharma-sun,
   .news-events-page .dharma-sun {
     text-align: center;
@@ -4382,7 +4327,7 @@ img.doneLoading {
     gap: 10px;
   }
 
-  @media (max-width: 389.98px) {
+  @media (max-width: 389px) {
     .news-events-page .movie-news-grid {
       grid-template-columns: minmax(0, 1fr);
       max-width: 240px;
@@ -4411,7 +4356,7 @@ img.doneLoading {
 }
 
 /* Small tablets (e.g. 765px) should not use narrow-phone card width */
-@media (min-width: 576px) and (max-width: 767.98px) {
+@media (min-width: 576px) and (max-width: 767px) {
   .news-events-page .mobile-text-center {
     text-align: center;
   }
@@ -4434,7 +4379,7 @@ img.doneLoading {
 }
 
 /* iPad Air range (820x1180) */
-@media (min-width: 768px) and (max-width: 991.98px) {
+@media (min-width: 768px) and (max-width: 991px) {
   .news-events-page .mobile-text-center,
   .news-events-detail .mt15.mobile-text-center {
     text-align: center;
@@ -4622,7 +4567,7 @@ img.doneLoading {
 }
 
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .news-events-detail .dharma-sun {
     max-width: 280px;
   }
@@ -4844,7 +4789,7 @@ img.doneLoading {
   text-transform: uppercase;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .news-events-detail .share-section h4 {
     font-size: 20px;
     margin-bottom: 10px;
@@ -4873,7 +4818,7 @@ img.doneLoading {
   min-height: 60px;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .mob-top-em {
     margin-bottom: 20px;
   }
@@ -4889,7 +4834,7 @@ img.doneLoading {
 }
 
 /* News detail: small-tablet fix (e.g. 765x738) should not use phone-only layout */
-@media (min-width: 576px) and (max-width: 767.98px) {
+@media (min-width: 576px) and (max-width: 767px) {
   .news-events-detail .news-search {
     padding-top: 80px;
     max-width: 640px;
@@ -5194,7 +5139,7 @@ img.doneLoading {
 }
 
 /* Movie detail — tablets / iPad: Synopsis·Cast·Gallery·Awards row scrolls sideways like `.movie-inside-tabs-mob` on phones */
-@media (min-width: 768px) and (max-width: 1366.98px) {
+@media (min-width: 768px) and (max-width: 1366px) {
   .movie-tabs .all-tabs .btn-group,
   .all-tabs .btn-group {
     flex-wrap: nowrap !important;
@@ -5237,7 +5182,7 @@ img.doneLoading {
 }
 
 /* Synopsis deco (`cutImage2` inline): tablets — smaller plate + bottom band so image stays under copy */
-@media (max-width: 1366.98px) {
+@media (max-width: 1366px) {
   .movie-inside-date.bg-synopsis.mob-bg,
   .movie-inside-date.bg-synopsis {
     background-repeat: no-repeat !important;
@@ -5260,7 +5205,7 @@ img.doneLoading {
 }
 
 /* Phones: deco draws upward from bottom — need extra vertical band + smaller bitmap so paragraphs don’t sit on art */
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .movie-inside-date.bg-synopsis.mob-bg,
   .movie-inside-date.bg-synopsis {
     background-size: min(80vw, 310px) auto !important;
@@ -5283,7 +5228,7 @@ img.doneLoading {
   }
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .movie-inside-date.bg-synopsis.mob-bg,
   .movie-inside-date.bg-synopsis {
     background-size: min(74vw, 270px) auto !important;
@@ -5889,7 +5834,7 @@ img.doneLoading {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .movie-award .awards-name ul li {
     font-size: 14px;
   }
@@ -6078,7 +6023,7 @@ img.doneLoading {
 }
 
 /* background-attachment: fixed is broken on iOS/Android — disable on mobile */
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .dharma-top-bg {
     background-attachment: scroll;
     background-position: center top;
@@ -6672,13 +6617,13 @@ img.doneLoading {
   width: 100%;
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .videos-page-legacy .videos-tv-swiper .swiper-slide {
     width: 272px;
   }
 }
 
-@media (min-width: 576px) and (max-width: 991.98px) {
+@media (min-width: 576px) and (max-width: 991px) {
   .videos-page-legacy .videos-tv-swiper .swiper-slide {
     width: 286px;
   }
@@ -6764,7 +6709,7 @@ img.doneLoading {
       max-height: 70vh;
     }
 
-    @media (max-width: 575.98px) {
+    @media (max-width: 575px) {
       max-height: 45vh;
     }
   }
@@ -6860,13 +6805,13 @@ img.doneLoading {
 }
 
 /* Home hero carousel — iPad / tablet: sit slider slightly lower under fixed header */
-@media (min-width: 768px) and (max-width: 991.98px) {
+@media (min-width: 768px) and (max-width: 991px) {
   .dharma-home .home-hero {
     padding-top: calc(var(--dh-header-offset) + clamp(22px, 3.2vw, 44px));
   }
 }
 
-@media (min-width: 992px) and (max-width: 1366.98px) {
+@media (min-width: 992px) and (max-width: 1366px) {
   @media (hover: none) and (pointer: coarse) {
     .dharma-home .home-hero {
       padding-top: calc(var(--dh-header-offset) + clamp(22px, 3.2vw, 44px));
@@ -7323,7 +7268,7 @@ img.doneLoading {
   height: 459px;
 }
 
-@media (max-width: 1199.98px) {
+@media (max-width: 1199px) {
   /* Legacy `_mobile.scss`: `zoom: 0.9` on these imgs → intrinsic × 0.9 */
   .home-dharma-world-corner--tr .home-dharma-world-corner-img {
     width: 252px;
@@ -7701,7 +7646,7 @@ img.doneLoading {
 }
 
 /* Mobile portrait image: 705×1087 */
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .dh-hero-slide-frame {
     aspect-ratio: 705 / 1087;
     max-height: none;
@@ -7758,7 +7703,7 @@ img.doneLoading {
   margin: 0 0 10px;
   line-height: 1.05;
 
-  @media (max-width: 767.98px) {
+  @media (max-width: 767px) {
     font-size: 40px;
   }
 }
@@ -7773,7 +7718,7 @@ img.doneLoading {
 .fan-landing-pad-img {
   padding: 70px 40px;
 
-  @media (max-width: 767.98px) {
+  @media (max-width: 767px) {
     padding: 70px 0;
   }
 }
@@ -7845,7 +7790,7 @@ img.doneLoading {
   }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .social-page-hero {
     min-height: calc(var(--dh-header-offset, 116px) + 260px);
     padding-bottom: 32px;
@@ -7960,7 +7905,7 @@ img.doneLoading {
   margin-bottom: 0.5rem;
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .fan-corner-page .ans-opt li {
     display: block;
     margin-right: 0;
@@ -8058,7 +8003,7 @@ img.doneLoading {
   color: #c62828;
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 767px) {
   .fan-corner-modal-inner .pop-pad {
     padding-left: 12px !important;
     padding-right: 12px !important;
@@ -8085,7 +8030,7 @@ img.doneLoading {
 }
 
 /* Mobile: stack buttons full-width */
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .btn-n-s {
     display: flex;
     flex-direction: column;
@@ -8167,11 +8112,11 @@ img.doneLoading {
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 
-  @media (max-width: 991.98px) {
+  @media (max-width: 991px) {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  @media (max-width: 575.98px) {
+  @media (max-width: 575px) {
     grid-template-columns: 1fr;
   }
 }
